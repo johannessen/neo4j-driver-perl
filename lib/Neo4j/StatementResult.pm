@@ -21,6 +21,7 @@ sub new {
 sub _column_keys {
 	my ($self) = @_;
 	
+	return undef if ! keys %{$self->{result}};
 	return Neo4j::ResultColumns->new($self->{result});
 }
 
@@ -60,10 +61,18 @@ sub single {
 	return undef if $self->size != 1;  # original Neo4j driver API raises an exception here
 	my $record = bless $self->{result}->{data}->[0], 'Neo4j::Record';
 	$record->{column_keys} = $self->_column_keys;
+	$record->{_stats} = $self->stats;
 	return $record;
 	
 	# can this be better implemented like this?
 	#my ($record) = $self->list;  return $record;
+}
+
+
+sub stats {
+	my ($self) = @_;
+	
+	return $self->{result}->{stats} // {};
 }
 
 

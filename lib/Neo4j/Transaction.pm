@@ -31,7 +31,8 @@ sub new {
 		transaction => URI->new( $TRANSACTION_ENDPOINT ),
 		commit => URI->new( $COMMIT_ENDPOINT ),
 		die_on_error => $session->{die_on_error},
-		return_graph => $session->{return_graph},
+		return_graph => 0,
+		return_stats => 0,
 	};
 	
 	return bless $transaction, $class;
@@ -60,11 +61,9 @@ sub run {
 sub _prepare {
 	my ($self, $query, @parameters) = @_;
 	
-	my $json = {
-#		includeStats => \1,
-		statement => $query,
-	};
+	my $json = { statement => $query };
 	$json->{resultDataContents} = [ "row", "graph" ] if $self->{return_graph};
+	$json->{includeStats} = JSON::PP::true if $self->{return_stats};
 	
 	if (ref $query eq 'REST::Neo4p::Query') {
 		$json->{statement} = $query->query;
@@ -95,7 +94,7 @@ sub _post {
 	});
 	
 	$self->{client}->POST( "$self->{transaction}", $coder->encode($request) );
-	say 'Status: ', $self->{client}->responseCode() unless $self->{client}->responseCode() =~ m/^200|[^2]\d\d$/;
+	say 'Status: ', $self->{client}->responseCode() unless $self->{client}->responseCode() =~ m/^20[01]|[1345]\d\d$/;
 	
 	my $response;
 	my @errors = ();
@@ -120,11 +119,11 @@ sub _post {
 	$self->{transaction} = new URI($location)->path_query if $location;
 	$self->{commit} = new URI($response->{commit})->path_query if $response->{commit};
 	
-	if (scalar @statements eq 1) {
+	if (scalar @statements le 1) {
 		my $statement_result = Neo4j::StatementResult->new( $response->{results}->[0] );
 		return wantarray ? $statement_result->list : $statement_result;
 	}
-	warn "Multiple statements in single Neo4j request untested";
+	carp "Multiple statements in single Neo4j request untested";
 	my @statement_results = map { Neo4j::StatementResult->new( $_ ) } @{$response->{results}};
 	return wantarray ? @statement_results : \@statement_results;
 }

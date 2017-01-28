@@ -5,13 +5,10 @@ use utf8;
 
 package Neo4j::ResultColumns;
 
-use Carp qw(croak);
-
 
 sub new {
 	my ($class, $result) = @_;
 	
-	croak "No columns in Neo4j response (syntax error?)" if ! $result->{columns};
 	my $columns = $result->{columns};
 	my $column_keys = {};
 	for (my $f = scalar(@$columns) - 1; $f >= 0; $f--) {
