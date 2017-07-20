@@ -100,13 +100,21 @@ sub _post {
 	my @errors = ();
 	if ($self->{client}->responseCode() =~ m/^[^2]\d\d$/) {
 		push @errors, 'Error: ' . $self->{client}->responseCode();
+		if ($self->{client}->responseHeader('Content-Type') =~ m|^text/plain|) {
+			push @errors, $self->{client}->responseContent();
+		}
 	}
-	try {
-		$response = decode_json $self->{client}->responseContent();
+	if ($self->{client}->responseHeader('Content-Type') eq 'application/json') {
+		try {
+			$response = decode_json $self->{client}->responseContent();
+		}
+		catch {
+			push @errors, $_;
+		};
 	}
-	catch {
-		push @errors, $_;
-	};
+	else {
+		push @errors, "Received " . $self->{client}->responseHeader('Content-Type') . " content from database server; skipping JSON decode";
+	}
 	foreach my $error (@{$response->{errors}}) {
 		push @errors, "$error->{code}:\n$error->{message}";
 	}
