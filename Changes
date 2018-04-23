@@ -1,0 +1,18 @@
+0.04, 2018-04-23
+
+ - convert into a Dist::Zilla-compatible module
+ - move supporting classes into Neo4j::Driver namespace
+ - allow reuse under the terms of the Artistic License 2.0
+
+0.03, 2017-07-20
+
+ - improve handling of server errors
+
+0.02, 2017-01-28
+
+ - add Neo4j includeStats support
+ - add method to handle boolean values specially
+
+0.01, 2016-11-19
+
+ - implement the Neo4j Driver API

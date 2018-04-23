@@ -3,7 +3,9 @@ use strict;
 use warnings;
 use utf8;
 
-package Neo4j::ResultColumns;
+package Neo4j::Driver::ResultColumns;
+# ABSTRACT: structure definition of Cypher result values
+
 
 
 sub new {

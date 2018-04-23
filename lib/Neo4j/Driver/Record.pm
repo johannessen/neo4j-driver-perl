@@ -3,7 +3,9 @@ use strict;
 use warnings;
 use utf8;
 
-package Neo4j::Record;
+package Neo4j::Driver::Record;
+# ABSTRACT: container for Cypher result values
+
 
 use Carp qw(croak);
 use JSON::PP;

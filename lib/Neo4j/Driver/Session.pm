@@ -3,9 +3,11 @@ use strict;
 use warnings;
 use utf8;
 
-package Neo4j::Session;
+package Neo4j::Driver::Session;
+# ABSTRACT: context of work for database interactions
 
-use Neo4j::Transaction;
+
+use Neo4j::Driver::Transaction;
 
 
 sub new {
@@ -28,7 +30,7 @@ sub begin_transaction {
 	my ($self) = @_;
 	
 	# this method might initiate the HTTP connection, but doesn't as of yet
-	return Neo4j::Transaction->new($self);
+	return Neo4j::Driver::Transaction->new($self);
 }
 
 

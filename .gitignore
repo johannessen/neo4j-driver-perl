@@ -1,0 +1,11 @@
+# Dist::Zilla
+/.build/
+/Neo4j-Driver-*
+/Makefile.PL
+/MANIFEST
+/META.json
+/README
+
+/t/author-pod-syntax.t
+
+/Stuff

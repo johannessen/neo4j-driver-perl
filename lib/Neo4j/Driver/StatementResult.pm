@@ -3,12 +3,14 @@ use strict;
 use warnings;
 use utf8;
 
-package Neo4j::StatementResult;
+package Neo4j::Driver::StatementResult;
+# ABSTRACT: result of running a Cypher statement (a list of records)
+
 
 use Carp qw(croak);
 
-use Neo4j::Record;
-use Neo4j::ResultColumns;
+use Neo4j::Driver::Record;
+use Neo4j::Driver::ResultColumns;
 
 
 sub new {
@@ -22,7 +24,7 @@ sub _column_keys {
 	my ($self) = @_;
 	
 	return undef if ! keys %{$self->{result}};
-	return Neo4j::ResultColumns->new($self->{result});
+	return Neo4j::Driver::ResultColumns->new($self->{result});
 }
 
 
@@ -38,7 +40,7 @@ sub list {
 	if ( ! $self->{blessed} ) {
 		my $column_keys = $self->_column_keys;
 		foreach my $a (@$l) {
-			bless $a, 'Neo4j::Record';
+			bless $a, 'Neo4j::Driver::Record';
 			$a->{column_keys} = $column_keys;
 		}
 		$self->{blessed} = 1;
@@ -59,7 +61,7 @@ sub single {
 	my ($self) = @_;
 	
 	return undef if $self->size != 1;  # original Neo4j driver API raises an exception here
-	my $record = bless $self->{result}->{data}->[0], 'Neo4j::Record';
+	my $record = bless $self->{result}->{data}->[0], 'Neo4j::Driver::Record';
 	$record->{column_keys} = $self->_column_keys;
 	$record->{_stats} = $self->stats;
 	return $record;

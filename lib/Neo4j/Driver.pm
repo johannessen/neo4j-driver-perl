@@ -4,21 +4,17 @@ use warnings;
 use utf8;
 
 package Neo4j::Driver;
+# ABSTRACT: Perl implementation of the Neo4j Driver API
 
-our $VERSION = 0.03;
 
 use Carp qw(croak);
 
 use URI;
 use REST::Client 134;
-use Neo4j::Session;
+use Neo4j::Driver::Session;
 
 
 =pod
-
-=head1 NAME
-
-Neo4j::Driver - Perl implementation of a Neo4j REST driver.
 
 =head1 SYNOPSIS
 
@@ -118,7 +114,7 @@ sub _client {
 sub session {
 	my ($self) = @_;
 	
-	return Neo4j::Session->new($self);
+	return Neo4j::Driver::Session->new($self);
 }
 
 
@@ -157,10 +153,5 @@ concern to clients as the API is the same and the speed difference isn't
 particularly large anyway as far as I can see.
 
 HTTPS support is planned.
-
-=head1 COPYRIGHT
-
-Copyright (c) 2016 Arne Johannessen
-All rights reserved.
 
 =cut

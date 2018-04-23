@@ -3,7 +3,9 @@ use strict;
 use warnings;
 use utf8;
 
-package Neo4j::Transaction;
+package Neo4j::Driver::Transaction;
+# ABSTRACT: logical container for an atomic unit of work
+
 
 #use Devel::StackTrace qw();
 #use Data::Dumper qw();
@@ -15,7 +17,7 @@ use URI;
 use JSON::PP qw();
 use JSON::MaybeXS;
 
-use Neo4j::StatementResult;
+use Neo4j::Driver::StatementResult;
 
 
 our $TRANSACTION_ENDPOINT = '/db/data/transaction';
@@ -128,11 +130,11 @@ sub _post {
 	$self->{commit} = new URI($response->{commit})->path_query if $response->{commit};
 	
 	if (scalar @statements le 1) {
-		my $statement_result = Neo4j::StatementResult->new( $response->{results}->[0] );
+		my $statement_result = Neo4j::Driver::StatementResult->new( $response->{results}->[0] );
 		return wantarray ? $statement_result->list : $statement_result;
 	}
 	carp "Multiple statements in single Neo4j request untested";
-	my @statement_results = map { Neo4j::StatementResult->new( $_ ) } @{$response->{results}};
+	my @statement_results = map { Neo4j::Driver::StatementResult->new( $_ ) } @{$response->{results}};
 	return wantarray ? @statement_results : \@statement_results;
 }
 
