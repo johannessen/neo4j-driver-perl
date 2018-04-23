@@ -67,7 +67,12 @@ sub new {
 		$uri = URI->new("http://localhost:7474");
 	}
 	
-	return bless { uri => $uri, die_on_error => 1 }, $class;
+	my @defaults = (
+		die_on_error => 1,
+		http_timeout => 6,  # seconds
+	);
+	
+	return bless { uri => $uri, @defaults }, $class;
 }
 
 
@@ -99,7 +104,7 @@ sub _client {
 		
 		$self->{client} = REST::Client->new({
 			host => "$uri",
-			timeout => 6,  # seconds
+			timeout => $self->{http_timeout},
 			follow => 1,
 		});
 		$self->{client}->addHeader('Accept', $CONTENT_TYPE);
