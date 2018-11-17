@@ -15,7 +15,7 @@ use Try::Tiny;
 
 use URI;
 use JSON::PP qw();
-use JSON::MaybeXS;
+use Cpanel::JSON::XS 3.0201;
 
 use Neo4j::Driver::StatementResult;
 
@@ -68,13 +68,16 @@ sub _prepare {
 	$json->{includeStats} = JSON::PP::true if $self->{return_stats};
 	
 	if ($query->isa('REST::Neo4p::Query')) {
+		# REST::Neo4p::Query->query is not part of the documented API
 		$json->{statement} = '' . $query->query;
 	}
 	
 	if (ref $parameters[0] eq 'HASH') {
 		$json->{parameters} = $parameters[0];
 	}
-	elsif (scalar @parameters && scalar @parameters % 2 == 0) {
+	elsif (@parameters) {
+		croak 'Query parameters must be given as hash or hashref' if ref $parameters[0];
+		croak 'Odd number of elements in query parameter hash' if scalar @parameters % 2 != 0;
 		$json->{parameters} = {@parameters};
 	}
 	
@@ -95,41 +98,46 @@ sub _post {
 		return 0;  # $JSON::PP::a cmp $JSON::PP::b;
 	});
 	
-	$self->{client}->POST( "$self->{transaction}", $coder->encode($request) );
-	say 'Status: ', $self->{client}->responseCode() unless $self->{client}->responseCode() =~ m/^20[01]|[1345]\d\d$/;
+	my $client = $self->{client};
+	$client->POST( "$self->{transaction}", $coder->encode($request) );
 	
+	my $content_type = $client->responseHeader('Content-Type');
 	my $response;
 	my @errors = ();
-	if ($self->{client}->responseCode() =~ m/^[^2]\d\d$/) {
-		push @errors, 'Error: ' . $self->{client}->responseCode();
-		if ($self->{client}->responseHeader('Content-Type') =~ m|^text/plain|) {
-			push @errors, $self->{client}->responseContent();
+	if ($client->responseCode() =~ m/^[^2]\d\d$/) {
+		push @errors, 'Network error: ' . $client->{_res}->status_line;  # there is no other way than using {_res} to get the error message
+		if ($content_type && $content_type =~ m|^text/plain|) {
+			push @errors, $client->responseContent();
+		}
+		elsif ($self->{die_on_error}) {
+			croak $errors[0];
 		}
 	}
-	if ($self->{client}->responseHeader('Content-Type') eq 'application/json') {
+	if ($content_type && $content_type eq 'application/json') {
 		try {
-			$response = decode_json $self->{client}->responseContent();
+			$response = decode_json $client->responseContent();
 		}
 		catch {
 			push @errors, $_;
 		};
 	}
 	else {
-		push @errors, "Received " . $self->{client}->responseHeader('Content-Type') . " content from database server; skipping JSON decode";
+		push @errors, "Received " . ($content_type ? $content_type : "empty") . " content from database server; skipping JSON decode";
 	}
 	foreach my $error (@{$response->{errors}}) {
 		push @errors, "$error->{code}:\n$error->{message}";
 	}
 	if (@errors) {
 		my $errors = join "\n", @errors;
-		$self->{die_on_error} and croak $errors or carp $errors;
+		croak $errors if $self->{die_on_error};
+		carp $errors;
 	}
 	
-	my $location = $self->{client}->responseHeader('Location');
-	$self->{transaction} = new URI($location)->path_query if $location;
-	$self->{commit} = new URI($response->{commit})->path_query if $response->{commit};
+	my $location = $client->responseHeader('Location');
+	$self->{transaction} = URI->new($location)->path_query if $location;
+	$self->{commit} = URI->new($response->{commit})->path_query if $response->{commit};
 	
-	if (scalar @statements le 1) {
+	if (scalar @statements <= 1) {
 		my $statement_result = Neo4j::Driver::StatementResult->new( $response->{results}->[0] );
 		return wantarray ? $statement_result->list : $statement_result;
 	}
@@ -158,6 +166,7 @@ sub rollback {
 	my ($self) = @_;
 	
 	$self->{client}->DELETE( "$self->{transaction}" );
+	return;
 }
 
 

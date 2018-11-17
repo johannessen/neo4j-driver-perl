@@ -27,7 +27,7 @@ sub get_bool {
 	my $value = $self->get($field);
 	return $value if ! ref $value;
 	return $value if $value != JSON::PP::false;
-	return undef;
+	return undef;  ##no critic (ProhibitExplicitReturnUndef)
 }
 
 

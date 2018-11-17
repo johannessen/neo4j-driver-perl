@@ -1,3 +1,6 @@
+
+ - improve error handling
+
 0.06, 2018-11-17
 
  - change single() to die rather than return undef

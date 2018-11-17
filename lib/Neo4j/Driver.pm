@@ -90,6 +90,8 @@ sub basic_auth {
 }
 
 
+# at the moment, every session uses the same REST::Client instance
+# this is a bug: two different sessions should use two different TCP connections
 sub _client {
 	my ($self) = @_;
 	
@@ -123,13 +125,6 @@ sub session {
 }
 
 
-sub run {
-	my ($self, $query, @parameters) = @_;
-	
-	return $self->session->run($query, @parameters);
-}
-
-
 sub close {
 }
 
@@ -151,6 +146,15 @@ It has only been tested with Neo4j 2.3.
 This software has pre-release quality. There is little documentation and no
 schedule for further development. The interface is not yet stable.
 
+Just like the official Neo4j drivers, this driver has been designed to strike
+a balance between an idiomatic API for Perl and a uniform surface across all
+languages. Differences between this driver and the official Neo4j drivers in
+either the API or the behaviour are generally to be regarded as bugs unless
+there is a compelling reason for a different approach in Perl.
+
+Due to lack of resources, only the Neo4j community edition is targeted by this
+driver at present.
+
 This driver does not support the Bolt protocol of Neo4j version 3 and there are
 no plans of supporting Bolt in the future. The Transactional HTTP API is used
 for communicating with the server instead. However, this should be of little
@@ -158,5 +162,7 @@ concern to clients as the API is the same and the speed difference isn't
 particularly large anyway as far as I can see.
 
 HTTPS support is planned.
+
+Support for persistent HTTP/HTTPS connections is planned.
 
 =cut

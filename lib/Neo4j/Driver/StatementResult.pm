@@ -23,7 +23,6 @@ sub new {
 sub _column_keys {
 	my ($self) = @_;
 	
-	return undef if ! keys %{$self->{result}};
 	return Neo4j::Driver::ResultColumns->new($self->{result});
 }
 
@@ -62,13 +61,9 @@ sub single {
 	my ($self) = @_;
 	
 	croak 'There is not exactly one result record' if $self->size != 1;
-	my $record = bless $self->{result}->{data}->[0], 'Neo4j::Driver::Record';
-	$record->{column_keys} = $self->_column_keys;
+	my ($record) = $self->list;
 	$record->{_stats} = $self->stats;
 	return $record;
-	
-	# can this be better implemented like this?
-	#my ($record) = $self->list;  return $record;
 }
 
 
