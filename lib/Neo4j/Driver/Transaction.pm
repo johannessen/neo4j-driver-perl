@@ -10,7 +10,7 @@ package Neo4j::Driver::Transaction;
 #use Devel::StackTrace qw();
 #use Data::Dumper qw();
 use Carp qw(carp croak);
-our @CARP_NOT = qw(Neo4j::Session Neo4j::Driver);
+our @CARP_NOT = qw(Neo4j::Driver::Session Neo4j::Driver);
 use Try::Tiny;
 
 use URI;
@@ -63,12 +63,12 @@ sub run {
 sub _prepare {
 	my ($self, $query, @parameters) = @_;
 	
-	my $json = { statement => $query };
+	my $json = { statement => '' . $query };
 	$json->{resultDataContents} = [ "row", "graph" ] if $self->{return_graph};
 	$json->{includeStats} = JSON::PP::true if $self->{return_stats};
 	
-	if (ref $query eq 'REST::Neo4p::Query') {
-		$json->{statement} = $query->query;
+	if ($query->isa('REST::Neo4p::Query')) {
+		$json->{statement} = '' . $query->query;
 	}
 	
 	if (ref $parameters[0] eq 'HASH') {

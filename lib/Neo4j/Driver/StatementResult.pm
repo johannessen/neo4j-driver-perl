@@ -53,6 +53,7 @@ sub list {
 sub size {
 	my ($self) = @_;
 	
+	return 0 unless $self->{result};
 	return scalar @{$self->{result}->{data}};
 }
 
