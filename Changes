@@ -1,3 +1,9 @@
+0.06, 2018-11-17
+
+ - change single() to die rather than return undef
+ - fix size() to avoid dying on results with no rows
+ - allow REST::Neo4p::Query and Neo4j::Cypher::Abstract objects as queries
+
 0.05, 2018-04-23
 
  - make HTTP timeout configurable

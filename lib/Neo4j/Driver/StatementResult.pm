@@ -61,7 +61,7 @@ sub size {
 sub single {
 	my ($self) = @_;
 	
-	return undef if $self->size != 1;  # original Neo4j driver API raises an exception here
+	croak 'There is not exactly one result record' if $self->size != 1;
 	my $record = bless $self->{result}->{data}->[0], 'Neo4j::Driver::Record';
 	$record->{column_keys} = $self->_column_keys;
 	$record->{_stats} = $self->stats;
