@@ -1,4 +1,5 @@
 
+ - deprecate get_bool()
  - improve error handling
 
 0.06, 2018-11-17
