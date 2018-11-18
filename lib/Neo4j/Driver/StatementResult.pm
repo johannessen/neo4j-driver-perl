@@ -7,10 +7,11 @@ package Neo4j::Driver::StatementResult;
 # ABSTRACT: result of running a Cypher statement (a list of records)
 
 
-use Carp qw(croak);
+use Carp qw(carp croak);
 
 use Neo4j::Driver::Record;
 use Neo4j::Driver::ResultColumns;
+use Neo4j::Driver::ResultSummary;
 
 
 sub new {
@@ -62,15 +63,23 @@ sub single {
 	
 	croak 'There is not exactly one result record' if $self->size != 1;
 	my ($record) = $self->list;
-	$record->{_stats} = $self->stats;
+	$record->{_stats} = $self->summary if $self->{result}->{stats};
 	return $record;
+}
+
+
+sub summary {
+	my ($self) = @_;
+	
+	return Neo4j::Driver::ResultSummary->new( $self->{result} );
 }
 
 
 sub stats {
 	my ($self) = @_;
+	carp __PACKAGE__ . "->stats is deprecated; use summary instead";
 	
-	return $self->{result}->{stats} // {};
+	return $self->{result}->{stats} ? $self->summary->counters : {};
 }
 
 

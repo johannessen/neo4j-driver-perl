@@ -40,10 +40,19 @@ sub get_bool {
 }
 
 
-sub stats {
+sub summary {
 	my ($self) = @_;
 	
+	croak 'Result missing stats' unless ref $self->{_stats} eq 'Neo4j::Driver::ResultSummary';
 	return $self->{_stats};
+}
+
+
+sub stats {
+	my ($self) = @_;
+	carp __PACKAGE__ . "->stats is deprecated; use summary instead";
+	
+	return $self->{_stats} ? $self->{_stats} : {};
 }
 
 

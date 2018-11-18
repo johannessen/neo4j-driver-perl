@@ -1,4 +1,5 @@
 
+ - add SummaryCounters, deprecate stats()
  - deprecate get_bool()
  - improve error handling
 
