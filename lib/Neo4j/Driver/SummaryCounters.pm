@@ -7,14 +7,10 @@ package Neo4j::Driver::SummaryCounters;
 # ABSTRACT: Statement statistics
 
 
-use Carp qw(croak);
-
-
 sub new {
-	my ($self, $result) = @_;
+	my ($class, $stats) = @_;
 	
-	croak 'Result missing stats' unless $result && $result->{stats};
-	return bless $result->{stats}, $self;
+	return bless $stats, $class;
 }
 
 

@@ -10,6 +10,8 @@ package Neo4j::Driver::Record;
 use Carp qw(carp croak);
 use JSON::PP;
 
+use Neo4j::Driver::ResultSummary;
+
 
 sub get {
 	my ($self, $field) = @_;
@@ -43,8 +45,8 @@ sub get_bool {
 sub summary {
 	my ($self) = @_;
 	
-	croak 'Result missing stats' unless ref $self->{_stats} eq 'Neo4j::Driver::ResultSummary';
-	return $self->{_stats};
+	$self->{_summary} //= Neo4j::Driver::ResultSummary->new;
+	return $self->{_summary}->init;
 }
 
 
@@ -52,7 +54,7 @@ sub stats {
 	my ($self) = @_;
 	carp __PACKAGE__ . "->stats is deprecated; use summary instead";
 	
-	return $self->{_stats} ? $self->{_stats} : {};
+	return $self->{_summary} ? $self->{_summary}->counters : {};
 }
 
 

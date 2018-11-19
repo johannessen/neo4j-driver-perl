@@ -17,6 +17,7 @@ use URI;
 use JSON::PP qw();
 use Cpanel::JSON::XS 3.0201;
 
+use Neo4j::Driver::ResultSummary;
 use Neo4j::Driver::StatementResult;
 
 
@@ -137,13 +138,17 @@ sub _post {
 	$self->{transaction} = URI->new($location)->path_query if $location;
 	$self->{commit} = URI->new($response->{commit})->path_query if $response->{commit};
 	
-	if (scalar @statements <= 1) {
-		my $statement_result = Neo4j::Driver::StatementResult->new( $response->{results}->[0] );
-		return wantarray ? $statement_result->list : $statement_result;
+	my @results = ();
+	foreach my $i ( keys @{$response->{results}} ) {
+		my $result = $response->{results}->[$i];
+		my $summary = Neo4j::Driver::ResultSummary->new( $result, $response, $statements[$i], $self );
+		push @results, Neo4j::Driver::StatementResult->new( $result, $summary );
 	}
-	carp "Multiple statements in single Neo4j request untested";
-	my @statement_results = map { Neo4j::Driver::StatementResult->new( $_ ) } @{$response->{results}};
-	return wantarray ? @statement_results : \@statement_results;
+	if (scalar @statements <= 1) {
+		my $result = $results[0] // Neo4j::Driver::StatementResult->new;
+		return wantarray ? $result->list : $result;
+	}
+	return wantarray ? @results : \@results;
 }
 
 

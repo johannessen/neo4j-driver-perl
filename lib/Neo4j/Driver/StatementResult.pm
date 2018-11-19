@@ -15,9 +15,14 @@ use Neo4j::Driver::ResultSummary;
 
 
 sub new {
-	my ($class, $result) = @_;
+	my ($class, $result, $summary) = @_;
 	
-	return bless { blessed => 0, result => $result }, $class;
+	my $self = {
+		blessed => 0,
+		result => $result,
+		summary => $summary,
+	};
+	return bless $self, $class;
 }
 
 
@@ -63,7 +68,7 @@ sub single {
 	
 	croak 'There is not exactly one result record' if $self->size != 1;
 	my ($record) = $self->list;
-	$record->{_stats} = $self->summary if $self->{result}->{stats};
+	$record->{_summary} = $self->summary if $self->{result}->{stats};
 	return $record;
 }
 
@@ -71,7 +76,8 @@ sub single {
 sub summary {
 	my ($self) = @_;
 	
-	return Neo4j::Driver::ResultSummary->new( $self->{result} );
+	$self->{summary} //= Neo4j::Driver::ResultSummary->new;
+	return $self->{summary}->init;
 }
 
 
