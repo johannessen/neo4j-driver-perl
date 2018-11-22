@@ -1,4 +1,4 @@
-use 5.014;
+use 5.010;
 use strict;
 use warnings;
 use utf8;
@@ -13,7 +13,7 @@ use Carp qw(carp croak);
 our @CARP_NOT = qw(Neo4j::Driver::Session Neo4j::Driver);
 use Try::Tiny;
 
-use URI;
+use URI 1.25;
 use JSON::PP qw();
 use Cpanel::JSON::XS 3.0201;
 
@@ -102,7 +102,8 @@ sub _post {
 	my $response = $self->_request('POST', $coder->encode($request));
 	
 	my @results = ();
-	foreach my $i ( keys @{$response->{results}} ) {
+	my $result_count = defined $response->{results} ? @{$response->{results}} : 0;
+	for (my $i = 0; $i < $result_count; $i++) {
 		my $result = $response->{results}->[$i];
 		my $summary = Neo4j::Driver::ResultSummary->new( $result, $response, $statements[$i], $self );
 		push @results, Neo4j::Driver::StatementResult->new( $result, $summary );

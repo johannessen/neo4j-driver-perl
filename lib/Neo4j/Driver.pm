@@ -1,4 +1,4 @@
-use 5.014;
+use 5.010;
 use strict;
 use warnings;
 use utf8;
@@ -9,7 +9,7 @@ package Neo4j::Driver;
 
 use Carp qw(croak);
 
-use URI;
+use URI 1.25;
 use REST::Client 134;
 use Neo4j::Driver::Session;
 

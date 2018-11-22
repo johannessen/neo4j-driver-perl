@@ -1,4 +1,4 @@
-use 5.014;
+use 5.010;
 use strict;
 use warnings;
 use utf8;
@@ -9,7 +9,7 @@ package Neo4j::Driver::ResultSummary;
 
 use Carp qw(croak);
 use Cpanel::JSON::XS 3.0201 qw(decode_json);
-use URI;
+use URI 1.25;
 
 use Neo4j::Driver::SummaryCounters;
 
