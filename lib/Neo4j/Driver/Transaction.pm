@@ -99,22 +99,41 @@ sub _post {
 		return 0;  # $JSON::PP::a cmp $JSON::PP::b;
 	});
 	
+	my $response = $self->_request('POST', $coder->encode($request));
+	
+	my @results = ();
+	foreach my $i ( keys @{$response->{results}} ) {
+		my $result = $response->{results}->[$i];
+		my $summary = Neo4j::Driver::ResultSummary->new( $result, $response, $statements[$i], $self );
+		push @results, Neo4j::Driver::StatementResult->new( $result, $summary );
+	}
+	if (scalar @statements <= 1) {
+		my $result = $results[0] // Neo4j::Driver::StatementResult->new;
+		return wantarray ? $result->list : $result;
+	}
+	return wantarray ? @results : \@results;
+}
+
+
+sub _request {
+	my ($self, $method, $content) = @_;
+	
 	my $client = $self->{client};
-	$client->POST( "$self->{transaction}", $coder->encode($request) );
+	$client->request( $method, "$self->{transaction}", $content );
 	
 	my $content_type = $client->responseHeader('Content-Type');
 	my $response;
 	my @errors = ();
 	if ($client->responseCode() =~ m/^[^2]\d\d$/) {
 		push @errors, 'Network error: ' . $client->{_res}->status_line;  # there is no other way than using {_res} to get the error message
-		if ($content_type && $content_type =~ m|^text/plain|) {
+		if ($content_type && $content_type =~ m|^text/plain\b|) {
 			push @errors, $client->responseContent();
 		}
 		elsif ($self->{die_on_error}) {
 			croak $errors[0];
 		}
 	}
-	if ($content_type && $content_type eq 'application/json') {
+	if ($content_type && $content_type =~ m|^application/json\b|) {
 		try {
 			$response = decode_json $client->responseContent();
 		}
@@ -138,17 +157,7 @@ sub _post {
 	$self->{transaction} = URI->new($location)->path_query if $location;
 	$self->{commit} = URI->new($response->{commit})->path_query if $response->{commit};
 	
-	my @results = ();
-	foreach my $i ( keys @{$response->{results}} ) {
-		my $result = $response->{results}->[$i];
-		my $summary = Neo4j::Driver::ResultSummary->new( $result, $response, $statements[$i], $self );
-		push @results, Neo4j::Driver::StatementResult->new( $result, $summary );
-	}
-	if (scalar @statements <= 1) {
-		my $result = $results[0] // Neo4j::Driver::StatementResult->new;
-		return wantarray ? $result->list : $result;
-	}
-	return wantarray ? @results : \@results;
+	return $response;
 }
 
 
@@ -170,7 +179,7 @@ sub commit {
 sub rollback {
 	my ($self) = @_;
 	
-	$self->{client}->DELETE( "$self->{transaction}" );
+	$self->_request('DELETE');
 	return;
 }
 
