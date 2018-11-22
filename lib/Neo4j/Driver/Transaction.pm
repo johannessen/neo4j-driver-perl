@@ -31,8 +31,8 @@ sub new {
 	my $transaction = {
 #		session => $session,
 		client => $session->{client},
-		transaction => URI->new( $TRANSACTION_ENDPOINT ),
-		commit => URI->new( $COMMIT_ENDPOINT ),
+		transaction => undef,  # server-side open connections have an individual transaction URL
+		commit => URI->new( $COMMIT_ENDPOINT ),  # client-side open connections have a commit URL
 		die_on_error => $session->{die_on_error},
 		return_graph => 0,
 		return_stats => 0,
@@ -118,7 +118,10 @@ sub _post {
 sub _request {
 	my ($self, $method, $content) = @_;
 	
+	croak 'Transaction closed' unless $self->is_open;
+	
 	my $client = $self->{client};
+	$self->{transaction} //= URI->new( $TRANSACTION_ENDPOINT );
 	$client->request( $method, "$self->{transaction}", $content );
 	
 	my $content_type = $client->responseHeader('Content-Type');
@@ -136,6 +139,8 @@ sub _request {
 	if ($content_type && $content_type =~ m|^application/json\b|) {
 		try {
 			$response = decode_json $client->responseContent();
+			$self->{commit} = URI->new($response->{commit})->path_query if $response->{commit};
+			$self->{commit} = undef unless $response->{transaction};
 		}
 		catch {
 			push @errors, $_;
@@ -153,10 +158,10 @@ sub _request {
 		carp $errors;
 	}
 	
-	my $location = $client->responseHeader('Location');
-	$self->{transaction} = URI->new($location)->path_query if $location;
-	$self->{commit} = URI->new($response->{commit})->path_query if $response->{commit};
-	
+	if ($client->responseCode() eq '201') {  # Created
+		my $location = $client->responseHeader('Location');
+		$self->{transaction} = URI->new($location)->path_query if $location;
+	}
 	return $response;
 }
 
@@ -179,12 +184,24 @@ sub commit {
 sub rollback {
 	my ($self) = @_;
 	
-	$self->_request('DELETE');
+	croak 'Transaction closed' unless $self->is_open;
+	
+	# Explicitly marking this transaction as closed by removing the commit
+	# URL is only necessary for transactions that never have been used.
+	# These would initially contact the server's root transaction endpoint,
+	# DELETE'ing which fails (as it should). But calling rollback on an
+	# open transaction should never fail. Hence we need to special-case
+	# this scenario here.
+	$self->_request('DELETE') if $self->{transaction};
+	$self->{commit} = undef;
 	return;
 }
 
 
-sub close {
+sub is_open {
+	my ($self) = @_;
+	
+	return defined $self->{commit};
 }
 
 

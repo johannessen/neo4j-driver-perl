@@ -1,3 +1,6 @@
+
+ - track whether transactions are open or closed
+
 0.07, 2018-11-19
 
  - add ResultSummary and SummaryCounters, deprecate stats()
