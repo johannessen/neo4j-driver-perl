@@ -1,6 +1,7 @@
 
  - track whether transactions are open or closed
  - support Perl 5.10
+ - add a test suite
 
 0.07, 2018-11-19
 
