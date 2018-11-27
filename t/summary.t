@@ -16,7 +16,7 @@ my $s = $driver->session;
 
 # These tests are for the result summary and statistics.
 
-use Test::More 0.96 tests => 6 + 1;
+use Test::More 0.96 tests => 7 + 1;
 use Test::Exception;
 my $transaction = $s->begin_transaction;
 $transaction->{return_stats} = 1;
@@ -134,6 +134,17 @@ END
 
 #subtest 'SummaryCounters: constraints, indexes' => sub {
 #};
+
+
+subtest 'repeated invocation' => sub {
+	# References to the summary and to the counters can be requested
+	# more than once, in which case every request returns a reference
+	# to the exact same object.
+	plan tests => 3;
+	lives_ok { $r = $t->run('RETURN 42') } 'get result';
+	lives_and { is $r->summary, $r->summary } 'summary identical';
+	lives_and { is $r->summary->counters, $r->summary->counters } 'counters identical';
+};
 
 
 CLEANUP: {

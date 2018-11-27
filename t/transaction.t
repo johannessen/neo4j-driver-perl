@@ -25,7 +25,7 @@ my ($q, $r);
 
 
 subtest 'param syntax' => sub {
-	plan tests => 9;
+	plan tests => 11;
 	my ($a, $b) = (17, 19);
 	$q = <<END;
 RETURN {a} AS a, {b} AS b
@@ -34,6 +34,9 @@ END
 	is $r->get('a') * $r->get('b'), $a * $b, 'param values hashref';
 	lives_and { ok $r = $s->run( $q,  a => $a, b => $b  )->single } 'param list';
 	is $r->get('a') * $r->get('b'), $a * $b, 'param values list';
+	my %hash = (a => $a, b => $b);
+	lives_and { ok $r = $s->run( $q, %hash )->single } 'param hash';
+	is $r->get('a') * $r->get('b'), $a * $b, 'param values hash';
 	throws_ok {
 		$r = $s->run($q, a => $a, b => $b, c => );
 	} qr/Odd number of elements .* parameter hash/i, 'param list uneven';

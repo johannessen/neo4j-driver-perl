@@ -1,7 +1,8 @@
+0.08, 2018-11-27
 
  - track whether transactions are open or closed
  - support Perl 5.10
- - add a test suite
+ - add documentation and a test suite
 
 0.07, 2018-11-19
 
@@ -11,7 +12,7 @@
 
 0.06, 2018-11-17
 
- - change single() to die rather than return undef
+ - change single() to die on failure rather than return undef
  - fix size() to avoid dying on results with no rows
  - allow REST::Neo4p::Query and Neo4j::Cypher::Abstract objects as queries
 

@@ -89,14 +89,92 @@ sub stats {
 }
 
 
-sub consume {
-	my ($self) = @_;
-	
-	croak 'not implemented';
-}
-
-
-
 1;
 
 __END__
+
+=head1 SYNOPSIS
+
+ use Neo4j::Driver;
+ my $session = Neo4j::Driver->new->basic_auth(...)->session;
+ 
+ my $result = $session->run('MATCH (m:Movie) RETURN m.name, m.year');
+ my $record_count = $result->size;
+ my @records = @{ $result->list };
+ 
+ my $query = 'MATCH (m:Movie) WHERE id(m) = {id} RETURN m.name';
+ my $name = $session->run($query, id => 12)->single->get('m.name');
+
+=head1 DESCRIPTION
+
+The result of running a Cypher statement, conceptually a list of
+records. The standard way of navigating through the result returned
+by the database is to iterate over the list it provides. Results are
+valid indefinitely.
+
+=head1 METHODS
+
+L<Neo4j::Driver::StatementResult> implements the following methods.
+
+=head2 list
+
+ my @records = @{ $result->list };
+
+Return the entire list of all L<Record|Neo4j::Driver::Record>s in the
+result.
+
+=head2 single
+
+ my $name = $session->run('... LIMIT 1')->single->get('name');
+
+Return the single L<Record|Neo4j::Driver::Record> in the result,
+failing if there is not exactly one record in the result.
+
+=head2 size
+
+ my $record_count = $result->size;
+
+Return the count of records in the result.
+
+=head2 summary
+
+ my $result_summary = $result->summary;
+
+Return a L<Neo4j::Driver::ResultSummary> object.
+
+The C<summary> method will fail unless the transaction has been
+modified to request statistics before the statement was run.
+
+ my $transaction = $session->begin_transaction;
+ $transaction->{return_stats} = 1;
+ my $result = $transaction->run('...');
+
+As a special case, L<Record|Neo4j::Driver::Record>s returned by the
+C<single> method also have a C<summary> method that works the same
+way.
+
+ my $record = $transaction->run('...')->single;
+ my $result_summary = $record->summary;
+
+=head1 EXPERIMENTAL FEATURES
+
+L<Neo4j::Driver::StatementResult> implements the following
+experimental features. These are subject to unannounced modification
+or removal in future versions. Expect your code to break if you
+depend upon these features.
+
+=head2 Calling in list context
+
+ my @records = $result->list;
+
+The C<list> method tries to Do What You Mean if called in list
+context.
+
+=head1 SEE ALSO
+
+L<Neo4j::Driver>,
+L<Neo4j Java Driver|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/v1/StatementResult.html>,
+L<Neo4j JavaScript Driver|https://neo4j.com/docs/api/javascript-driver/current/class/src/v1/result.js~Result.html>,
+L<Neo4j .NET Driver|https://neo4j.com/docs/api/dotnet-driver/current/html/1ddb9dbe-f40f-26a3-e6f0-7be417980044.htm>
+
+=cut
