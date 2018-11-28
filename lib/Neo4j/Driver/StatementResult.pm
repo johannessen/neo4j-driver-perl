@@ -4,7 +4,7 @@ use warnings;
 use utf8;
 
 package Neo4j::Driver::StatementResult;
-# ABSTRACT: result of running a Cypher statement (a list of records)
+# ABSTRACT: Result of running a Cypher statement (a list of records)
 
 
 use Carp qw(carp croak);

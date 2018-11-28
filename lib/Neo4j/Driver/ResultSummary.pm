@@ -179,13 +179,13 @@ Available if this is the summary of a Cypher C<EXPLAIN> statement.
 
  my $host_port = $summary->server->address;
 
-The address of the server the query was executed.
+The address of the server the query was executed on.
 
 =head2 server->version
 
  my $version_string = $summary->server->version;
 
-A string telling which version of the server the query was executed.
+A string telling which version of the server the query was executed on.
 
 =head2 statement
 

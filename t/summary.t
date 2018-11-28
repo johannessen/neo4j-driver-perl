@@ -28,7 +28,7 @@ my ($q, $r, $c);
 
 
 subtest 'ResultSummary' => sub {
-	plan tests => 12;
+	plan tests => 13;
 	$q = <<END;
 RETURN {num}
 END
@@ -36,7 +36,10 @@ END
 	lives_ok { $r = $t->run($q, @params)->summary; } 'get summary';
 	isa_ok $r, 'Neo4j::Driver::ResultSummary', 'ResultSummary';
 	lives_and { my $a = $r->server->address; like(Neo4j::Test->server_address, qr/$a/) } 'server address';
-	lives_and { like $r->server->version, qr(^Neo4j/\d+\.\d+\.\d) } 'server version';
+	my $neo4j_version;
+	lives_ok { $neo4j_version = $r->server->version } 'get server version';
+	like $neo4j_version, qr(^Neo4j/\d+\.\d+\.\d), 'server version syntax';
+	diag $neo4j_version if $ENV{AUTHOR_TESTING};  # give feedback about which Neo4j version is being tested
 	lives_and { is $r->statement->{text}, $q } 'statement text';
 	lives_and { is_deeply $r->statement->{parameters}, {@params} } 'statement params';
 	lives_and { ok ! $r->plan; } 'no plan';

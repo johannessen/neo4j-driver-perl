@@ -4,7 +4,7 @@ use warnings;
 use utf8;
 
 package Neo4j::Driver::ResultColumns;
-# ABSTRACT: structure definition of Cypher result values
+# ABSTRACT: Structure definition of Cypher result values
 
 
 use Carp qw(croak);

@@ -4,7 +4,7 @@ use warnings;
 use utf8;
 
 package Neo4j::Driver::Session;
-# ABSTRACT: context of work for database interactions
+# ABSTRACT: Context of work for database interactions
 
 
 use Neo4j::Driver::Transaction;
@@ -12,8 +12,6 @@ use Neo4j::Driver::Transaction;
 
 sub new {
 	my ($class, $driver) = @_;
-	
-	# this method might initiate the HTTP connection, but doesn't as of yet
 	
 	my $session = {
 #		driver => $driver,
@@ -29,7 +27,6 @@ sub new {
 sub begin_transaction {
 	my ($self) = @_;
 	
-	# this method might initiate the HTTP connection, but doesn't as of yet
 	return Neo4j::Driver::Transaction->new($self);
 }
 
@@ -92,7 +89,7 @@ Begin a new explicit L<Transaction|Neo4j::Driver::Transaction>.
  my $result = $session->run('...');
 
 Run and commit a statement using an autocommit transaction and return
-the result.
+the L<StatementResult|Neo4j::Driver::StatementResult>.
 
 This method is semantically exactly equivalent to the following code,
 but is faster because it doesn't require an extra server roundtrip to

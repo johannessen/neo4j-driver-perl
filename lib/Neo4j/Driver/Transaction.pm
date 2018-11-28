@@ -4,7 +4,7 @@ use warnings;
 use utf8;
 
 package Neo4j::Driver::Transaction;
-# ABSTRACT: logical container for an atomic unit of work
+# ABSTRACT: Logical container for an atomic unit of work
 
 
 #use Devel::StackTrace qw();

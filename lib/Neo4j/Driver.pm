@@ -100,7 +100,7 @@ __END__
 =head1 SYNOPSIS
 
  use Neo4j::Driver;
- mu $uri = 'http://localhost';
+ my $uri = 'http://localhost';
  my $driver = Neo4j::Driver->new($uri)->basic_auth('neo4j', 'password');
  
  sub say_friends_of {
@@ -280,7 +280,7 @@ driver at present.
 =head1 SEE ALSO
 
 L<Neo4j Developer Manual: Drivers|https://neo4j.com/docs/developer-manual/current/drivers/#driver-use-the-driver>,
-L<Neo4j Transactional Cypher HTTP API|https://neo4j.com/docs/developer-manual/3.0/http-api/>,
+L<Neo4j Transactional Cypher HTTP API|https://neo4j.com/docs/developer-manual/current/http-api/>,
 L<REST::Neo4p>
 
 =cut
