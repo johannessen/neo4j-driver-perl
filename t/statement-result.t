@@ -77,11 +77,20 @@ subtest 'list() repeated' => sub {
 };
 
 
+subtest 'keys()' => sub {
+	plan tests => 2;
+	$r = $t->run('RETURN 1 AS one, 2 AS two')->keys;
+	is $r->[0], 'one', 'key 1';
+	is $r->[1], 'two', 'key 2';
+};
+
+
 subtest 'simulate bogus data from server' => sub {
-	plan tests => 1;
+	plan tests => 2;
 	$r = $t->run('RETURN 42');
 	$r->{result}->{columns} = undef;
 	throws_ok { $r->list; } qr/missing columns/i, 'result with no columns field';
+	lives_and { is @{ scalar $r->keys }, 0; } 'empty keys list with no columns field';
 };
 
 

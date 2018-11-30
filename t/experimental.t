@@ -29,7 +29,7 @@ my ($q, $r, @a);
 
 
 subtest 'wantarray' => sub {
-	plan tests => 11;
+	plan tests => 13;
 	$q = <<END;
 RETURN 0 AS n UNION RETURN 1 AS n
 END
@@ -39,6 +39,8 @@ END
 	lives_ok { @a = $s->run($q); } 'get result as list';
 	lives_and { is $a[0]->get('n'), 0; } 'get record 0 in result list';
 	lives_and { is $a[1]->get('n'), 1; } 'get record 1 in result list';
+	lives_ok { @a = $s->run($q)->keys; } 'get keys as list';
+	lives_and { is $a[0], 'n'; } 'get record 0 in keys list';
 	
 	# notifications
 	my $t = $s->begin_transaction;

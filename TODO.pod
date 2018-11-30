@@ -111,10 +111,6 @@ priority.
 
 =over
 
-=item * Add C<keys> method, returning a simple list of strings. (Looks like
-we're stuck with a private method for the C<ResultColumns> object, but this is
-something different.)
-
 =item * Consider whether to implement iterator semantics for StatementResult.
 
 =back

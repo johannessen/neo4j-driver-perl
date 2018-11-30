@@ -33,9 +33,15 @@ sub _column_keys {
 }
 
 
-#sub _columns {
-#	return shift->_column_keys(@_);
-#}
+sub keys {
+	my ($self) = @_;
+	
+	# Don't break encapsulation by just returning the original reference
+	# because ResultColumns depends on the {columns} field being intact.
+	my @keys = ();
+	@keys = @{ $self->{result}->{columns} } if $self->{result}->{columns};
+	return wantarray ? @keys : [@keys];
+}
 
 
 sub list {
@@ -115,6 +121,12 @@ valid indefinitely.
 =head1 METHODS
 
 L<Neo4j::Driver::StatementResult> implements the following methods.
+
+=head2 keys
+
+ my @keys = @{ $result->keys };
+
+Retrieve the column names of the records this result contains.
 
 =head2 list
 
