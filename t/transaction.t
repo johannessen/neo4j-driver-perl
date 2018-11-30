@@ -59,11 +59,7 @@ subtest 'error handling' => sub {
 	plan tests => 6;
 	throws_ok { $s->run('iced manifolds.'); } qr/syntax/i, 'cypher syntax error';
 	my $q = 'RETURN 42';
-	TODO: {
-		local $TODO = 'query prep should fail on unblessed references with own error message';
-		eval { $s->run(\$q); };
-		unlike $@, qr/method "isa" on unblessed reference/i, 'bogus reference query';
-	}
+	throws_ok { $s->run(\$q) } qr/\bunblessed reference\b/, 'bogus reference query';
 	throws_ok { $s->run( bless \$q, 'Neo4j::Test' ); } qr/syntax/i, 'bogus blessed query';
 	my $t = $s->begin_transaction;
 	$t->{transaction} = '/qwertyasdfghzxcvbn';

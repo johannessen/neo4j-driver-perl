@@ -11,6 +11,7 @@ package Neo4j::Driver::Transaction;
 #use Data::Dumper qw();
 use Carp qw(carp croak);
 our @CARP_NOT = qw(Neo4j::Driver::Session Neo4j::Driver);
+use Scalar::Util qw(blessed);
 use Try::Tiny;
 
 use URI 1.25;
@@ -68,6 +69,7 @@ sub _prepare {
 	$json->{resultDataContents} = [ "row", "graph" ] if $self->{return_graph};
 	$json->{includeStats} = JSON::PP::true if $self->{return_stats};
 	
+	croak 'Query cannot be unblessed reference' if ref $query && ! blessed $query;
 	if ($query->isa('REST::Neo4p::Query')) {
 		# REST::Neo4p::Query->query is not part of the documented API
 		$json->{statement} = '' . $query->query;

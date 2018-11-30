@@ -45,9 +45,6 @@ of work".
 
 =over
 
-=item * B<Bugfix:> query prep should fail on unblessed references with own error
-message (see test C<bogus reference query>).
-
 =item * The option to send multiple statements at once should no longer be
 exposed to the client. It should only be used internally for running statements
 lazily. The method structure should be refactored such that this becomes
