@@ -29,7 +29,9 @@ subtest 'wrong/missing field names for get()' => sub {
 	plan tests => 7;
 	TODO: {
 		local $TODO = 'fix to not simply return the first field';
-		dies_ok { $t->run('RETURN 1, 2')->single->get; } 'ambiguous get without field';
+		throws_ok {
+			warnings { $t->run('RETURN 1, 2')->single->get; }
+		} qr/\bambiguous\b.*\bfield/i, 'ambiguous get without field';
 	}
 	lives_ok { is 1, $t->run('RETURN 1')->single->get; } 'unambiguous get without field';
 	dies_ok { $t->run('RETURN 0')->single->get({}); } 'non-scalar field';

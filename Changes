@@ -1,5 +1,6 @@
 
  - implement Record->data() and StatementResult->keys()
+ - change get() to warn when omitting the field parameter leads to ambiguity
  - better error message for run() if called with an unblessed reference as query
 
 0.08, 2018-11-27

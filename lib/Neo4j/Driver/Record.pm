@@ -16,7 +16,10 @@ use Neo4j::Driver::ResultSummary;
 sub get {
 	my ($self, $field) = @_;
 	
-	return $self->{row}->[0] if ! defined $field;
+	if ( ! defined $field ) {
+		carp "Ambiguous get() on " . __PACKAGE__ . " with multiple fields" if @{$self->{row}} > 1;
+		return $self->{row}->[0];
+	}
 	my $key = $self->{column_keys}->key($field);
 	croak "Field '$field' not present in query result" if ! defined $key;
 	return $self->{row}->[$key];
@@ -106,6 +109,12 @@ L<Neo4j::Driver::Record> implements the following methods.
 
 Get a value from this record, either by field key or by zero-based
 index.
+
+If there is only a single field, C<get> may be called without
+parameters.
+
+ my $value = $session->run('RETURN "It works!"')->single->get;
+ my $value = $session->run('RETURN "two", "fields"')->single->get;  # fails
 
 Nodes, relationships and maps are returned as hash references of
 their properties. Lists and paths are returned as array references.
