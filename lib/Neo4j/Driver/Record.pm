@@ -42,6 +42,17 @@ sub get_bool {
 }
 
 
+sub data {
+	my ($self) = @_;
+	
+	my %data = ();
+	foreach my $key ( $self->{column_keys}->list ) {
+		$data{$key} = $self->{row}->[ $self->{column_keys}->key($key) ];
+	}
+	return \%data;
+}
+
+
 sub summary {
 	my ($self) = @_;
 	
@@ -100,6 +111,13 @@ Nodes, relationships and maps are returned as hash references of
 their properties. Lists and paths are returned as array references.
 Boolean values are returned as JSON types; use C<!!> to force-convert
 to a plain Perl boolean value if necessary.
+
+=head2 data
+
+ my $hashref = $record->data;
+ my $value = $hashref->{field_key};
+
+Return the keys and values of this record as a hash reference.
 
 =head1 EXPERIMENTAL FEATURES
 

@@ -125,9 +125,19 @@ though, that the Python driver intentionally does deliver the first field only
 in this exact scenario (though its method is called C<value> instead of
 C<get>).
 
-=item * Implement a method that returns the entire record as a hashref. Most of
-the official drivers offer this; they use the method names C<asMap>,
-C<toObject>, C<data>.
+=item * Consider whether to implement methods to query the list of fields for
+this record (C<keys>, C<has>, C<size>) and/or a mapping function for all fields
+(C<map>/C<forEach>). Given that this data should easily be available through
+the StatementResult object, these seem slightly superfluous though.
+
+=item * Implement C<graph>; see
+L<https://github.com/neo4j/neo4j-python-driver/wiki/1.6-changelog#160a1>.
+
+=back
+
+=head2 ResultColumns
+
+=over
 
 =item * B<Bugfix:> The C<get> method behaves unpredictably for queries
 that have fields with conflicting indexes and keys such as C<RETURN 1, 0>.
@@ -136,14 +146,10 @@ by inspecting the scalar's FLAGS (namely, C<POK>/C<IOK>; see
 L<https://metacpan.org/pod/Devel::Peek#EXAMPLES> and C<JSON::PP>'s
 C<_looks_like_number>). Then C<get(0)> would mean I<index> C<0> and C<get('0')>
 would mean I<key> C<0>. Not sure if this is the best approach though.
+(FWIW, it's exactly what the JS driver does.)
 
-=item * Consider whether to implement methods to query the list of fields for
-this record (C<keys>, C<has>, C<size>) and/or a mapping function for all fields
-(C<map>/C<forEach>). Given that this data should easily be available through
-the StatementResult object, these seem slightly superfluous though.
-
-=item * Implement C<graph>; see
-L<https://github.com/neo4j/neo4j-python-driver/wiki/1.6-changelog#160a1>.
+=item * The C<list> implementation is quite ugly and probably has bugs with
+regards to index/key collisions.
 
 =back
 

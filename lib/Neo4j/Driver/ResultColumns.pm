@@ -32,6 +32,20 @@ sub key {
 }
 
 
+sub list {
+	my ($self) = @_;
+	
+	# reconstruct the ordered list of keys
+	my @keys = ();
+	foreach my $key ( keys %$self ) {
+		my $i = $self->{$key};
+		next if defined $keys[$i] && $keys[$i] ne "$i" && $key eq "$i";
+		$keys[$i] = $key;
+	}
+	return @keys;
+}
+
+
 sub add {
 	my ($self, $column) = @_;
 	

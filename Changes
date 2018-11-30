@@ -1,5 +1,5 @@
 
- - implement StatementResult->keys()
+ - implement Record->data() and StatementResult->keys()
  - better error message for run() if called with an unblessed reference as query
 
 0.08, 2018-11-27
