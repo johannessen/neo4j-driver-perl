@@ -8,25 +8,18 @@ package Neo4j::Driver::ResultSummary;
 
 
 use Carp qw(croak);
-use Cpanel::JSON::XS 3.0201 qw(decode_json);
-use URI 1.25;
 
 use Neo4j::Driver::SummaryCounters;
 
 
-# https://neo4j.com/docs/rest-docs/current/#rest-api-service-root
-our $SERVICE_ROOT_ENDPOINT = '/db/data/';
-
-
 sub new {
-	my ($class, $result, $response, $statement, $tx) = @_; 
+	my ($class, $result, $response, $statement) = @_; 
 	my $self = {};
 	if ($result && $result->{stats}) {
 		$self->{counters} = $result->{stats};
 		$self->{plan} = $result->{plan};
 		$self->{notifications} = $response->{notifications};
 		$self->{statement} = $statement;
-		$self->{client} = $tx->{client};
 	}
 	return bless $self, $class;
 }
@@ -77,36 +70,12 @@ sub statement {
 sub server {
 	my ($self) = @_;
 	
-	# That the ServerInfo is provided by the same object as ResultSummary
-	# is an implementation detail that might change in future.
-	return $self;
-}
-
-
-# server->
-sub address {
-	my ($self) = @_;
-	
-	my $uri = URI->new( $self->{client}->getHost() );
-	return $uri->host . ':' . $uri->port;
-}
-
-
-# server->
-sub version {
-	my ($self) = @_;
-	
-	# Security issue: Passing this ResultSummary/ServerInfo object to untrusted
-	# parties leaks login credentials through REST::Client internals; the same
-	# is true for StatementResult objects that include stats.
-	# Options:
-	# - always make an extra roundtrip at session creation time just for the version number
-	# - don't make the server version available at all
-	# - document this minor issue for our users and either ignore it or make the behaviour user-selectable
-	# - use a different API
-	my $json = $self->{client}->GET( $SERVICE_ROOT_ENDPOINT )->responseContent();
-	my $neo4j_version = decode_json($json)->{neo4j_version};
-	return "Neo4j/$neo4j_version";
+	# The HTTP-based driver does not provide the ServerInfo in the
+	# ResultSummary for security reasons: Determining the server version
+	# requires an additional server request, which requires the server's
+	# login credentials. If ResultSummary had access to those, it would
+	# not be safe to pass statement results to untrusted parties.
+	croak "Unimplemented (use Session->server instead)";
 }
 
 
@@ -132,11 +101,6 @@ __END__
  my $params = $summary->statement->{parameters};
  my $plan   = $summary->plan;
  my @notes  = @{ $summary->notifications };
- 
- # ServerInfo
- my $host_port = $summary->server->address;
- my $version_string = $summary->server->version;
- say "Result from $version_string at $host_port.";
 
 =head1 DESCRIPTION
 
@@ -144,6 +108,10 @@ The result summary of running a statement. The result summary can be
 used to investigate details about the result, like the Neo4j server
 version, how many and which kinds of updates have been executed, and
 query plan information if available.
+
+The Perl driver does not currently provide C<ServerInfo> as part of
+the result summary. Use L<Neo4j::Driver::Session> to obtain this
+information instead.
 
 =head1 METHODS
 
@@ -175,18 +143,6 @@ of a statement.
 This describes how the database will execute your statement.
 Available if this is the summary of a Cypher C<EXPLAIN> statement.
 
-=head2 server->address
-
- my $host_port = $summary->server->address;
-
-The address of the server the query was executed on.
-
-=head2 server->version
-
- my $version_string = $summary->server->version;
-
-A string telling which version of the server the query was executed on.
-
 =head2 statement
 
  my $query  = $summary->statement->{text};
@@ -211,6 +167,7 @@ list context.
 =head1 SEE ALSO
 
 L<Neo4j::Driver>,
+L<Neo4j::Driver::Session>,
 L<Neo4j Java Driver|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/v1/summary/ResultSummary.html>,
 L<Neo4j JavaScript Driver|https://neo4j.com/docs/api/javascript-driver/current/class/src/v1/result-summary.js~ResultSummary.html>,
 L<Neo4j .NET Driver|https://neo4j.com/docs/api/dotnet-driver/current/html/859dfa7c-80b8-f754-c0d3-359a0df5d33b.htm>

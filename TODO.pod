@@ -157,12 +157,6 @@ regards to index/key collisions.
 
 =over
 
-=item * Consider moving the C<ServerInfo> over to C<Session> to completely
-avoid the security issue described in the comments.
-
-=item * C<ServerInfo> should use host_port so that IPv6 addresses are returned
-correctly.
-
 =item * Profile the server-side performance penalty of requesting stats for
 various kinds of queries. If the penalty turns out to be low, stats should
 probably be requested by default.

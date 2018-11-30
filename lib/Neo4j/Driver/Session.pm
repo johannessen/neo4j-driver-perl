@@ -7,7 +7,14 @@ package Neo4j::Driver::Session;
 # ABSTRACT: Context of work for database interactions
 
 
+use Cpanel::JSON::XS 3.0201 qw(decode_json);
+use URI 1.25;
+
 use Neo4j::Driver::Transaction;
+
+
+# https://neo4j.com/docs/rest-docs/current/#rest-api-service-root
+our $SERVICE_ROOT_ENDPOINT = '/db/data/';
 
 
 sub new {
@@ -40,6 +47,33 @@ sub run {
 
 
 sub close {
+}
+
+
+sub server {
+	my ($self) = @_;
+	
+	# That the ServerInfo is provided by the same object as Session
+	# is an implementation detail that might change in future.
+	return $self;
+}
+
+
+# server->
+sub address {
+	my ($self) = @_;
+	
+	return URI->new( $self->{client}->getHost() )->host_port;
+}
+
+
+# server->
+sub version {
+	my ($self) = @_;
+	
+	my $json = $self->{client}->GET( $SERVICE_ROOT_ENDPOINT )->responseContent();
+	my $neo4j_version = decode_json($json)->{neo4j_version};
+	return "Neo4j/$neo4j_version";
 }
 
 
@@ -118,6 +152,22 @@ context.
 
 C<close> is currently a no-op in this class.
 
+=head2 ServerInfo
+
+ my $host_port = $session->server->address;
+ my $version_string = $session->server->version;
+ say "Result from $version_string at $host_port.";
+
+For security reasons, L<ResultSummary|Neo4j::Driver::ResultSummary>
+cannot provide C<ServerInfo>. Therefore, C<ServerInfo> is available
+from the L<Session|Neo4j::Driver::Session> instead.
+
+In future, an extra server round-trip I<just> to obtain the Neo4j
+version number might be a way to get around this restriction and
+offer the C<ServerInfo> strings through
+L<ResultSummary|Neo4j::Driver::ResultSummary> after all. However,
+I'm really not sure if the ensuing performance penalty is worth it.
+
 =head1 BUGS
 
 The implementation of sessions in this driver is incomplete. In
@@ -126,6 +176,17 @@ the count of transactions that can be used per session and offer
 additional methods to manage transactions.
 
 See the F<TODO> document and Github for details.
+
+=head1 SECURITY CONSIDERATIONS
+
+Both L<Session|Neo4j::Driver::Session> as well as
+L<Transaction|Neo4j::Driver::Transaction> objects internally hold
+references to the authentication credentials used to contact the
+Neo4j server. Objects of these classes should therefore not be
+passed to untrusted modules. However, objects of the
+L<StatementResult|Neo4j::Driver::StatementResult> class do not
+contain a reference to these credentials and are safe in this
+regard.
 
 =head1 SEE ALSO
 

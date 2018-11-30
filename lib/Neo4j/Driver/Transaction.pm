@@ -107,7 +107,7 @@ sub _post {
 	my $result_count = defined $response->{results} ? @{$response->{results}} : 0;
 	for (my $i = 0; $i < $result_count; $i++) {
 		my $result = $response->{results}->[$i];
-		my $summary = Neo4j::Driver::ResultSummary->new( $result, $response, $statements[$i], $self );
+		my $summary = Neo4j::Driver::ResultSummary->new( $result, $response, $statements[$i] );
 		push @results, Neo4j::Driver::StatementResult->new( $result, $summary );
 	}
 	if (scalar @statements <= 1) {
