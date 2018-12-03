@@ -285,7 +285,10 @@ After committing the transaction is closed and can no longer be used.
 Detect whether this transaction is still open, which means commit
 or rollback did not happen.
 
-Note that a transaction can timeout on the server due to
+Note that this method does not request the transaction status from
+the Neo4j server. Instead, it uses the status information the server
+provided along with its previous response, which may be outdated. In
+particular, a transaction can timeout on the server due to
 inactivity, in which case it may in fact be closed even though
 this method returns a true value. The Neo4j server default
 C<dbms.transaction_timeout> is 60 seconds.
@@ -323,7 +326,10 @@ given as a hash / balanced list.
 The Neo4j values C<true>, C<false> and C<null> may be given as C<\1>,
 C<\0> and C<undef>, respectively, as specified for the
 L<JSON module|Cpanel::JSON::XS/"MAPPING"> used by this class to
-encode the request to the Neo4j server.
+encode the request to the Neo4j server. To force numeric values, an
+arithmetic operation should be carried out, such as adding zero
+(S<e. g.> C<< number => 0 + $value >>). String values may be forced
+by concatenating the empty string C<< string => '' + $value >>).
 
 Running empty queries is supported. Such queries establish a
 connection with the Neo4j server, which returns a result with zero
@@ -399,6 +405,7 @@ the interface is not yet finalised.
 =head1 SEE ALSO
 
 L<Neo4j::Driver>,
+L<Neo4j::Driver::StatementResult>,
 L<Neo4j Java Driver|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/v1/Transaction.html>,
 L<Neo4j JavaScript Driver|https://neo4j.com/docs/api/javascript-driver/current/class/src/v1/transaction.js~Transaction.html>,
 L<Neo4j .NET Driver|https://neo4j.com/docs/api/dotnet-driver/current/html/ec1f5ba3-57f9-bdc6-9121-f595def04a00.htm>,

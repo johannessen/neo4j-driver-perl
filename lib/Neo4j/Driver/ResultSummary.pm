@@ -168,6 +168,7 @@ list context.
 
 L<Neo4j::Driver>,
 L<Neo4j::Driver::Session>,
+L<Neo4j::Driver::SummaryCounters>,
 L<Neo4j Java Driver|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/v1/summary/ResultSummary.html>,
 L<Neo4j JavaScript Driver|https://neo4j.com/docs/api/javascript-driver/current/class/src/v1/result-summary.js~ResultSummary.html>,
 L<Neo4j .NET Driver|https://neo4j.com/docs/api/dotnet-driver/current/html/859dfa7c-80b8-f754-c0d3-359a0df5d33b.htm>

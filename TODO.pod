@@ -131,6 +131,7 @@ this record (C<keys>, C<has>, C<size>) and/or a mapping function for all fields
 the StatementResult object, these seem slightly superfluous though.
 
 =item * Implement C<graph>; see
+<https://github.com/neo4j/neo4j/blob/3.5/community/server/src/main/java/org/neo4j/server/rest/transactional/GraphExtractionWriter.java>,
 L<https://github.com/neo4j/neo4j-python-driver/wiki/1.6-changelog#160a1>.
 
 =back
@@ -173,8 +174,6 @@ running the statement.
 =head2 SummaryCounters
 
 =over
-
-=item * Report C<relationships_deleted> issue to Neo4j.
 
 =item * C<use Class::Accessor::Fast 0.34;>
 

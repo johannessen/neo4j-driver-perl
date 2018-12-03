@@ -177,14 +177,17 @@ depend upon these features.
 
 =head2 Calling in list context
 
+ my @keys = $result->keys;
  my @records = $result->list;
 
-The C<list> method tries to Do What You Mean if called in list
-context.
+The C<keys> and C<list> methods try to Do What You Mean if called in
+list context.
 
 =head1 SEE ALSO
 
 L<Neo4j::Driver>,
+L<Neo4j::Driver::Record>,
+L<Neo4j::Driver::ResultSummary>,
 L<Neo4j Java Driver|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/v1/StatementResult.html>,
 L<Neo4j JavaScript Driver|https://neo4j.com/docs/api/javascript-driver/current/class/src/v1/result.js~Result.html>,
 L<Neo4j .NET Driver|https://neo4j.com/docs/api/dotnet-driver/current/html/1ddb9dbe-f40f-26a3-e6f0-7be417980044.htm>

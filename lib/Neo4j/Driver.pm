@@ -126,9 +126,12 @@ as-is.
 This driver extends the uniformity across languages, which is a
 stated goal of the Neo4j Driver API, to Perl. The downside is that
 this driver doesn't offer fully-fledged object bindings like the
-existing L<REST::Neo4p> module does. Nor does it offer any DBI
+existing L<REST::Neo4p> module does. Nor does it offer any L<DBI>
 integration. However, it avoids the legacy C<cypher> endpoint,
 assuring compatibility with future Neo4j versions.
+
+B<This software has pre-release quality. There is no schedule for
+further development. The interface is not yet stable.>
 
 =head1 METHODS
 
@@ -136,7 +139,7 @@ L<Neo4j::Driver> implements the following methods.
 
 =head2 basic_auth
 
- my $driver = $driver->basic_auth('neo4j', 'password');
+ $driver->basic_auth('neo4j', 'password');
 
 Set basic auth credentials with a given user and password. This
 method returns the modified L<Neo4j::Driver> object, so that method
@@ -155,7 +158,7 @@ including server URIs, credentials and other configuration.
 The URI passed to this method determines the type of driver created. 
 Only the C<http> URI scheme is currently supported.
 
-If parts of the URL or even the entire URI is missing, suitable
+If a part of the URI or even the entire URI is missing, suitable
 default values will be substituted. In particular, the host name
 C<localhost> will be used as default, along with the default port
 of the specified protocol. The default protocol might change to
@@ -279,6 +282,7 @@ driver at present.
 
 =head1 SEE ALSO
 
+L<Neo4j::Driver::Session>,
 L<Neo4j Developer Manual: Drivers|https://neo4j.com/docs/developer-manual/current/drivers/#driver-use-the-driver>,
 L<Neo4j Transactional Cypher HTTP API|https://neo4j.com/docs/developer-manual/current/http-api/>,
 L<REST::Neo4p>

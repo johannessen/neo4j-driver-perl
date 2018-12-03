@@ -151,7 +151,8 @@ can then be accessed just like regular columns.
  my $rels  = $record->{graph}->{relationships};
 
 Allows accessing the graph response the Neo4j server can deliver via
-HTTP. Requires the C<return_graph> field to be set on the transaction
+HTTP. Requires the C<return_graph> field to be set on the
+L<Transaction|Neo4j::Driver::Transaction>
 before the statement is executed.
 
 =head2 C<meta>

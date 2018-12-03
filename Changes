@@ -1,3 +1,4 @@
+0.09, 2018-12-03
 
  - implement Record->data() and StatementResult->keys()
  - security fix: move ServerInfo from ResultSummary to Session

@@ -191,6 +191,8 @@ regard.
 =head1 SEE ALSO
 
 L<Neo4j::Driver>,
+L<Neo4j::Driver::Transaction>,
+L<Neo4j::Driver::StatementResult>,
 L<Neo4j Java Driver|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/v1/Session.html>,
 L<Neo4j JavaScript Driver|https://neo4j.com/docs/api/javascript-driver/current/class/src/v1/session.js~Session.html>,
 L<Neo4j .NET Driver|https://neo4j.com/docs/api/dotnet-driver/current/html/bd812bce-8d2c-f29e-6c2a-cf93bd3d85d7.htm>

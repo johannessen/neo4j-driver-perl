@@ -28,6 +28,7 @@ sub new {
 sub key {
 	my ($self, $key) = @_;
 	
+	# returns the index [!] of the field specified by the given key
 	return $self->{$key};
 }
 
@@ -66,3 +67,10 @@ sub count {
 1;
 
 __END__
+
+=head1 DESCRIPTION
+
+The L<Neo4j::Driver::ResultColumns> package is not part of the
+public L<Neo4j::Driver> API.
+
+=cut

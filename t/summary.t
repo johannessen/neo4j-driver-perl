@@ -110,24 +110,18 @@ END
 
 
 subtest 'SummaryCounters: nodes, relationships' => sub {
-	plan tests => 6;
+	plan tests => 4;
 	$q = <<END;
-CREATE (d:DeepThought)-[:GIVES]->(a:UniversalAnswer)
-CREATE (a)-[:ORIGIN]->(d)
+CREATE (d:DeepThought)-[r1:GIVES]->(a:UniversalAnswer)
+CREATE (a)-[r2:ORIGIN]->(d)
 CREATE (a)-[:ANSWERS]->(q:UniversalQuestion)
-DELETE d
+DELETE r1, r2, d
 END
 	$c = $transaction->run($q)->summary->counters;
 	is $c->nodes_created, 3, 'nodes_created counter';
 	is $c->nodes_deleted, 1, 'nodes_deleted counter';
 	is $c->relationships_created, 3, 'relationships_created counter';
-	TODO: {
-		local $TODO = 'implement relationships_deleted';
-		# relationships_deleted is not provided by Neo4j server 2.3.3, 3.3.5, 3.4.1, 3.5.0
-		lives_and { is $c->relationships_deleted, 1 } 'relationships_deleted counter';
-		lives_and { is $c->{relationship_deleted}, 1 } 'relationship_deleted prop';
-		lives_and { is $c->{relationships_deleted}, 1 } 'relationships_deleted prop';
-	}
+	is $c->relationships_deleted, 2, 'relationships_deleted counter';
 };
 
 
