@@ -255,7 +255,7 @@ errors occur while executing statements.
  use Try::Tiny;
  try {
    $result = $tx->run($query, \%parameters);
-   $transaction->commit;
+   $tx->commit;
  }
  catch {
    say "Database error: $_";
@@ -326,10 +326,10 @@ given as a hash / balanced list.
 The Neo4j values C<true>, C<false> and C<null> may be given as C<\1>,
 C<\0> and C<undef>, respectively, as specified for the
 L<JSON module|Cpanel::JSON::XS/"MAPPING"> used by this class to
-encode the request to the Neo4j server. To force numeric values, an
+encode the request sent to the Neo4j server. To force numeric values, an
 arithmetic operation should be carried out, such as adding zero
 (S<e. g.> C<< number => 0 + $value >>). String values may be forced
-by concatenating the empty string C<< string => '' + $value >>).
+by concatenating the empty string (C<< string => '' . $value >>).
 
 Running empty queries is supported. Such queries establish a
 connection with the Neo4j server, which returns a result with zero

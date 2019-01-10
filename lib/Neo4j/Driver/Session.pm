@@ -150,13 +150,17 @@ context.
 
 =head2 Close method
 
-C<close> is currently a no-op in this class.
+ $session->close;  # no-op
+
+This driver does not support persistent connections at present. All
+connections are closed automatically. There is no need for explicit
+calls to `close` at this time.
 
 =head2 ServerInfo
 
  my $host_port = $session->server->address;
  my $version_string = $session->server->version;
- say "Result from $version_string at $host_port.";
+ say "Contacting $version_string at $host_port.";
 
 For security reasons, L<ResultSummary|Neo4j::Driver::ResultSummary>
 cannot provide C<ServerInfo>. Therefore, C<ServerInfo> is available

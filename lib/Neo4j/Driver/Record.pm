@@ -89,7 +89,7 @@ __END__
  
  $query .= ' ORDER BY m.year LIMIT 1';
  my $record = $session->run($query)->single;
- say 'Age of oldest movie: ', $record->get(1);
+ say 'Year of oldest movie: ', $record->get(1);
 
 =head1 DESCRIPTION
 

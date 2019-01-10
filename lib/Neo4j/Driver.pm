@@ -161,7 +161,7 @@ Only the C<http> URI scheme is currently supported.
 If a part of the URI or even the entire URI is missing, suitable
 default values will be substituted. In particular, the host name
 C<localhost> will be used as default, along with the default port
-of the specified protocol. The default protocol might change to
+of the selected protocol. The default protocol might change to
 C<https> in future.
 
  # all of these are semantically equal
@@ -185,7 +185,11 @@ features.
 
 =head2 Close method
 
-C<close> is currently a no-op in this class.
+ $driver->close;  # no-op
+
+This driver does not support persistent connections at present. All
+connections are closed automatically. There is no need for explicit
+calls to `close` at this time.
 
 =head2 HTTP Timeout
 
@@ -263,7 +267,7 @@ discovered. Use C<eval>, L<Try::Tiny> or similar to catch this.
 This software has pre-release quality. There is no schedule for
 further development. The interface is not yet stable.
 
-See the F<TODO> document and Github for known issues and planned
+See the L<TODO.pod> document and Github for known issues and planned
 improvements. Please report new issues and other feedback on Github.
 
 Just like the official Neo4j drivers, this driver has been designed to strike

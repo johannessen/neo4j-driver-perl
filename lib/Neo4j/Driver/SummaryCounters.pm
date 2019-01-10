@@ -86,7 +86,7 @@ another, certain error conditions produce misleading statistics: It
 was observed that deleting a node that has relationships fails in a
 Cypher shell with an obscure error message, while it succeeds when
 executed over HTTP with this driver. However, the HTTP response then
-reports that the node was deleted, but the relationship wasn't, which
+reports that the node was deleted, but that the relationship wasn't, which
 is obviously inconsistent. Not quite sure what is going on there. To
 verify that modifying the database was successful, it would therefore
 probably make more sense to run a MATCH query, tedious or not.
