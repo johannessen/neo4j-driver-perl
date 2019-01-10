@@ -10,7 +10,7 @@ package Neo4j::Driver;
 use Carp qw(croak);
 
 use URI 1.25;
-use REST::Client 134;
+use Neo4j::Driver::Protocol::HTTP;
 use Neo4j::Driver::Session;
 
 
@@ -54,38 +54,11 @@ sub basic_auth {
 }
 
 
-# at the moment, every session uses the same REST::Client instance
-# this is a bug: two different sessions should use two different TCP connections
-sub _client {
-	my ($self) = @_;
-	
-	# lazy initialisation
-	if ( ! $self->{client} ) {
-		my $uri = $self->{uri};
-		if ($self->{auth}) {
-			croak "Only HTTP Basic Authentication is supported" if $self->{auth}->{scheme} ne 'basic';
-			$uri = $uri->clone;
-			$uri->userinfo( $self->{auth}->{principal} . ':' . $self->{auth}->{credentials} );
-		}
-		
-		$self->{client} = REST::Client->new({
-			host => "$uri",
-			timeout => $self->{http_timeout},
-			follow => 1,
-		});
-		$self->{client}->addHeader('Accept', $CONTENT_TYPE);
-		$self->{client}->addHeader('Content-Type', $CONTENT_TYPE);
-		$self->{client}->addHeader('X-Stream', 'true');
-	}
-	
-	return $self->{client};
-}
-
-
 sub session {
 	my ($self) = @_;
 	
-	return Neo4j::Driver::Session->new($self);
+	my $protocol = Neo4j::Driver::Protocol::HTTP->new($self);
+	return Neo4j::Driver::Session->new($protocol);
 }
 
 

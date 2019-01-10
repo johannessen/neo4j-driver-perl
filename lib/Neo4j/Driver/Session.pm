@@ -13,18 +13,13 @@ use URI 1.25;
 use Neo4j::Driver::Transaction;
 
 
-# https://neo4j.com/docs/rest-docs/current/#rest-api-service-root
-our $SERVICE_ROOT_ENDPOINT = '/db/data/';
-
-
 sub new {
-	my ($class, $driver) = @_;
+	my ($class, $protocol) = @_;
 	
 	my $session = {
 #		driver => $driver,
 #		uri => $driver->{uri}->clone,
-		client => $driver->_client,
-		die_on_error => $driver->{die_on_error},
+		protocol => $protocol,
 	};
 	
 	return bless $session, $class;
@@ -42,7 +37,8 @@ sub run {
 	my ($self, $query, @parameters) = @_;
 	
 	my $t = $self->begin_transaction();
-	return $t->_commit($query, @parameters);
+	$t->_autocommit;
+	return $t->run($query, @parameters);
 }
 
 
@@ -53,27 +49,7 @@ sub close {
 sub server {
 	my ($self) = @_;
 	
-	# That the ServerInfo is provided by the same object as Session
-	# is an implementation detail that might change in future.
-	return $self;
-}
-
-
-# server->
-sub address {
-	my ($self) = @_;
-	
-	return URI->new( $self->{client}->getHost() )->host_port;
-}
-
-
-# server->
-sub version {
-	my ($self) = @_;
-	
-	my $json = $self->{client}->GET( $SERVICE_ROOT_ENDPOINT )->responseContent();
-	my $neo4j_version = decode_json($json)->{neo4j_version};
-	return "Neo4j/$neo4j_version";
+	return $self->{protocol}->server_info;
 }
 
 

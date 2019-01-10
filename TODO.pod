@@ -34,9 +34,6 @@ short as reasonably possible.
 
 =item * Support for persistent connections would be nice.
 
-=item * Two different sessions should use two different TCP connections (at the
-moment, every session uses the same L<REST::Client> instance).
-
 =item * Sessions should offer a C<close> method that automatically rolls back
 and terminates all currently open transactions. The current C<close> method is
 a no-op, which needs to be fixed.
