@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use utf8;
 
-package Neo4j::Driver::Protocol::HTTP;
+package Neo4j::Driver::Transport::HTTP;
 # ABSTRACT: Adapter for the Neo4j Transactional HTTP API
 
 
@@ -223,7 +223,7 @@ __END__
 
 =head1 DESCRIPTION
 
-The L<Neo4j::Driver::Protocol::HTTP> package is not part of the
+The L<Neo4j::Driver::Transport::HTTP> package is not part of the
 public L<Neo4j::Driver> API.
 
 =cut

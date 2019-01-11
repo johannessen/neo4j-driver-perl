@@ -11,7 +11,7 @@ use Carp qw(croak);
 use Module::Load;
 
 use URI 1.25;
-use Neo4j::Driver::Protocol::HTTP;
+use Neo4j::Driver::Transport::HTTP;
 use Neo4j::Driver::Session;
 
 
@@ -68,16 +68,16 @@ sub basic_auth {
 sub session {
 	my ($self) = @_;
 	
-	my $protocol;
+	my $transport;
 	if ($self->{uri}->scheme eq 'bolt') {
-		load 'Neo4j::Driver::Protocol::Bolt';
-		$protocol = Neo4j::Driver::Protocol::Bolt->new($self);
+		load 'Neo4j::Driver::Transport::Bolt';
+		$transport = Neo4j::Driver::Transport::Bolt->new($self);
 	}
 	else {
-		$protocol = Neo4j::Driver::Protocol::HTTP->new($self);
+		$transport = Neo4j::Driver::Transport::HTTP->new($self);
 	}
 	
-	return Neo4j::Driver::Session->new($protocol);
+	return Neo4j::Driver::Session->new($transport);
 }
 
 

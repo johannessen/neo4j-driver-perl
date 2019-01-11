@@ -18,7 +18,7 @@ sub new {
 	my ($class, $session) = @_;
 	
 	my $transaction = {
-		protocol => $session->{protocol},
+		transport => $session->{transport},
 		open => 1,
 		return_graph => 0,
 		return_stats => 0,
@@ -46,7 +46,7 @@ sub run {
 		@statements = ();
 	}
 	
-	my @results = $self->{protocol}->run($self, @statements);
+	my @results = $self->{transport}->run($self, @statements);
 	
 	if (scalar @statements <= 1) {
 		my $result = $results[0] // Neo4j::Driver::StatementResult->new;
@@ -75,16 +75,16 @@ sub _prepare {
 		$params = {@parameters};
 	}
 	
-	$self->{protocol}->{return_graph} = $self->{return_graph};
-	$self->{protocol}->{return_stats} = $self->{return_stats};
-	return $self->{protocol}->prepare($self, $query, $params);
+	$self->{transport}->{return_graph} = $self->{return_graph};
+	$self->{transport}->{return_stats} = $self->{return_stats};
+	return $self->{transport}->prepare($self, $query, $params);
 }
 
 
 sub _explicit {
 	my ($self) = @_;
 	
-	$self->{protocol}->begin($self);
+	$self->{transport}->begin($self);
 	return $self;
 }
 
@@ -92,7 +92,7 @@ sub _explicit {
 sub _autocommit {
 	my ($self) = @_;
 	
-	$self->{protocol}->autocommit($self);
+	$self->{transport}->autocommit($self);
 	return $self;
 }
 
@@ -102,7 +102,7 @@ sub commit {
 	
 	croak 'Transaction closed' unless $self->is_open;
 	
-	$self->{protocol}->commit($self);
+	$self->{transport}->commit($self);
 	$self->{open} = 0;
 }
 
@@ -112,7 +112,7 @@ sub rollback {
 	
 	croak 'Transaction closed' unless $self->is_open;
 	
-	$self->{protocol}->rollback($self);
+	$self->{transport}->rollback($self);
 	$self->{open} = 0;
 }
 

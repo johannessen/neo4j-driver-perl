@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use utf8;
 
-package Neo4j::Driver::Protocol::Bolt;
+package Neo4j::Driver::Transport::Bolt;
 # ABSTRACT: Adapter for Neo4j::Bolt
 
 
@@ -144,7 +144,7 @@ __END__
 
 =head1 DESCRIPTION
 
-The L<Neo4j::Driver::Protocol::Bolt> package is not part of the
+The L<Neo4j::Driver::Transport::Bolt> package is not part of the
 public L<Neo4j::Driver> API.
 
 =cut

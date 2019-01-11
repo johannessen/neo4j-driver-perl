@@ -14,12 +14,12 @@ use Neo4j::Driver::Transaction;
 
 
 sub new {
-	my ($class, $protocol) = @_;
+	my ($class, $transport) = @_;
 	
 	my $session = {
 #		driver => $driver,
 #		uri => $driver->{uri}->clone,
-		protocol => $protocol,
+		transport => $transport,
 	};
 	
 	return bless $session, $class;
@@ -49,7 +49,7 @@ sub close {
 sub server {
 	my ($self) = @_;
 	
-	return $self->{protocol}->server_info;
+	return $self->{transport}->server_info;
 }
 
 
