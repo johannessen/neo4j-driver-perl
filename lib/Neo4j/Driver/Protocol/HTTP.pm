@@ -150,6 +150,13 @@ sub _request {
 }
 
 
+# Declare that the specified transaction should be treated as an explicit
+# transaction (i. e. it is opened at this time and will be closed by
+# explicit command from the client).
+sub begin {
+}
+
+
 # Declare that the specified transaction should be treated as an autocommit
 # transaction (i. e. it should automatically close successfully when the
 # next statement is run).

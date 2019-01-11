@@ -8,13 +8,17 @@ package Neo4j::Driver;
 
 
 use Carp qw(croak);
+use Module::Load;
 
 use URI 1.25;
 use Neo4j::Driver::Protocol::HTTP;
 use Neo4j::Driver::Session;
 
 
-our $CONTENT_TYPE = 'application/json; charset=UTF-8';
+my %NEO4J_DEFAULT_PORT = (
+	bolt => 7687,
+	http => 7474,
+);
 
 
 sub new {
@@ -23,13 +27,21 @@ sub new {
 	if ($uri) {
 		$uri =~ s|^|http://| if $uri !~ m{:|/};
 		$uri = URI->new($uri);
-		croak "Only the 'http' URI scheme is supported [$uri]" if $uri->scheme ne 'http';
+		
+		if ($uri->scheme eq 'bolt') {
+			eval { load 'Neo4j::Bolt' };
+			croak "Only the 'http' URI scheme is supported [$uri] (you may need to install the Neo4j::Bolt module)" if $@;
+		}
+		else {
+			croak "Only the 'http' URI scheme is supported [$uri]" if $uri->scheme ne 'http';
+		}
+		
 		croak "Hostname is required [$uri]" if ! $uri->host;
-		$uri->port(7474) if ! $uri->port;
 	}
 	else {
-		$uri = URI->new("http://localhost:7474");
+		$uri = URI->new("http://localhost");
 	}
+	$uri->port( $NEO4J_DEFAULT_PORT{ $uri->scheme } ) if ! $uri->_port;
 	
 	my @defaults = (
 		die_on_error => 1,
@@ -48,7 +60,6 @@ sub basic_auth {
 		principal => $username,
 		credentials => $password,
 	};
-	$self->{client} = undef;  # ensure the next call to _client picks up the new credentials
 	
 	return $self;
 }
@@ -57,7 +68,15 @@ sub basic_auth {
 sub session {
 	my ($self) = @_;
 	
-	my $protocol = Neo4j::Driver::Protocol::HTTP->new($self);
+	my $protocol;
+	if ($self->{uri}->scheme eq 'bolt') {
+		load 'Neo4j::Driver::Protocol::Bolt';
+		$protocol = Neo4j::Driver::Protocol::Bolt->new($self);
+	}
+	else {
+		$protocol = Neo4j::Driver::Protocol::HTTP->new($self);
+	}
+	
 	return Neo4j::Driver::Session->new($protocol);
 }
 
@@ -156,6 +175,24 @@ These are subject to unannounced modification or removal in future
 versions. Expect your code to break if you depend upon these
 features.
 
+=head2 Bolt support
+
+ my $driver = Neo4j::Driver->new('bolt://localhost');
+
+Thanks to L<Neo4j::Bolt>, there is now skeletal support for the
+L<Bolt Protocol|https://boltprotocol.org/>, which can be used as
+an alternative to HTTP to connect to the Neo4j server.
+
+The design goal is for this driver to eventually offer equal support
+for Bolt and HTTP. At this time, using Bolt with this driver is not
+recommended, although it sorta-kinda works. The biggest issues
+include: Explicit transactions are not yet implemented, there is
+no proper error handling, and summary information is completely
+unavailable. Additionally, there are certain problems with Unicode,
+incompatibilities with other "experimental" features of this driver,
+and parts of the documentation still assume that HTTP is the only
+option.
+
 =head2 Close method
 
  $driver->close;  # no-op
@@ -237,9 +274,6 @@ discovered. Use C<eval>, L<Try::Tiny> or similar to catch this.
 
 =head1 BUGS
 
-This software has pre-release quality. There is no schedule for
-further development. The interface is not yet stable.
-
 See the L<TODO.pod> document and Github for known issues and planned
 improvements. Please report new issues and other feedback on Github.
 
@@ -248,11 +282,6 @@ a balance between an idiomatic API for Perl and a uniform surface across all
 languages. Differences between this driver and the official Neo4j drivers in
 either the API or the behaviour are generally to be regarded as bugs unless
 there is a compelling reason for a different approach in Perl.
-
-This driver does not support the Bolt protocol of Neo4j version 3 and
-there are currently no plans of supporting Bolt in the future. The
-Transactional HTTP API is used for communicating with the server
-instead. This also means that Casual Clusters are not supported.
 
 Due to lack of resources, only the Neo4j community edition is targeted by this
 driver at present.

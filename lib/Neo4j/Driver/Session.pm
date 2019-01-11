@@ -29,16 +29,16 @@ sub new {
 sub begin_transaction {
 	my ($self) = @_;
 	
-	return Neo4j::Driver::Transaction->new($self);
+	my $t = Neo4j::Driver::Transaction->new($self);
+	return $t->_explicit;
 }
 
 
 sub run {
 	my ($self, $query, @parameters) = @_;
 	
-	my $t = $self->begin_transaction();
-	$t->_autocommit;
-	return $t->run($query, @parameters);
+	my $t = Neo4j::Driver::Transaction->new($self);
+	return $t->_autocommit->run($query, @parameters);
 }
 
 
@@ -83,6 +83,10 @@ of transaction is known as an I<autocommit transaction>.
 I<Explicit transactions> allow multiple statements to be committed
 as part of a single atomic operation and can be rolled back if
 necessary.
+
+Only one open transaction per session at a time is supported. To
+work with multiple concurrent transactions, simply use more than one
+session.
 
 =head1 METHODS
 
@@ -147,6 +151,19 @@ version number might be a way to get around this restriction and
 offer the C<ServerInfo> strings through
 L<ResultSummary|Neo4j::Driver::ResultSummary> after all. However,
 I'm really not sure if the ensuing performance penalty is worth it.
+
+=head2 Multiple transactions per session
+
+ my $session = Neo4j::Driver->new('http://...')->basic_auth(...)->session;
+ my $tx1 = $session->begin_transaction;
+ my $tx2 = $session->begin_transaction;
+ my $tx3 = $session->run(...);
+
+Since HTTP is a stateless protocol, the Neo4j HTTP API effectively
+allows multiple concurrently open transactions without special
+client-side considerations. This driver exposes this feature to the
+client and will continue to do so, but the interface is not yet
+finalised.
 
 =head1 BUGS
 

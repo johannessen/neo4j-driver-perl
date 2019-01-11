@@ -26,6 +26,8 @@ the session C<close> method; see below.
 =item * Consider if the 6 second timeout is too long. It should in fact be as
 short as reasonably possible.
 
+=item * Should we plan to support Casual Clusters?
+
 =back
 
 =head2 L<Neo4j::Driver::Session>
@@ -37,6 +39,7 @@ short as reasonably possible.
 =item * Sessions should offer a C<close> method that automatically rolls back
 and terminates all currently open transactions. The current C<close> method is
 a no-op, which needs to be fixed.
+Bolt support B<needs> something like this!
 
 =item * Sessions of some of the official drivers can have at most one
 transaction running at a time. This restriction is not necessary for this Perl
@@ -116,7 +119,7 @@ priority.
 
 =over
 
-=item * Consider whether to implement iterator semantics for StatementResult.
+=item * Implement a stream iterator (for Bolt as well as HTTP).
 
 =back
 

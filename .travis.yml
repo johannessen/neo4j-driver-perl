@@ -7,8 +7,8 @@ perl:
   # "5.10"
 
 env:
-  - NEO4J_VER=3.5.0
-  - NEO4J_VER=3.4.10
+  - NEO4J_VER=3.5.1
+  - NEO4J_VER=3.4.11
   # NEO4J_VER=3.3.9
   - NEO4J_VER=3.2.13
   # NEO4J_VER=3.1.9

@@ -81,10 +81,19 @@ sub _prepare {
 }
 
 
+sub _explicit {
+	my ($self) = @_;
+	
+	$self->{protocol}->begin($self);
+	return $self;
+}
+
+
 sub _autocommit {
 	my ($self) = @_;
 	
 	$self->{protocol}->autocommit($self);
+	return $self;
 }
 
 
