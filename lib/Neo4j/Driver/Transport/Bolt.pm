@@ -26,14 +26,17 @@ sub new {
 		$uri->userinfo( $driver->{auth}->{principal} . ':' . $driver->{auth}->{credentials} );
 	}
 	
-	my $cxn = Neo4j::Bolt->connect_("$uri");
-	croak "Unauthorized" unless $cxn;
+	my $cxn = Neo4j::Bolt->connect("$uri");
+	croak 'Bolt error ' . $cxn->errnum . ' ' . $cxn->errmsg unless $cxn && $cxn->connected;
 	
 	return bless {
 		connection => $cxn,
 		uri => $driver->{uri},
 	}, $class;
 }
+
+# libneo4j-client error numbers:
+# https://github.com/cleishm/libneo4j-client/blob/master/lib/src/neo4j-client.h.in
 
 
 # Prepare query statement, including parameters. When multiple statements
@@ -58,16 +61,26 @@ sub run {
 	
 	my ($stream, $json);
 	if ($statement->[0]) {
-		$stream = $self->{connection}->run_query_( @$statement );
+		$stream = $self->{connection}->run_query( @$statement );
+		
+		croak 'Bolt error ' . $self->{connection}->errnum . ' ' . $self->{connection}->errmsg unless $stream;
 		
 		# There is some sort of strange problem passing the stream along
 		# to StatementResult. As a workaround, for now we consume the full
 		# stream right here and re-create the JSON result data structure.
-		my @names = $stream->fieldnames_;
+		my @names = $stream->field_names;
 		my @data = ();
-		while ( my @row = $stream->fetch_next_ ) {
-			push @data, { row => \@row };
+		while ( my @row = $stream->fetch_next ) {
+			
+			croak 'next true and failure/success mismatch: ' . $stream->failure . '/' . $stream->success unless $stream->failure == -1 || $stream->success == -1 || ($stream->failure xor $stream->success);  # assertion
+			croak 'next true and error: client ' . $stream->client_errnum . ' ' . $stream->client_errmsg . '; server ' . $stream->server_errcode . ' ' . $stream->server_errmsg if $stream->failure && $stream->failure != -1;
+			
+			push @data, { row => \@row, meta => [] };
 		}
+		
+		croak 'next false and failure/success mismatch: ' . $stream->failure . '/' . $stream->success unless  $stream->failure == -1 || $stream->success == -1 || ($stream->failure xor $stream->success);  # assertion
+		croak 'next false and error: client ' . $stream->client_errnum . ' ' . $stream->client_errmsg . '; server ' . $stream->server_errcode . ' ' . $stream->server_errmsg if $stream->failure && $stream->failure != -1;
+		
 		$json = {
 			columns => \@names,
 			data => \@data,
