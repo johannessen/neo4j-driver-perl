@@ -170,6 +170,9 @@ regards to index/key collisions.
 various kinds of queries. If the penalty turns out to be low, stats should
 probably be requested by default.
 
+=item * Using Bolt seems to always provide stats. Since the API should not be
+different for HTTP and Bolt, requesting stats should probably be the default.
+
 =item * The ResultSummary is currently only available via C<summary> after
 explicitly requesting stats before C<run>, while the C<ResultSummary> object is
 created regardless. Profile the performance impact of this (questionable)

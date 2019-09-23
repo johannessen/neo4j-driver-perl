@@ -59,7 +59,7 @@ sub run {
 	# multiple statements not yet supported for Bolt
 	my ($statement) = @statements;
 	
-	my ($stream, $json);
+	my ($stream, $json, $summary);
 	if ($statement->[0]) {
 		$stream = $self->{connection}->run_query( @$statement );
 		
@@ -81,13 +81,32 @@ sub run {
 		croak 'next false and failure/success mismatch: ' . $stream->failure . '/' . $stream->success unless  $stream->failure == -1 || $stream->success == -1 || ($stream->failure xor $stream->success);  # assertion
 		croak 'next false and error: client ' . $stream->client_errnum . ' ' . $stream->client_errmsg . '; server ' . $stream->server_errcode . ' ' . $stream->server_errmsg if $stream->failure && $stream->failure != -1;
 		
+		my $stats = {};
+		my @counters = qw(
+			nodes_created
+			nodes_deleted
+			relationships_created
+			properties_set
+			labels_added
+			labels_removed
+			indexes_added
+			indexes_removed
+			constraints_added
+			constraints_removed
+		);
+		for my $c (@counters) { eval {$stats->{$c} = $stream->update_counts()->{$c} } }
+		eval {$stats->{relationship_deleted} = $stream->update_counts()->{relationships_deleted}};
+		
 		$json = {
 			columns => \@names,
 			data => \@data,
+			stats => $stats,
 		};
+		my $statement_summary = {statement => shift @$statement};
+		$statement_summary->{parameters} = $statement->[0];
+		$summary = Neo4j::Driver::ResultSummary->new( $json, {}, $statement_summary );
 	}
 	
-	my $summary;  # not yet implemented
 	my $result = Neo4j::Driver::StatementResult->new( $json, $summary );
 	return ($result);
 }
