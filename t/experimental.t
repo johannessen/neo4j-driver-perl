@@ -108,7 +108,7 @@ subtest 'die_on_error = 0' => sub {
 	lives_and { is $t->run('RETURN 42')->single->get, 42 } 'no error';
 	lives_and { warnings { is $t->run('iced manifolds.')->size, 0 } } 'cypher syntax error';
 	$t = $driver->session->begin_transaction;
-	$t->{die_on_error} = 0;
+	$t->{transport}->{die_on_error} = 0;
 	$t->{transaction_endpoint} = '/qwertyasdfghzxcvbn';
 	lives_and { warnings { is $t->run('RETURN 42')->size, 0 } } 'HTTP 404';
 	lives_ok { warnings {

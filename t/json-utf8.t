@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use lib qw(./lib t/lib);
+use utf8;  # required to parse UTF-8 bytes in this file as characters
 
 my $driver;
 use Neo4j::Test;
