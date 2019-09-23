@@ -11,7 +11,6 @@ BEGIN {
 		exit;
 	}
 }
-my $s = $driver->session;
 
 
 # The purpose of these tests is to confirm that Unicode data is treated
@@ -22,7 +21,7 @@ my $s = $driver->session;
 
 use Test::More 0.96 tests => 5 + 1;
 use Test::Exception;
-my $transaction = $s->begin_transaction;
+my $transaction = $driver->session->begin_transaction;
 
 
 my ($r);

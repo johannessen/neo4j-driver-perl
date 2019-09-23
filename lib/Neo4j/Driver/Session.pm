@@ -85,8 +85,8 @@ as part of a single atomic operation and can be rolled back if
 necessary.
 
 Only one open transaction per session at a time is supported. To
-work with multiple concurrent transactions, simply use more than one
-session.
+work with multiple concurrent transactions (also known as "nested
+transactions"), simply use more than one session.
 
 =head1 METHODS
 
@@ -134,7 +134,7 @@ context.
 
 This driver does not support persistent connections at present. All
 connections are closed automatically. There is no need for explicit
-calls to `close` at this time.
+calls to C<close> at this time.
 
 =head2 ServerInfo
 
@@ -152,18 +152,29 @@ offer the C<ServerInfo> strings through
 L<ResultSummary|Neo4j::Driver::ResultSummary> after all. However,
 I'm really not sure if the ensuing performance penalty is worth it.
 
-=head2 Multiple transactions per session
+=head2 Concurrent explicit transactions
 
  my $session = Neo4j::Driver->new('http://...')->basic_auth(...)->session;
  my $tx1 = $session->begin_transaction;
  my $tx2 = $session->begin_transaction;
- my $tx3 = $session->run(...);
 
 Since HTTP is a stateless protocol, the Neo4j HTTP API effectively
 allows multiple concurrently open transactions without special
 client-side considerations. This driver exposes this feature to the
 client and will continue to do so, but the interface is not yet
 finalised.
+
+The Bolt protocol does not support concurrent explicit transactions.
+
+=head2 Concurrent autocommit transactions
+
+ my $tx1 = $session->begin_transaction;
+ my $tx2 = $session->run(...);
+
+Sessions support autocommit transactions while an explicit
+transaction is open. Since it is not clear to me if this is
+intended behaviour when the Bolt protocol is used, this feature
+is listed as experimental.
 
 =head1 BUGS
 

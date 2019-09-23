@@ -11,7 +11,6 @@ BEGIN {
 		exit;
 	}
 }
-my $s = $driver->session;
 
 
 # The purpose of these tests is to confirm that Neo4j values are correctly
@@ -27,7 +26,7 @@ my $s = $driver->session;
 use Test::More 0.96 tests => 3 + 1;
 use Test::Exception;
 use JSON::PP ();
-my $transaction = $s->begin_transaction;
+my $transaction = $driver->session->begin_transaction;
 
 
 my ($q, $r);
@@ -38,7 +37,7 @@ subtest 'Neo4j property types' => sub {
 	$q = <<END;
 RETURN 42, 0.5, 'Praise be to the dartmakers.', true, false, null
 END
-	lives_ok { $r = $s->run($q)->list->[0]; } 'get property values';
+	lives_ok { $r = $transaction->run($q)->list->[0]; } 'get property values';
 	
 	is $r->get(0), 42, 'integer';
 	is $r->get(1), .5, 'float';

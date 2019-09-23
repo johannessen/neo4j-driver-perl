@@ -11,18 +11,17 @@ BEGIN {
 		exit;
 	}
 }
-my $s = $driver->session;
 
 
 # These tests are for the result summary and statistics.
 
 use Test::More 0.96 tests => 7 + 1;
 use Test::Exception;
-my $transaction = $s->begin_transaction;
+my $transaction = $driver->session->begin_transaction;
 $transaction->{return_stats} = 1;
 
 
-my $t = $s->begin_transaction;
+my $t = $driver->session->begin_transaction;
 $t->{return_stats} = 1;
 my ($q, $r, $c);
 
