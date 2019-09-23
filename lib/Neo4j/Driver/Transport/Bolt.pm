@@ -50,9 +50,7 @@ sub prepare {
 }
 
 
-# Send statements to the Neo4j server and return all results. Will either
-# continue to use the existing open server transaction or create a new one
-# (iff the server transaction is not yet open).
+# Send statements to the Neo4j server and return all results.
 sub run {
 	my ($self, $tx, @statements) = @_;
 	
@@ -65,9 +63,11 @@ sub run {
 		
 		croak 'Bolt error ' . $self->{connection}->errnum . ' ' . $self->{connection}->errmsg unless $stream;
 		
-		# There is some sort of strange problem passing the stream along
+		# There is some sort of strange problem passing any data structures
+		# that come from the Neo4j::Bolt result stream along
 		# to StatementResult. As a workaround, for now we consume the full
 		# stream right here and re-create the JSON result data structure.
+		# Not sure if this issue occurs outside the tests.
 		my @names = $stream->field_names;
 		my @data = ();
 		while ( my @row = $stream->fetch_next ) {
