@@ -100,8 +100,8 @@ notifications are not associated with a single statement, so there must be an
 option to disable this behaviour; indeed, disabled should probably be the
 default when stats are requested. Additionally, there are some bugs with
 multiple statements (see tests C<non-arrayref individual statement> and
-C<include empty statement>). If stats end up being requested by default due to
-profiling, this item would mean investing time in developing an optimisation
+C<include empty statement>). Since stats are now requested by default,
+this item might mean investing time in developing an optimisation
 feature that is almost never used. Since the server is often run on localhost
 anyway where latency is very close to zero, this item should not have high
 priority.
@@ -163,18 +163,10 @@ regards to index/key collisions.
 =over
 
 =item * Profile the server-side performance penalty of requesting stats for
-various kinds of queries. If the penalty turns out to be low, stats should
-probably be requested by default.
-
-=item * Using Bolt seems to always provide stats. Since the API should not be
-different for HTTP and Bolt, requesting stats should probably be the default.
-
-=item * The ResultSummary is currently only available via C<summary> after
-explicitly requesting stats before C<run>, while the C<ResultSummary> object is
-created regardless. Profile the performance impact of this (questionable)
-design and investigate possible improvements. One option might be to always
-provide the summary, but to provide the counters only if requested before
-running the statement.
+various kinds of queries. If the penalty turns out to be high, stats should
+perhaps have to be requested explicitly by clients (rather than being
+obtained by default, as with 0.13 and higher). However, using Bolt always
+provides stats, and different APIs for HTTP and Bolt seem like a bad idea.
 
 =back
 

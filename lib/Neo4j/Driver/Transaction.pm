@@ -21,7 +21,7 @@ sub new {
 		transport => $session->{transport},
 		open => 1,
 		return_graph => 0,
-		return_stats => 0,
+		return_stats => 1,
 	};
 	
 	return bless $transaction, $class;
@@ -292,16 +292,17 @@ single HTTP request. This driver exposes this feature to the client.
 This feature is likely to be removed from this driver in favour of
 lazy execution, similar to the official Neo4j drivers.
 
-=head2 Obtain query statistics
+=head2 Disable obtaining query statistics
 
  my $transaction = $session->begin_transaction;
- $transaction->{return_stats} = 1;
+ $transaction->{return_stats} = 0;
  my $result = $transaction->run('...');
- my $stats = $result->summary->counters;
 
-The Neo4j server supports requesting query statistics. This driver
-exposes this feature to the client and will continue to do so, but
-the interface is not yet finalised.
+Since version 0.13, this driver requests query statistics from the
+Neo4j server by default. When using HTTP, this behaviour can be
+disabled. Doing so might provide a very minor performance increase.
+
+The ability to disable the statistics may be removed in future.
 
 =head2 Return results in graph format
 

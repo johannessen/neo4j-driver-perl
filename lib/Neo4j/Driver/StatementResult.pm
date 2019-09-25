@@ -154,13 +154,6 @@ Return the count of records in the result.
 
 Return a L<Neo4j::Driver::ResultSummary> object.
 
-The C<summary> method will fail unless the transaction has been
-modified to request statistics before the statement was run.
-
- my $transaction = $session->begin_transaction;
- $transaction->{return_stats} = 1;
- my $result = $transaction->run('...');
-
 As a special case, L<Record|Neo4j::Driver::Record>s returned by the
 C<single> method also have a C<summary> method that works the same
 way.

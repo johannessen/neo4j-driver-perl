@@ -11,18 +11,16 @@ BEGIN {
 		exit;
 	}
 }
+my $s = $driver->session;  # only for autocommit transactions
 
 
 # These tests are for the result summary and statistics.
 
-use Test::More 0.96 tests => 7 + 1;
+use Test::More 0.96 tests => 6 + 1;
 use Test::Exception;
 my $transaction = $driver->session->begin_transaction;
-$transaction->{return_stats} = 1;
 
 
-my $t = $driver->session->begin_transaction;
-$t->{return_stats} = 1;
 my ($q, $r, $c);
 
 
@@ -32,7 +30,7 @@ subtest 'ResultSummary' => sub {
 RETURN {num}
 END
 	my @params = (num => 42);
-	lives_ok { $r = $t->run($q, @params)->summary; } 'get summary';
+	lives_ok { $r = $s->run($q, @params)->summary; } 'get summary';
 	isa_ok $r, 'Neo4j::Driver::ResultSummary', 'ResultSummary';
 	throws_ok { $r->server; } qr/\bunimplemented\b/i, 'server address';
 	lives_and { is $r->statement->{text}, $q } 'statement text';
@@ -43,31 +41,10 @@ END
 	$q = <<END;
 EXPLAIN MATCH (n), (m) RETURN n, m
 END
-	lives_ok { $r = $t->run($q)->summary; } 'get plan';
+	lives_ok { $r = $s->run($q)->summary; } 'get summary with plan';
 	lives_and { is_deeply $r->statement->{parameters}, {} } 'no params';
 	lives_and { is $r->plan->{root}->{children}->[0]->{operatorType}, 'CartesianProduct' } 'plan detail';
 	lives_and { like $r->notifications->[0]->{code}, qr/CartesianProduct/ } 'notification';
-};
-
-
-subtest 'ResultSummary: failure' => sub {
-	plan tests => 4;
-	throws_ok { $t->run()->summary; } qr/missing stats/i, 'missing statement - summary';
-	SKIP: {
-		my $is_bolt = URI->new( $ENV{TEST_NEO4J_SERVER} // '' )->scheme // '' eq 'bolt';
-		skip 'Bolt always provides stats', 3 if $is_bolt;
-		my $tx = $driver->session->begin_transaction;
-		$tx->{return_stats} = 0;
-		throws_ok {
-			$tx->run('RETURN 42')->summary;
-		} qr/missing stats/i, 'no stats requested - summary';
-		throws_ok {
-			$tx->run('RETURN 42')->single->summary;
-		} qr/missing stats/i, 'no stats requested - single summary';
-		lives_ok {
-			$tx->run('RETURN 42')->single;
-		} 'no stats requested - single';
-	}
 };
 
 
@@ -76,7 +53,7 @@ subtest 'SummaryCounters: from result' => sub {
 	$q = <<END;
 RETURN 42
 END
-	lives_ok { $r = $t->run($q); } 'run query';
+	lives_ok { $r = $s->run($q); } 'run query';
 	lives_ok { $c = $r->summary->counters; } 'get counters';
 	isa_ok $c, 'Neo4j::Driver::SummaryCounters', 'summary counters';
 	lives_and { ok ! $c->contains_updates } 'contains_updates counter';
@@ -88,7 +65,7 @@ subtest 'SummaryCounters: from single' => sub {
 	$q = <<END;
 RETURN 42
 END
-	lives_ok { $r = $t->run($q)->single; } 'run query';
+	lives_ok { $r = $s->run($q)->single; } 'run query';
 	lives_ok { $c = $r->summary->counters; } 'get counters';
 	isa_ok $c, 'Neo4j::Driver::SummaryCounters', 'summary counters';
 	lives_and { ok ! $c->contains_updates } 'contains_updates counter';
@@ -137,7 +114,7 @@ subtest 'repeated invocation' => sub {
 	# more than once, in which case every request returns a reference
 	# to the exact same object.
 	plan tests => 3;
-	lives_ok { $r = $t->run('RETURN 42') } 'get result';
+	lives_ok { $r = $s->run('RETURN 42') } 'get result';
 	lives_and { is $r->summary, $r->summary } 'summary identical';
 	lives_and { is $r->summary->counters, $r->summary->counters } 'counters identical';
 };

@@ -87,10 +87,8 @@ __END__
 
  use Neo4j::Driver;
  my $driver = Neo4j::Driver->new->basic_auth(...);
+ my $result = $driver->session->run('MATCH (a)-[:KNOWS]-(b) RETURN a, b');
  
- my $transaction = $driver->session->begin_transaction;
- $transaction->{return_stats} = 1;
- my $result = $transaction->run('MATCH (a)-[:KNOWS]-(b) RETURN a, b');
  my $summary = $result->summary;
  
  # SummaryCounters
