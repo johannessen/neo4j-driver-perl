@@ -4,14 +4,18 @@ use warnings;
 
 use URI;
 use Neo4j::Driver;
+use Neo4j::Sim;
 
 my $ok;
 
 
+# may be used for conditional testing
+our $bolt;
+our $sim;
+
+
 # returns a driver that might or might not work
 sub driver_maybe {
-	
-	return unless my $pass = $ENV{TEST_NEO4J_PASSWORD};
 	
 	my $driver;
 	eval {
@@ -21,6 +25,7 @@ sub driver_maybe {
 	return unless $driver;
 	
 	my $user = $ENV{TEST_NEO4J_USERNAME} || 'neo4j';
+	my $pass = $ENV{TEST_NEO4J_PASSWORD};
 	$driver->basic_auth($user, $pass);
 	
 	return $driver;
@@ -30,6 +35,14 @@ sub driver_maybe {
 # returns a driver that is known to work
 sub driver {
 	my $driver = driver_maybe;
+	
+	$bolt = $driver->{uri} && $driver->{uri}->scheme eq 'bolt';
+	if (! $ENV{TEST_NEO4J_PASSWORD} && $driver && ! $bolt) {
+		# the driver has no chance of connecting to a real database via
+		# HTTP without a password, so we use the REST simulator instead
+		$driver->{client_factory} = Neo4j::Sim->factory;
+		$sim = 1;
+	}
 	
 	# verify that the supplied credentials actually work
 	eval {

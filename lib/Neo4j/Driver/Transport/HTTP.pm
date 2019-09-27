@@ -32,6 +32,17 @@ our $SERVICE_ROOT_ENDPOINT = '/db/data/';
 sub new {
 	my ($class, $driver) = @_;
 	
+	my $self = bless {
+		die_on_error => $driver->{die_on_error},
+	}, $class;
+	
+	# If the Driver object knows how to create the REST client,
+	# we'll follow its lead. This is useful for testing.
+	if ($driver->{client_factory}) {
+		$self->{client} = $driver->{client_factory}->();
+		return $self;
+	}
+	
 	my $uri = $driver->{uri};
 	if ($driver->{auth}) {
 		croak "Only HTTP Basic Authentication is supported" if $driver->{auth}->{scheme} ne 'basic';
@@ -47,11 +58,9 @@ sub new {
 	$client->addHeader('Accept', $CONTENT_TYPE);
 	$client->addHeader('Content-Type', $CONTENT_TYPE);
 	$client->addHeader('X-Stream', 'true');
+	$self->{client} = $client;
 	
-	return bless {
-		client => $client,
-		die_on_error => $driver->{die_on_error},
-	}, $class;
+	return $self;
 }
 
 
@@ -83,7 +92,7 @@ sub run {
 	$coder = $coder->pretty->sort_by(sub {
 		return -1 if $JSON::PP::a eq 'statements';
 		return 1 if $JSON::PP::b eq 'statements';
-		return 0;  # $JSON::PP::a cmp $JSON::PP::b;
+		return $JSON::PP::a cmp $JSON::PP::b;  # Neo4j doesn't care, but our testing sim does
 	});
 	
 	my $response = $self->_request($tx, 'POST', $coder->encode($request));

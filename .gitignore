@@ -1,11 +1,13 @@
 # Dist::Zilla
 /.build/
+/blib/
+/pm_to_blib
 /Neo4j-Driver-*
 /Makefile.PL
-/MANIFEST
-/META.json
-/README
-
+/Makefile
+/MYMETA.*
 /cover_db
+
+/t/simulator/*.txt
 
 /Stuff

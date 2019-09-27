@@ -11,6 +11,7 @@ BEGIN {
 		exit;
 	}
 }
+my $s = $driver->session;  # only for autocommit transactions
 
 
 # The purpose of these tests is to confirm that Neo4j values are correctly
@@ -27,28 +28,36 @@ use Test::More 0.96 tests => 4 + 1;
 use Test::Exception;
 use JSON::PP ();
 my $transaction = $driver->session->begin_transaction;
+$transaction->{return_stats} = 0;  # optimise sim
 
 
-my ($q, $r);
+my ($q, $r, $v);
 
 
 subtest 'Neo4j property types' => sub {
-	plan tests => 7;
+	plan tests => 12;
 	$q = <<END;
-RETURN 42, 0.5, 'Praise be to the dartmakers.', true, false, null
+RETURN 42, 0.5, 'yes', [1], {a:1}, true, false, null, 0, '', [], {}
 END
-	lives_ok { $r = $transaction->run($q)->list->[0]; } 'get property values';
+	lives_ok { $r = $s->run($q)->list->[0]; } 'get property values';
 	
 	is $r->get(0), 42, 'integer';
 	is $r->get(1), .5, 'float';
-	is $r->get(2), 'Praise be to the dartmakers.', 'string';
-	is $r->get(3), JSON::PP::true, 'true';
-#	ok JSON::PP::is_bool $r->get(3), 'true type';
-#	ok $r->get(3), 'true value';
-	is $r->get(4), JSON::PP::false, 'false';
-#	ok JSON::PP::is_bool $r->get(4), 'false type';
-#	ok ! $r->get(4), 'false value';
-	is $r->get(5), undef, 'null/undef';
+	is $r->get(2), 'yes', 'string';
+	$v = $r->get(3);
+	is ref $v, 'ARRAY', 'list';
+	is $v->[0], 1, 'list entry';
+	$v = $r->get(4);
+	is ref $v, 'HASH', 'map';
+	is $v->{a}, 1, 'map entry';
+	is $r->get(5), JSON::PP::true, 'true';
+#	ok JSON::PP::is_bool $r->get(5), 'true type';
+#	ok $r->get(5), 'true value';
+	is $r->get(6), JSON::PP::false, 'false';
+#	ok JSON::PP::is_bool $r->get(6), 'false type';
+#	ok ! $r->get(6), 'false value';
+	is $r->get(7), undef, 'null/undef';
+	is $r->get(8), 0, 'zero';
 #	diag explain $r;
 };
 

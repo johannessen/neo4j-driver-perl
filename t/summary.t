@@ -25,11 +25,11 @@ my ($q, $r, $c);
 
 
 subtest 'ResultSummary' => sub {
-	plan tests => 11;
+	plan tests => 13;
 	$q = <<END;
-RETURN {num}
+RETURN {fortytwo}
 END
-	my @params = (num => 42);
+	my @params = (fortytwo => 42);
 	lives_ok { $r = $s->run($q, @params)->summary; } 'get summary';
 	isa_ok $r, 'Neo4j::Driver::ResultSummary', 'ResultSummary';
 	throws_ok { $r->server; } qr/\bunimplemented\b/i, 'server address';
@@ -43,8 +43,11 @@ EXPLAIN MATCH (n), (m) RETURN n, m
 END
 	lives_ok { $r = $s->run($q)->summary; } 'get summary with plan';
 	lives_and { is_deeply $r->statement->{parameters}, {} } 'no params';
-	lives_and { is $r->plan->{root}->{children}->[0]->{operatorType}, 'CartesianProduct' } 'plan detail';
-	lives_and { like $r->notifications->[0]->{code}, qr/CartesianProduct/ } 'notification';
+	my ($plan, $notifications);
+	lives_and { ok $plan = $r->plan; } 'get plan';
+	lives_and { is $plan->{root}->{children}->[0]->{operatorType}, 'CartesianProduct' } 'plan detail';
+	lives_and { ok $notifications = $r->notifications; } 'get notifications';
+	lives_and { like $notifications->[0]->{code}, qr/CartesianProduct/ } 'notifications detail';
 };
 
 

@@ -20,7 +20,7 @@ my $s = $driver->session;
 # those features or moved elsewhere once the features are documented
 # and thus officially supported.
 
-use Test::More 0.96 tests => 9;
+use Test::More 0.96 tests => 10;
 use Test::Exception;
 use Test::Warnings qw(warnings :no_end_test);
 
@@ -103,7 +103,7 @@ subtest 'die_on_error = 0' => sub {
 	plan tests => 4;
 	my $t = $driver->session->begin_transaction;
 	$t->{transport}->{die_on_error} = 0;
-	lives_and { is $t->run('RETURN 42')->single->get, 42 } 'no error';
+	lives_and { is $t->run('RETURN 42, "live on error"')->single->get(0), 42 } 'no error';
 	lives_and { warnings { is $t->run('iced manifolds.')->size, 0 } } 'cypher syntax error';
 	$t = $driver->session->begin_transaction;
 	$t->{transport}->{die_on_error} = 0;
@@ -117,13 +117,39 @@ subtest 'die_on_error = 0' => sub {
 };
 
 
-subtest 'nested transactions: explicit' => sub {
-	plan tests => 1;
+subtest 'nested transactions: explicit (REST)' => sub {
+	plan skip_all => '(currently testing Bolt)' if $Neo4j::Test::bolt;
+	plan tests => 4 if ! $Neo4j::Test::bolt;
 	my $session = $driver->session;
+	my ($t1, $t2);
 	lives_ok {
-		$session->begin_transaction;
-		$session->begin_transaction;
-	} 'explicit nested transactions';
+		$t1 = $session->begin_transaction;
+		$t1->run("CREATE (nested1:Test)");
+	} 'explicit nested transactions: 1st';
+	lives_ok {
+		$t2 = $session->begin_transaction;
+		$t2->run("CREATE (nested2:Test)");
+	} 'explicit nested transactions: 2nd';
+	lives_ok { $t1->rollback; } 'explicit nested transactions: close 1st';
+	lives_ok { $t2->rollback; } 'explicit nested transactions: close 2nd';
+};
+
+
+subtest 'nested transactions: explicit (Bolt)' => sub {
+	plan skip_all => '(currently testing HTTP)' if ! $Neo4j::Test::bolt;
+	plan tests => 4 if $Neo4j::Test::bolt;
+	my $session = $driver->session;
+	my ($t1, $t2);
+	lives_ok {
+		$t1 = $session->begin_transaction;
+		$t1->run("CREATE (nested1:Test)");
+	} 'explicit nested transactions: 1st';
+	throws_ok {
+		$t2 = $session->begin_transaction;
+		$t2->run("CREATE (nested2:Test)");
+	} qr/\bnested\b/i, 'explicit nested transactions: 2nd';
+	lives_ok { $t1->rollback; } 'explicit nested transactions: close 1st';
+	dies_ok { $t2->rollback; } 'explicit nested transactions: close 2nd';
 };
 
 
@@ -136,7 +162,7 @@ subtest 'stats' => sub {
 	lives_and { warnings { isa_ok $r->stats, 'Neo4j::Driver::SummaryCounters', 'stats' } };
 	lives_and { warnings { isa_ok $r->single->stats, 'Neo4j::Driver::SummaryCounters', 'single stats type' } };
 	lives_and { warnings { ok ! $r->single->stats->{contains_updates} } } 'single stats value';
-	lives_ok { $r = $t->run('RETURN 42'); } 'run no stats query';
+	lives_ok { $r = $t->run('RETURN "no stats old syntax"'); } 'run no stats query';
 	lives_and { warnings { is ref $r->stats, 'HASH' } } 'no stats: type';
 	lives_and { warnings { is scalar keys %{$r->stats}, 0 } } 'no stats: none';
 	lives_and { warnings { is ref $r->single->stats, 'HASH' } } 'no single stats: type';
@@ -145,20 +171,19 @@ subtest 'stats' => sub {
 
 
 subtest 'disable HTTP summary counters' => sub {
-	my $is_bolt = URI->new( $ENV{TEST_NEO4J_SERVER} // '' )->scheme // '' eq 'bolt';
-	plan skip_all => '(Bolt always provides stats)' if $is_bolt;
-	plan tests => 4 unless $is_bolt;
+	plan skip_all => '(Bolt always provides stats)' if $Neo4j::Test::bolt;
+	plan tests => 4 unless $Neo4j::Test::bolt;
 	throws_ok { $s->run()->summary; } qr/missing stats/i, 'missing statement - summary';
 	my $tx = $driver->session->begin_transaction;
 	$tx->{return_stats} = 0;
 	throws_ok {
-		$tx->run('RETURN 42+0')->summary;
+		$tx->run('RETURN "no stats 0"')->summary;
 	} qr/missing stats/i, 'no stats requested - summary';
 	throws_ok {
-		$tx->run('RETURN 42+1')->single->summary;
+		$tx->run('RETURN "no stats 1"')->single->summary;
 	} qr/missing stats/i, 'no stats requested - single summary';
 	lives_ok {
-		$tx->run('RETURN 42+2')->single;
+		$tx->run('RETURN "no stats 2"')->single;
 	} 'no stats requested - single';
 };
 
@@ -166,24 +191,25 @@ subtest 'disable HTTP summary counters' => sub {
 subtest 'get_bool' => sub {
 	plan tests => 4;
 	$q = <<END;
-RETURN false, true, 0, [42], 1, 'yes', '', [], {a:1}, {}, null
+RETURN 42, 0.5, 'yes', [1], {a:1}, true, false, null, 0, '', [], {}
 END
 	lives_ok { $r = $s->run($q)->list->[0]; } 'get property values';
 	# deprecation warnings are expected
-	warnings { is $r->get_bool(0), undef, 'get_bool false'; };
-	warnings { ok $r->get_bool(1), 'get_bool true'; };
-	warnings { is $r->get_bool(2), 0, 'get_bool 0'; };
+	warnings { is $r->get_bool(6), undef, 'get_bool false'; };
+	warnings { ok $r->get_bool(5), 'get_bool true'; };
+	warnings { is $r->get_bool(8), 0, 'get_bool 0'; };
 };
 
 
 subtest 'support for get_person in LOMS plugin' => sub {
-	plan tests => 5;
-	$r = $s->run('RETURN 42 AS value')->single;
-	lives_and { is $r->{column_keys}->count, 1 } 'ResultColumns count 1';
-	lives_ok { $r->{column_keys}->add('name'), 1 } 'ResultColumns add';
+	plan tests => 6;
+	$r = $s->run('RETURN 1 AS one, 2 AS two')->single;
 	lives_and { is $r->{column_keys}->count, 2 } 'ResultColumns count 2';
-	$r->{1} = 'Universal Answer';
-	lives_and { is $r->get('name'), $r->{name} } 'ResultColumns get';
+	lives_and { is $r->{column_keys}->add('three'), 2 } 'ResultColumns add';
+	lives_and { is $r->{column_keys}->count, 3 } 'ResultColumns count 3';
+	$r->{row}->[2] = 'Three!';
+	lives_and { is $r->get(2), 'Three!' } 'ResultColumns get col by index';
+	lives_and { is $r->get('three'), 'Three!' } 'ResultColumns get col by name';
 	throws_ok {
 		$s->run('')->_column_keys;
 	} qr/missing columns/i, 'result missing columns';
