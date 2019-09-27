@@ -1,36 +1,71 @@
 language: perl
-perl:
-  - "5.30"
-  - "5.28.2"
-  - "5.16"
-  # "5.10"
 
-env:
-  - NEO4J_VER=3.5.9
-  - NEO4J_VER=3.4.15
-  # NEO4J_VER=3.3.9
-  - NEO4J_VER=3.2.14
-  # NEO4J_VER=3.1.9
-  # NEO4J_VER=3.0.12
-  - NEO4J_VER=2.3.12
+# Differences must be expected between major Neo4j versions.
+# Additionally, at least one old Perl version should be tested.
+# Other than that, no major differences between combinations of
+# distinct versions are known or expected, therefore the testing
+# matrix can be small.
+matrix:
+  include:
+    - perl: "5.30"
+      env: NEO4J=3.5.9 JAVA=11
+      dist: bionic
+    - perl: "5.28.2"
+      env: NEO4J=3.4.15 JAVA=8
+      dist: xenial
+    - perl: "5.22.4"
+      env: NEO4J=2.3.12 JAVA=7
+      dist: trusty
+    - perl: "5.10"
+      env: NEO4J=3.2.14 JAVA=8
+      dist: trusty
+  allow_failures:
+    - perl: "5.10"
+  fast_finish: true
 
-jdk: oraclejdk8
+git:
+  depth: 1
 
+# The neo4j launch script relies heavily on the JAVA_HOME environment
+# variable. Some of the VMs provided by Travis have JREs installed
+# manually into /usr/local and placed in the PATH before /usr/bin,
+# making it impossible to switch the JRE using conventional methods.
+# Therefore JAVA_HOME must be configured manually here.
+before_install:
+  - perlbrew list
+  - if [[ "$JAVA" = "8" ]] ; then sudo apt-get -y install openjdk-8-jre-headless ; fi
+  - if [[ "$JAVA" = "7" ]] ; then sudo apt-get -y install openjdk-7-jre-headless ; fi
+#  - update-java-alternatives --list || true
+#  - update-alternatives --display java
+  - if [[ "$JAVA" = "11" && -d /usr/local/lib/jvm/openjdk11 ]] ; then echo "Java 11 OpenJDK" ; export JAVA_HOME=/usr/local/lib/jvm/openjdk11 ; fi
+  - if [[ "$JAVA" = "8" && -d /usr/lib/jvm/java-8-openjdk-amd64/jre ]] ; then echo "Java 8 OpenJDK" ; export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre ; elif [[ "$JAVA" = "8" && -d /usr/lib/jvm/java-8-oracle/jre ]] ; then echo "Java 8 Oracle" ; export JAVA_HOME=/usr/lib/jvm/java-8-oracle/jre ; fi
+  - if [[ "$JAVA" = "7" && -d /usr/lib/jvm/java-7-openjdk-amd64/jre ]] ; then echo "Java 7 OpenJDK" ; export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64/jre ; elif [[ "$JAVA" = "7" && -d /usr/lib/jvm/java-7-oracle/jre ]] ; then echo "Java 7 Oracle" ; export JAVA_HOME=/usr/lib/jvm/java-7-oracle/jre ; fi
+  - eval "${JAVA_HOME:-/usr}/bin/java -version"
+  - curl -O https://dist.neo4j.org/neo4j-community-$NEO4J-unix.tar.gz
+  - tar -xzf neo4j-community-$NEO4J-unix.tar.gz
+  - neo4j-community-$NEO4J/bin/neo4j start
+
+# Dist::Zilla doesn't work with Perl < 5.14, so some foo is needed
+# to use MakeMaker instead for the 5.10 test. While Dist::Zilla
+# can determine dependencies automatically, MakeMaker requires
+# an explicit list here.
 install:
-  - curl -O https://dist.neo4j.org/neo4j-community-$NEO4J_VER-unix.tar.gz
-  - tar -xzf neo4j-community-$NEO4J_VER-unix.tar.gz
-  - neo4j-community-$NEO4J_VER/bin/neo4j start
-  - cpanm -nq Dist::Zilla
-  - dzil authordeps --missing | cpanm -nq
-  - dzil listdeps --missing --author | cpanm -nq
+  - cpanm -nq Cpanel::JSON::XS JSON::PP LWP::UserAgent REST::Client Try::Tiny URI
+  - cpanm -nq File::Slurp Test::Exception Test::More Test::Warnings
+  - OLD_PERL=`perl -e 'print $] < "5.014";'`
+  - if test $OLD_PERL ; then touch Makefile.PL ; fi
+  - if test $OLD_PERL ; then perl -MExtUtils::MakeMaker -e 'WriteMakefile(NAME=>"Neo4j::Driver");' ; fi
+  - if test $OLD_PERL ; then make ; fi
+  - test $OLD_PERL || cpanm -nq Dist::Zilla
+  - test $OLD_PERL || dzil authordeps --missing | cpanm -nq
+  - test $OLD_PERL || dzil listdeps --missing --author | cpanm -nq
 
 before_script:
-  - neo4j-community-$NEO4J_VER/bin/neo4j status
+  - neo4j-community-$NEO4J/bin/neo4j status
   - curl -u neo4j:neo4j -d '{"password":"xkcd792"}' -X POST -H 'Content-Type:application/json' http://localhost:7474/user/neo4j/password
   - export TEST_NEO4J_PASSWORD=xkcd792
   # export AUTHOR_TESTING=1
 
 script:
-  # prove t
-  - dzil test
+  - test $OLD_PERL && make test || dzil test
 
