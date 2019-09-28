@@ -110,9 +110,9 @@ subtest 'die_on_error = 0' => sub {
 	$t->{transaction_endpoint} = '/qwertyasdfghzxcvbn';
 	lives_and { warnings { is $t->run('RETURN 42')->size, 0 } } 'HTTP 404';
 	lives_ok { warnings {
-		my $d = Neo4j::Driver->new('http://none.invalid');
+		my $d = Neo4j::Test->driver_no_host;
 		$d->{die_on_error} = 0;
-		$d->session->begin_transaction->run;
+		$d->session->run;
 	} } 'no connection';
 };
 

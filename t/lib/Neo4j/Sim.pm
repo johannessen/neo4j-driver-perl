@@ -16,16 +16,20 @@ my $hash_url = 1;  # not 100% sure if 0 would produce correct results, but it mi
 
 
 sub new {
-	my ($class) = @_;
-	my $self = bless {}, $class;
-	$self->{_res} = bless \(my $o), $class."::Response";
+	my ($class, $options) = @_;
+	my $self = bless {
+		auth => $options->{auth} // 1,
+	}, $class;
+	$self->{_res} = bless \($self), $class."::Response";
 	return $self;
 }
 
 
 sub factory {
+	shift;
+	my %options = (@_);
 	sub {
-		return Neo4j::Sim->new;
+		return Neo4j::Sim->new(\%options);
 	}
 }
 
@@ -33,6 +37,7 @@ sub factory {
 sub request {
 	my ($self, $method, $url, $content, $headers) = @_;
 	
+	return $self->not_authenticated() unless $self->{auth};
 	if ($method eq 'DELETE') {
 		$self->{status} = 204;  # HTTP: No Content
 		return $self;
@@ -67,6 +72,14 @@ sub not_found {
 	my ($self, $url) = @_;
 	$self->{json} = "{\"error\":\"$url not found in Neo4j simulator.\"}";
 	$self->{status} = 404;  # HTTP: Not Found
+	return $self;
+}
+
+
+sub not_authenticated {
+	my ($self, $method, $url, $file) = @_;
+	$self->{json} = "{\"error\":\"Neo4j simulator unauthenticated.\"}";
+	$self->{status} = 401;  # HTTP: Unauthorized
 	return $self;
 }
 
@@ -110,13 +123,12 @@ sub responseCode {
 
 
 sub getHost {
-	my ($self) = @_;
 	return "http://" . Neo4j::Test->server_address;
 }
 
 
 sub store {
-	my ($class, $url, $request, $response, $write_txt) = @_;
+	my (undef, $url, $request, $response, $write_txt) = @_;
 	return if $Neo4j::Test::sim;  # don't overwrite the files while we're reading from them
 	
 	my $hash = request_hash($url, $request);
@@ -137,7 +149,9 @@ sub request_hash ($$) {
 package Neo4j::Sim::Response;
 
 sub status_line {
-	my ($self) = @_;
+	my $status = ${ shift() }->{status};
+	return "401 Unauthorized" if $status == 401;
+	return "404 Not Found" if $status == 404;
 	return "501 Not Implemented";
 }
 

@@ -1,4 +1,4 @@
-0.12_02, 2019-09-25
+0.12_03, 2019-09-28
 
  - change HTTP transactions to make query statistics available by default
 
