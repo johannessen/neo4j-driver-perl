@@ -51,21 +51,14 @@ of work".
 exposed to the client. It should only be used internally for running statements
 lazily.
 
-=item * Using the C<meta> data (which is automatically returned since version
-3.0 (or possibly 3.1/3.2/3.3) and cannot be explicitly requested in
-C<resultDataContents>), it should be possible to parse out the IDs and stuff
-from any reply and bless the entities in the JSON hashes accordingly. However,
-we'd need to investigate how the official drivers handle multiple requests for
-the same entities: We'd rather avoid the hassle of keeping a central object
-store like L<REST::Neo4p> does. C<rest> can always be requested in
-C<resultDataContents>, but just returns some info for the deprecated API. It
-should work on old server versions where C<meta> is not available. However, the
-internal structure is different (actually C<rest> looks easier to parse than
-C<meta> at first glance).
-
-=item * Profile the performance penalty of blessing the entities in the JSON
-hashes (see using the C<meta> data). If the penalty turns out to be low,
-blessing should probably be done by default.
+=item * Consider unrolling C<deep_bless> recursion. Based on initial profiling,
+this may save up to about 5% CPU time (for a specific HTTP test query cached in
+RAM, performance went from about 2700/s to 2850/s when skipping the call to
+C<deep_bless> entirely). However, when accessing the database, the bottleneck
+is typically I/O (querying Neo4j itself instead of the RAM-cached response let
+the performance for the very same query drop down to 650/s when executed over
+HTTP). So this optimisation may not be worth it (OTOH, Bolt performance was
+something like 7000/s, so optimising C<deep_bless> may be more useful there).
 
 =item * An alternative to using C<< $client->{_res}->status_line >>
 (to get the HTTP error message) might be to call
@@ -175,5 +168,20 @@ provides stats, and different APIs for HTTP and Bolt seem like a bad idea.
 =over
 
 =item * C<use Class::Accessor::Fast 0.34;>
+
+=back
+
+=head2 Neo4j::Driver::Type::*
+
+=over
+
+=item * Implement spatial and temporal types.
+
+=item * The C<eq> and C<ne> operators should be overloaded to allow
+for ID comparison on nodes and relationships.
+
+=item * Consider whether to use C<use overload '%{}'> to allow direct
+access to e. g. properties using the pre-0.13 hashref syntax. See
+L<https://metacpan.org/pod/overload#Two-face-References> for an example.
 
 =back

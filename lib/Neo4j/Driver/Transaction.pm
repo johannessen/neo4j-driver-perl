@@ -238,13 +238,29 @@ given as a hash / balanced list.
  my $result = $transaction->run('...', \%hash);
  my $result = $transaction->run('...',  %hash);
 
-The Neo4j values C<true>, C<false> and C<null> may be given as C<\1>,
-C<\0> and C<undef>, respectively, as specified for the
-L<JSON module|Cpanel::JSON::XS/"MAPPING"> used by this class to
-encode the request sent to the Neo4j server. To force numeric values, an
-arithmetic operation should be carried out, such as adding zero
-(S<e. g.> C<< number => 0 + $value >>). String values may be forced
-by concatenating the empty string (C<< string => '' . $value >>).
+When used as parameters, Perl values are converted to Neo4j types as
+shown in the following example:
+
+ my $parameters = {
+   number =>  0 + $scalar,
+   string => '' . $scalar,
+   true   => \1,
+   false  => \0,
+   null   => undef,
+   list   => [ ],
+   map    => { },
+ };
+
+A Perl scalar may internally be represented as a number or a string
+(see L<perldata/Scalar values>). Perl usually auto-converts one into
+the other based on the context in which the scalar is used. However,
+Perl cannot know the context of a Neo4j query parameter, because
+queries are just opaque strings to Perl. Most often your scalars will
+already have the correct internal flavour. A typical example for a
+situation in which this is I<not> the case are numbers parsed out
+of strings using regular expressions. If necessary, you can force
+conversion of such values into the correct type using unary coercions
+as shown in the example above.
 
 Running empty queries is supported. Such queries establish a
 connection with the Neo4j server, which returns a result with zero

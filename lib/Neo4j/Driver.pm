@@ -14,6 +14,14 @@ use URI 1.25;
 use Neo4j::Driver::Transport::HTTP;
 use Neo4j::Driver::Session;
 
+# The following packages are never used directly anywhere. We mention them
+# here so that a simple `use Neo4j::Driver;` will make them available.
+use Neo4j::Driver::Type::Node;
+use Neo4j::Driver::Type::Relationship;
+use Neo4j::Driver::Type::Path;
+use Neo4j::Driver::Type::Point;
+use Neo4j::Driver::Type::Temporal;
+
 
 my %NEO4J_DEFAULT_PORT = (
 	bolt => 7687,
@@ -112,8 +120,7 @@ This is an unofficial Perl implementation of the
 L<Neo4j Driver API|https://neo4j.com/docs/developer-manual/current/drivers/#driver-use-the-driver>.
 It enables interacting with a Neo4j database server using more or
 less the same classes and method calls as the official Neo4j drivers
-do. Responses from the Neo4j server are passed through to the client
-as-is.
+do.
 
 This driver extends the uniformity across languages, which is a
 stated goal of the Neo4j Driver API, to Perl. The downside is that

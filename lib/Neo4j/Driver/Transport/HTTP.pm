@@ -28,6 +28,10 @@ our $CONTENT_TYPE = 'application/json; charset=UTF-8';
 # https://neo4j.com/docs/rest-docs/current/#rest-api-service-root
 our $SERVICE_ROOT_ENDPOINT = '/db/data/';
 
+# use 'rest' in place of broken 'meta', see neo4j #12306
+our $RESULT_DATA_CONTENTS = ['row', 'rest'];
+our $RESULT_DATA_CONTENTS_GRAPH = ['row', 'rest', 'graph'];
+
 
 sub new {
 	my ($class, $driver) = @_;
@@ -71,7 +75,8 @@ sub prepare {
 	my ($self, $tx, $query, $parameters) = @_;
 	
 	my $json = { statement => '' . $query };
-	$json->{resultDataContents} = [ "row", "graph" ] if $self->{return_graph};
+	$json->{resultDataContents} = $RESULT_DATA_CONTENTS;
+	$json->{resultDataContents} = $RESULT_DATA_CONTENTS_GRAPH if $self->{return_graph};
 	$json->{includeStats} = JSON::PP::true if $self->{return_stats};
 	$json->{parameters} = $parameters if defined $parameters;
 	
@@ -101,6 +106,9 @@ sub run {
 	my $result_count = defined $response->{results} ? @{$response->{results}} : 0;
 	for (my $i = 0; $i < $result_count; $i++) {
 		my $result = $response->{results}->[$i];
+		foreach my $data (@{ $result->{data} }) {
+			_deep_bless( $data->{row}, $data->{meta}, $data->{rest} );
+		}
 		my $summary = Neo4j::Driver::ResultSummary->new( $result, $response, $statements[$i] );
 		push @results, Neo4j::Driver::StatementResult->new( $result, $summary );
 	}
@@ -223,6 +231,88 @@ sub version {
 	my $json = $self->{client}->GET( $SERVICE_ROOT_ENDPOINT )->responseContent();
 	my $neo4j_version = decode_json($json)->{neo4j_version};
 	return "Neo4j/$neo4j_version";
+}
+
+
+sub _deep_bless {
+	my ($data, $meta, $rest) = @_;
+	
+	# "meta" is broken, so we primarily use "rest", see neo4j #12306
+	
+	if (ref $data eq 'HASH' && ref $rest eq 'HASH' && ref $rest->{metadata} eq 'HASH' && $rest->{self} && $rest->{self} =~ m|/db/data/node/|) {  # node
+		bless $data, 'Neo4j::Driver::Type::Node';
+		$data->{_meta} = $rest->{metadata};
+		$data->{_meta}->{deleted} = $meta->{deleted} if ref $meta eq 'HASH';
+		return $data;
+	}
+	if (ref $data eq 'HASH' && ref $rest eq 'HASH' && ref $rest->{metadata} eq 'HASH' && $rest->{self} && $rest->{self} =~ m|/db/data/relationship/|) {  # relationship
+		bless $data, 'Neo4j::Driver::Type::Relationship';
+		$data->{_meta} = $rest->{metadata};
+		$rest->{start} =~ m|/([0-9]+)$|;
+		$data->{_meta}->{start} = 0 + $1;
+		$rest->{end} =~ m|/([0-9]+)$|;
+		$data->{_meta}->{end} = 0 + $1;
+		$data->{_meta}->{deleted} = $meta->{deleted} if ref $meta eq 'HASH';
+		return $data;
+	}
+	
+	if (ref $data eq 'ARRAY' && ref $rest eq 'HASH') {  # path
+		die "Assertion failed: path length mismatch: ".(scalar @$data).">>1/$rest->{length}" if @$data >> 1 != $rest->{length};  # uncoverable branch true
+		for my $n ( 0 .. $#{ $rest->{nodes} } ) {
+			my $i = $n * 2;
+			my $uri = $rest->{nodes}->[$n];
+			$uri =~ m|/([0-9]+)$|;
+			$data->[$i]->{_meta} = { id => 0 + $1 };
+			$data->[$i]->{_meta}->{deleted} = $meta->[$i]->{deleted} if ref $meta eq 'ARRAY';
+			$data->[$i] = bless $data->[$i], 'Neo4j::Driver::Type::Node';
+		}
+		for my $r ( 0 .. $#{ $rest->{relationships} } ) {
+			my $i = $r * 2 + 1;
+			my $uri = $rest->{relationships}->[$r];
+			$uri =~ m|/([0-9]+)$|;
+			$data->[$i]->{_meta} = { id => 0 + $1 };
+			my $rev = $rest->{directions}->[$r] eq '<-' ? -1 : 1;
+			$data->[$i]->{_meta}->{start} = $data->[$i - 1 * $rev]->{_meta}->{id};
+			$data->[$i]->{_meta}->{end} =   $data->[$i + 1 * $rev]->{_meta}->{id};
+			$data->[$i]->{_meta}->{deleted} = $meta->[$i]->{deleted} if ref $meta eq 'ARRAY';
+			$data->[$i] = bless $data->[$i], 'Neo4j::Driver::Type::Relationship';
+		}
+		return bless $data, 'Neo4j::Driver::Type::Path';
+	}
+	
+	if (ref $data eq 'HASH' && ref $rest eq 'HASH' && ref $rest->{crs} eq 'HASH') {  # spatial
+		return bless $rest, 'Neo4j::Driver::Type::Point';
+	}
+	if (ref $data eq '' && ref $rest eq '' && ref $meta eq 'HASH' && $meta->{type} && $meta->{type} =~ m/date|time|duration/) {  # temporal (depends on meta => doesn't always work)
+		return bless { data => $data, type => $meta->{type} }, 'Neo4j::Driver::Type::Temporal';
+	}
+	
+	if (ref $data eq 'ARRAY' && ref $rest eq 'ARRAY') {  # array
+		die "Assertion failed: array rest size mismatch" if @$data != @$rest;  # uncoverable branch true
+		$meta = [] if ref $meta ne 'ARRAY' || @$data != @$meta;  # handle neo4j #12306
+		foreach my $i ( 0 .. $#{$data} ) {
+			$data->[$i] = _deep_bless($data->[$i], $meta->[$i], $rest->[$i]);
+		}
+		return $data;
+	}
+	if (ref $data eq 'HASH' && ref $rest eq 'HASH') {  # and neither node nor relationship nor spatial ==> map
+		die "Assertion failed: map rest size mismatch" if (scalar keys %$data) != (scalar keys %$rest);  # uncoverable branch true
+		die "Assertion failed: map rest keys mismatch" if (join '', sort keys %$data) ne (join '', sort keys %$rest);  # uncoverable branch true
+		$meta = {} if ref $meta ne 'HASH' || (scalar keys %$data) != (scalar keys %$meta);  # handle neo4j #12306
+		foreach my $key ( keys %$data ) {
+			$data->{$key} = _deep_bless($data->{$key}, $meta->{$key}, $rest->{$key});
+		}
+		return $data;
+	}
+	
+	if (ref $data eq '' && ref $rest eq '') {  # scalar
+		return $data;
+	}
+	if (ref $data eq 'JSON::PP::Boolean' && ref $rest eq 'JSON::PP::Boolean') {  # boolean
+		return $data;
+	}
+	
+	die "Assertion failed: unexpected type combo: " . ref($data) . "/" . ref($rest);  # uncoverable statement
 }
 
 

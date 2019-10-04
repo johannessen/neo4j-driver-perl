@@ -12,7 +12,7 @@ use Neo4j::Driver::Transport::HTTP;
 use Neo4j::Test;
 
 my $path = (dirname dirname dirname __FILE__) . "/simulator";
-my $hash_url = 1;  # not 100% sure if 0 would produce correct results, but it might increase maintainability ... and it _looks_ okay!
+my $hash_url = 0;  # not 100% sure if 0 produces correct results, but it might increase maintainability ... and it _looks_ okay!
 
 
 sub new {

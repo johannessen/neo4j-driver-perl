@@ -44,7 +44,7 @@ my %props = (
 	mixed      => "%äĀ한😀ô",  # 0x25c3a4c480ed959cf09f98806fcc82
 );
 my @keys = sort keys %props;
-my (@id, $smp_r, $mixed_r, $props_r);
+my (@id, $smp_r, $mixed_r, $node);
 
 
 lives_ok {
@@ -78,22 +78,18 @@ subtest 'read single property' => sub {
 
 
 subtest 'read full property list' => sub {
-	plan tests => 4 + @keys;
+	plan tests => 3 + @keys;
 	# This strategy depends on the implementation detail that Neo4j
 	# returns exactly the property map in JSON when a node is requested.
 	lives_ok {
 		$r = $transaction->run('MATCH (n) WHERE id(n) = {id} RETURN n', @id);
 	} 'read props';
 	lives_ok {
-		$props_r = $r->list->[0]->get(0);
-	} 'get props_r';
-	isnt $props_r, $id[1], 'get node instead of its id';
-	is ref $props_r, 'HASH', '$props_r is HASH ref';
-	SKIP: {
-		skip 'individual property check ($props_r not a HASH ref)', 0 + @keys if ref $props_r ne 'HASH';
-		foreach my $key (@keys) {
-			is to_hex $props_r->{$key}, to_hex $props{$key}, "props_r: $key";
-		}
+		$node = $r->list->[0]->get(0);
+	} 'get node';
+	is ref $node, 'Neo4j::Driver::Type::Node', '$node is blessed node';
+	foreach my $key (@keys) {
+		is to_hex $node->get($key), to_hex $props{$key}, "prop: $key";
 	}
 };
 

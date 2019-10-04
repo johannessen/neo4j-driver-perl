@@ -116,10 +116,34 @@ parameters.
  my $value = $session->run('RETURN "It works!"')->single->get;
  my $value = $session->run('RETURN "two", "fields"')->single->get;  # fails
 
-Nodes, relationships and maps are returned as hash references of
-their properties. Lists and paths are returned as array references.
+When retrieving values from records, Neo4j types are converted to Perl
+types as shown in the following table:
+
+ Neo4j type      resulting Perl type
+ ----------      -------------------
+ Number          scalar
+ String          scalar
+ Boolean         JSON::PP::true, JSON::PP::false
+ null            undef
+ 
+ Node            Neo4j::Driver::Type::Node
+ Relationship    Neo4j::Driver::Type::Relationship
+ Path            Neo4j::Driver::Type::Path
+ 
+ List            array reference
+ Map             hash reference
+
 Boolean values are returned as JSON types; use C<!!> to force-convert
 to a plain Perl boolean value if necessary.
+
+Note that early versions of this class returned nodes, relationships
+and paths as hashrefs or arrayrefs rather than blessed objects. This
+was a bug. The underlying data structure of nodes and relationships
+is an implementation detail that should not be relied upon. If you
+try to treat L<Neo4j::Driver::Type::Node>,
+L<Neo4j::Driver::Type::Relationship> or L<Neo4j::Driver::Type::Path>
+objects as hashrefs or arrayrefs, your code will eventually fail
+with a future version of this driver.
 
 =head2 data
 

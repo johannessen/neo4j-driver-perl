@@ -29,7 +29,7 @@ my ($q, $r, @a);
 
 
 subtest 'wantarray' => sub {
-	plan tests => 13;
+	plan tests => 20;
 	$q = <<END;
 RETURN 0 AS n UNION RETURN 1 AS n
 END
@@ -49,6 +49,21 @@ EXPLAIN MATCH (n), (m) RETURN n, m
 END
 	lives_ok { @a = $s->run($q)->summary->notifications; } 'get notifications';
 	lives_and { like $a[0]->{code}, qr/CartesianProduct/ } 'notification';
+	
+	# type objects
+	my $tx = $driver->session->begin_transaction;
+	$tx->{return_stats} = 0;  # optimise sim
+	$q = <<END;
+CREATE p=(a:Test:Want:Array)-[:TEST]->(c)
+RETURN p, a
+END
+	lives_ok { $r = $tx->run($q)->single; } 'get type objects';
+	lives_ok { @a = (); @a = $r->get('p')->nodes; } 'get path nodes as list';
+	is scalar @a, 2, 'path nodes list size';
+	lives_ok { @a = (); @a = $r->get('p')->relationships; } 'get path rels as list';
+	is scalar @a, 1, 'path rels list size';
+	lives_ok { @a = (); @a = $r->get('a')->labels; } 'get node labels as list';
+	is scalar @a, 3, 'node labels list size';
 	
 	# multiple statements; see below
 	$q = [
@@ -191,13 +206,13 @@ subtest 'disable HTTP summary counters' => sub {
 subtest 'get_bool' => sub {
 	plan tests => 4;
 	$q = <<END;
-RETURN 42, 0.5, 'yes', [1], {a:1}, true, false, null, 0, '', [], {}
+RETURN 42, 0.5, 'yes', 0, '', true, false, null
 END
 	lives_ok { $r = $s->run($q)->list->[0]; } 'get property values';
 	# deprecation warnings are expected
 	warnings { is $r->get_bool(6), undef, 'get_bool false'; };
 	warnings { ok $r->get_bool(5), 'get_bool true'; };
-	warnings { is $r->get_bool(8), 0, 'get_bool 0'; };
+	warnings { is $r->get_bool(3), 0, 'get_bool 0'; };
 };
 
 
@@ -232,13 +247,13 @@ END
 	lives_ok { $n = $r->{graph}->{nodes}; } 'got nodes';
 	lives_ok { $e = $r->{graph}->{relationships}; } 'got rels';
 	lives_and {
-		ok grep {$_->{properties}->{name} eq $r->get('a')->{name}} @$n;
+		ok grep {$_->{properties}->{name} eq $r->get('a')->get('name')} @$n;
 	} 'node a found';
 	lives_and {
-		is $e->[0]->{properties}->{since}, $r->get('b')->{since};
+		is $e->[0]->{properties}->{since}, $r->get('b')->get('since');
 	} 'rel b found';
 	lives_and {
-		ok grep {$_->{properties}->{name} eq $r->get('c')->{name}} @$n;
+		ok grep {$_->{properties}->{name} eq $r->get('c')->get('name')} @$n;
 	} 'node c found';
 };
 

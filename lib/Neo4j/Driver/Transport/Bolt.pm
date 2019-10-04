@@ -75,6 +75,7 @@ sub run {
 			croak 'next true and failure/success mismatch: ' . $stream->failure . '/' . $stream->success unless $stream->failure == -1 || $stream->success == -1 || ($stream->failure xor $stream->success);  # assertion
 			croak 'next true and error: client ' . $stream->client_errnum . ' ' . $stream->client_errmsg . '; server ' . $stream->server_errcode . ' ' . $stream->server_errmsg if $stream->failure && $stream->failure != -1;
 			
+			_deep_bless( \@row );
 			push @data, { row => \@row, meta => [] };
 		}
 		
@@ -167,6 +168,56 @@ sub version {
 	my ($self) = @_;
 	
 	...
+}
+
+
+sub _deep_bless {
+	my ($data) = @_;
+	
+	if (ref $data eq 'HASH' && defined $data->{_node}) {  # node
+		bless $data, 'Neo4j::Driver::Type::Node';
+		$data->{_meta} = {
+			id => $data->{_node},
+			labels => $data->{_labels},
+		};
+		return $data;
+	}
+	if (ref $data eq 'HASH' && defined $data->{_relationship}) {  # relationship
+		bless $data, 'Neo4j::Driver::Type::Relationship';
+		$data->{_meta} = {
+			id => $data->{_relationship},
+			start => $data->{_start},
+			end => $data->{_end},
+			type => $data->{_type},
+		};
+		return $data;
+	}
+	
+# 	if (ref $data eq 'ARRAY' && ref $rest eq 'HASH' && defined $rest->{length}) {  # path
+# 		# unimplemented:
+# 		# no discernible difference to array in Neo4j::Bolt
+# 		bless $data, 'Neo4j::Driver::Type::Path';
+# 		return;
+# 	}
+	
+	if (ref $data eq 'ARRAY') {  # array
+		foreach my $i ( 0 .. $#{$data} ) {
+			$data->[$i] = _deep_bless($data->[$i]);
+		}
+		return $data;
+	}
+	if (ref $data eq 'HASH') {  # and neither node nor relationship ==> map
+		foreach my $key ( keys %$data ) {
+			$data->{$key} = _deep_bless($data->{$key});
+		}
+		return $data;
+	}
+	
+	if (ref $data eq '') {  # scalar
+		return $data;
+	}
+	
+	die "Assertion failed: unexpected type: " . ref $data;
 }
 
 

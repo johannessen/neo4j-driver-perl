@@ -1,5 +1,6 @@
-0.12_03, 2019-09-28
+0.12_04, 2019-10-05
 
+ - implement Cypher type system, returning Neo4j entities as blessed objects
  - change HTTP transactions to make query statistics available by default
 
 0.12, 2019-09-23
