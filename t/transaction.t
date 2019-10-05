@@ -16,7 +16,7 @@ my $s = $driver->session;  # only for autocommit transactions
 
 # These tests are about the REST and transaction implementation.
 
-use Test::More 0.96 tests => 5 + 2;
+use Test::More 0.96 tests => 5 + 3;
 use Test::Exception;
 my $undo_id;
 
@@ -161,7 +161,7 @@ END
 
 CLEANUP: {
 	SKIP: {
-		skip 'undo: nothing to undo', 2 unless defined $undo_id;  # `defined` because node id 0 exists in Neo4j
+		skip 'undo: nothing to undo', 3 unless defined $undo_id;  # `defined` because node id 0 exists in Neo4j
 		my $t = $driver->session->begin_transaction;
 		$t->{return_stats} = 1;
 		$q = <<END;
@@ -169,5 +169,6 @@ MATCH (n) WHERE id(n) = {node_id} DELETE n
 END
 		lives_ok { $r = $t->run( $q, node_id => 0 + $undo_id ) } "undo commit [id $undo_id]";
 		lives_and { ok $r->summary->counters->nodes_deleted } 'undo commit verified';
+		lives_ok { $t->commit } 'undo commit execute';
 	}
 }
