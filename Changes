@@ -1,5 +1,6 @@
-0.12_04, 2019-10-05
+0.12_05, 2019-10-06
 
+ - add record streaming interface to StatementResult
  - implement Cypher type system, returning Neo4j entities as blessed objects
  - change HTTP transactions to make query statistics available by default
 

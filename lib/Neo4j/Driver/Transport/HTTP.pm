@@ -106,11 +106,8 @@ sub run {
 	my $result_count = defined $response->{results} ? @{$response->{results}} : 0;
 	for (my $i = 0; $i < $result_count; $i++) {
 		my $result = $response->{results}->[$i];
-		foreach my $data (@{ $result->{data} }) {
-			_deep_bless( $data->{row}, $data->{meta}, $data->{rest} );
-		}
 		my $summary = Neo4j::Driver::ResultSummary->new( $result, $response, $statements[$i] );
-		push @results, Neo4j::Driver::StatementResult->new( $result, $summary );
+		push @results, Neo4j::Driver::StatementResult->new( $result, $summary, \&_deep_bless );
 	}
 	return @results;
 }

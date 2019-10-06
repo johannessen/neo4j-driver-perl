@@ -13,6 +13,15 @@ use JSON::PP;
 use Neo4j::Driver::ResultSummary;
 
 
+sub new {
+	my ($class, $record, $columns, $deep_bless) = @_;
+	
+	$record->{column_keys} = $columns;
+	$deep_bless->( $record->{row}, $record->{meta}, $record->{rest} );
+	return bless $record, $class;
+}
+
+
 sub get {
 	my ($self, $field) = @_;
 	

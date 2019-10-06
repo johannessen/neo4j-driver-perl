@@ -75,7 +75,6 @@ sub run {
 			croak 'next true and failure/success mismatch: ' . $stream->failure . '/' . $stream->success unless $stream->failure == -1 || $stream->success == -1 || ($stream->failure xor $stream->success);  # assertion
 			croak 'next true and error: client ' . $stream->client_errnum . ' ' . $stream->client_errmsg . '; server ' . $stream->server_errcode . ' ' . $stream->server_errmsg if $stream->failure && $stream->failure != -1;
 			
-			_deep_bless( \@row );
 			push @data, { row => \@row, meta => [] };
 		}
 		
@@ -108,7 +107,7 @@ sub run {
 		$summary = Neo4j::Driver::ResultSummary->new( $json, {}, $statement_summary );
 	}
 	
-	my $result = Neo4j::Driver::StatementResult->new( $json, $summary );
+	my $result = Neo4j::Driver::StatementResult->new( $json, $summary, \&_deep_bless );
 	return ($result);
 }
 

@@ -110,6 +110,11 @@ L<https://neo4j.com/docs/cypher-manual/current/deprecations-additions-removals-c
 
 =item * Implement a stream iterator (for Bolt as well as HTTP).
 
+=item * Instead of simulating a result stream for HTTP, StatementResult should
+simply start out detached for HTTP connections. This should improve performance
+and more importantly simplify both the implementation and the documentation
+(which is currently imprecise with its use of "consume").
+
 =back
 
 =head2 L<Neo4j::Driver::Record>
