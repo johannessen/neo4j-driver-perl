@@ -18,15 +18,25 @@ sub new {
 	my ($class, $result, $summary, $deep_bless) = @_;
 	
 	my $self = {
-		consumed => 0,   # all records delivered by Neo4j; summary available
+		attached => 1,   # all records delivered by Neo4j; summary available
 		exhausted => 0,  # all records read by the client; fetch() will fail
 		result => $result,
-		json_cursor => 0,
 		buffer => [],
 		columns => undef,
 		summary => $summary,
 		deep_bless => $deep_bless,
 	};
+	
+	# HTTP JSON results can be fully buffered immediately
+	if ($result && ! $result->{bolt}) {
+		$self->{buffer} = $result->{data};
+		$self->{columns} = Neo4j::Driver::ResultColumns->new($result);
+		foreach my $record (@{ $self->{buffer} }) {
+			Neo4j::Driver::Record->new($record, $self->{columns}, $deep_bless);
+		}
+		$self->{attached} = 0;
+	}
+	
 	return bless $self, $class;
 }
 
@@ -79,6 +89,8 @@ sub single {
 sub _fill_buffer {
 	my ($self, $minimum) = @_;
 	
+	return 0 unless $self->{attached};
+	
 	$self->_column_keys if $self->{result};
 	
 	# try to get at least $minimum records on the buffer
@@ -92,7 +104,7 @@ sub _fill_buffer {
 	}
 	
 	# _fetch_next was called, but didn't return records => end of stream; detached
-	$self->{consumed} = 1 if ! $next;
+	$self->{attached} = 0 if ! $next;
 	
 	return $count;
 }
@@ -103,7 +115,9 @@ sub _fetch_next {
 	
 #	return $stream->fetch_next;
 	
-	return undef unless $self->{result};
+	# Neo4j::Bolt::ResultStream support is not yet implemented,
+	# so we simulate a JSON-backed result stream
+	$self->{json_cursor} //= 0;
 	my $record = $self->{result}->{data}->[ $self->{json_cursor}++ ];
 	return undef unless $record;
 	return Neo4j::Driver::Record->new($record, $self->{columns}, $self->{deep_bless});
@@ -139,25 +153,26 @@ sub has_next {
 }
 
 
-sub _attached {
+sub attached {
 	my ($self) = @_;
 	
-	return ! $self->{consumed};
+	return $self->{attached};
 }
 
 
-sub _detach {
+sub detach {
 	my ($self) = @_;
 	
 	return $self->_fill_buffer;
 }
 
 
-sub _consume {
+sub consume {
 	my ($self) = @_;
 	
+	# Neo4j::Bolt doesn't offer direct access to neo4j_close_results()
 	$self->{exhausted} = 1;
-	die "Unimplemented";
+	return $self->summary;
 }
 
 
@@ -207,17 +222,24 @@ __END__
 
 The result of running a Cypher statement, conceptually a stream of
 records. The result stream can be navigated through using C<fetch()>
-to yield records one at a time, or retrieved in its entirety using
-C<list()> to yield an array of all records.
+to consume records one at a time, or be consumed in its entirety
+using C<list()> to get an array of all records.
 
-Result streams received over HTTP are valid indefinitely.
+Result streams typically are initially attached to the active
+session. As records are retrieved from the stream, they may be
+buffered locally in the driver. Once I<all> data on the result stream
+has been retrieved from the server and buffered locally, the stream
+becomes B<detached.>
 
-Result streams running on Bolt are valid until the next statement
+Results received over HTTP always contain the complete list of
+records, which is kept buffered in the driver. HTTP result streams
+are thus immediately detached and valid indefinitely.
+
+Result streams received on Bolt are valid until the next statement
 is run on the same session or (if the result was retrieved within
 an explicit transaction) until the transaction is closed, whichever
 comes first. When a result stream has become invalid I<before> it
-was fully consumed, calling any methods in this class may fail.
-Exhausting a result stream always fully consumes it.
+was detached, calling any methods in this class may fail.
 
 =head1 METHODS
 
@@ -235,6 +257,18 @@ this result.
 When a record is fetched, that record is removed from the result
 stream. Once all records have been fetched, the result stream is
 exhausted and C<fetch()> returns C<undef>.
+
+=head2 has_next
+
+ while (my $record = $result->fetch) {
+   print $record->get('field');
+   print ', ' if $result->has_next;
+ }
+
+Whether the next call to C<fetch()> will return a record.
+
+Calling this method may change the internal stream buffer and
+detach the result, but will never exhaust it.
 
 =head2 keys
 
@@ -282,7 +316,7 @@ for use by C<list()>.
  my $result_summary = $result->summary;
 
 Return a L<Neo4j::Driver::ResultSummary> object. Calling this method
-fully consumes the result stream.
+detaches the result stream, but does I<not> exhaust it.
 
 As a special case, L<Record|Neo4j::Driver::Record>s returned by the
 C<single> method also have a C<summary> method that works the same
@@ -306,14 +340,48 @@ depend upon these features.
 The C<keys> and C<list> methods try to Do What You Mean if called in
 list context.
 
+=head2 Control result stream attachment
+
+ my $buffered = $result->attached;  # boolean
+ my $count = $result->detach;  # number of records fetched
+
+If necessary, C<detach()> can force the entire result stream to
+be buffered locally, so that it will be available to C<fetch()>
+indefinitely, irrespective of other statements run on the same
+session. Essentially, the outcome is the same as calling C<list()>,
+except that C<fetch()> can continue to be used because the result
+is not exhausted.
+
+Most of the official drivers do not offer these methods. Their
+usefulness is doubtful. They may be removed in future versions.
+
+=head2 Discarding the result stream
+
+ $result->consume;
+
+Discarding the entire result may be useful as a cheap way to signal
+to the Bolt networking layer that any resources held by the result
+may be released. The actual result records are silently discarded
+without any effort to buffer the results. Calling this method
+exhausts the result stream.
+
+As a side effect, discarding the result yields a summary of it.
+
+ my $result_summary = $result->consume;
+
+All of the official drivers offer this method, but it doesn't appear
+to be necessary here, since L<Neo4j::Bolt::ResultStream> reliably
+calls C<neo4j_close_results()> in its C<DESTROY()> method. It may
+be removed in future versions.
+
 =head2 Look ahead in the result stream
 
  say "Next record: ", $result->peek->get(...) if $result->has_next;
 
-Using C<has_next()> and C<peek()>, it is possible to retrieve the
+Using C<peek()>, it is possible to retrieve the
 same record the next call to C<fetch()> would retrieve without
 actually navigating to it. This may change the internal stream
-buffer and consume the result, but will never exhaust the result.
+buffer and detach the result, but will never exhaust it.
 
 =head1 SEE ALSO
 
