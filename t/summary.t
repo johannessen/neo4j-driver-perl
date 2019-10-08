@@ -16,7 +16,7 @@ my $s = $driver->session;  # only for autocommit transactions
 
 # These tests are for the result summary and statistics.
 
-use Test::More 0.96 tests => 6 + 1;
+use Test::More 0.96 tests => 5 + 1;
 use Test::Exception;
 my $transaction = $driver->session->begin_transaction;
 
@@ -25,7 +25,7 @@ my ($q, $r, $c);
 
 
 subtest 'ResultSummary' => sub {
-	plan tests => 13;
+	plan tests => 11;
 	$q = <<END;
 RETURN {fortytwo}
 END
@@ -45,9 +45,7 @@ END
 	lives_and { is_deeply $r->statement->{parameters}, {} } 'no params';
 	my ($plan, $notifications);
 	lives_and { ok $plan = $r->plan; } 'get plan';
-	lives_and { is $plan->{root}->{children}->[0]->{operatorType}, 'CartesianProduct' } 'plan detail';
 	lives_and { ok $notifications = $r->notifications; } 'get notifications';
-	lives_and { like $notifications->[0]->{code}, qr/CartesianProduct/ } 'notifications detail';
 };
 
 
@@ -110,17 +108,6 @@ END
 
 #subtest 'SummaryCounters: constraints, indexes' => sub {
 #};
-
-
-subtest 'repeated invocation' => sub {
-	# References to the summary and to the counters can be requested
-	# more than once, in which case every request returns a reference
-	# to the exact same object.
-	plan tests => 3;
-	lives_ok { $r = $s->run('RETURN 42') } 'get result';
-	lives_and { is $r->summary, $r->summary } 'summary identical';
-	lives_and { is $r->summary->counters, $r->summary->counters } 'counters identical';
-};
 
 
 CLEANUP: {

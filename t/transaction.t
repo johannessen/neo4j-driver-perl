@@ -56,16 +56,13 @@ END
 
 
 subtest 'error handling' => sub {
-	plan tests => 4;
+	plan tests => 3;
 	throws_ok { $s->run('iced manifolds.'); } qr/syntax/i, 'cypher syntax error';
 	my $q = 'RETURN 42';
 	throws_ok { $s->run(\$q) } qr/\bunblessed reference\b/, 'bogus reference query';
 	SKIP: {
-		skip 'for sim', 2 if $Neo4j::Test::sim;
+		skip 'for sim', 1 if $Neo4j::Test::sim;
 		throws_ok { $s->run( bless \$q, 'Neo4j::Test' ); } qr/syntax/i, 'bogus blessed query';
-		my $t = $driver->session->begin_transaction;
-		$t->{transaction_endpoint} = '/qwertyasdfghzxcvbn';
-		throws_ok { $t->run; } qr/\b404\b/, 'HTTP 404';
 	}
 };
 

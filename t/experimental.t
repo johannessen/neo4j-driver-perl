@@ -29,7 +29,7 @@ my ($q, $r, @a);
 
 
 subtest 'wantarray' => sub {
-	plan tests => 20;
+	plan tests => 19;
 	$q = <<END;
 RETURN 0 AS n UNION RETURN 1 AS n
 END
@@ -48,7 +48,6 @@ END
 EXPLAIN MATCH (n), (m) RETURN n, m
 END
 	lives_ok { @a = $s->run($q)->summary->notifications; } 'get notifications';
-	lives_and { like $a[0]->{code}, qr/CartesianProduct/ } 'notification';
 	
 	# type objects
 	my $tx = $driver->session->begin_transaction;
@@ -115,15 +114,11 @@ subtest 'die_on_error = 0' => sub {
 	# If this option is ever officially supported, one would expect
 	# it to also affect all croaks this driver issues by itself.
 	# The latter are not yet covered by these tests.
-	plan tests => 4;
+	plan tests => 3;
 	my $t = $driver->session->begin_transaction;
 	$t->{transport}->{die_on_error} = 0;
 	lives_and { is $t->run('RETURN 42, "live on error"')->single->get(0), 42 } 'no error';
 	lives_and { warnings { is $t->run('iced manifolds.')->size, 0 } } 'cypher syntax error';
-	$t = $driver->session->begin_transaction;
-	$t->{transport}->{die_on_error} = 0;
-	$t->{transaction_endpoint} = '/qwertyasdfghzxcvbn';
-	lives_and { warnings { is $t->run('RETURN 42')->size, 0 } } 'HTTP 404';
 	lives_ok { warnings {
 		my $d = Neo4j::Test->driver_no_host;
 		$d->{die_on_error} = 0;
