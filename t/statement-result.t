@@ -18,30 +18,17 @@ my $s = $driver->session;
 # class, particularly for input that is legal, but unusual -- for example,
 # due to coding errors on the client's part.
 
-use Test::More 0.96 tests => 4;
+use Test::More 0.96 tests => 10 + 1;
 use Test::Exception;
 my $transaction = $s->begin_transaction;
 $transaction->{return_stats} = 0;  # optimise sim
 
 
-my ($q, $r);
-
-
-subtest 'inappropriate use of single()' => sub {
-	plan tests => 2;
-	$q = <<END;
-RETURN 0 AS n UNION RETURN 1 AS n
-END
-	throws_ok { $s->run($q)->single; } qr/exactly one/i, 'single called with 2+ records';
-	$q = <<END;
-RETURN 0 LIMIT 0
-END
-	throws_ok { $s->run($q)->single; } qr/exactly one/i, 'single called with 0 records';
-};
+my ($q, $r, $v);
 
 
 subtest 'result with no statement' => sub {
-	plan tests => 3;
+	plan tests => 2;
 	# It is legal to run zero statements, in which case the run method,
 	# which normally gives one StatementResult object each for every
 	# statement run, must produce an empty StatementResult object for a
@@ -49,7 +36,6 @@ subtest 'result with no statement' => sub {
 	# doesn't unexpectedly blow up in the client's face.
 	lives_and { is $s->run->size, 0 } 'no query';
 	lives_and { is $s->run('')->size, 0 } 'empty query';
-	lives_and { is $s->run('RETURN 0 LIMIT 0')->size, 0 } 'one statement with no rows';
 };
 
 
@@ -58,6 +44,96 @@ subtest 'keys()' => sub {
 	$r = $s->run('RETURN 1 AS one, 2 AS two')->keys;
 	is $r->[0], 'one', 'key 1';
 	is $r->[1], 'two', 'key 2';
+};
+
+
+subtest 'stream interface: zero rows' => sub {
+	plan tests => 3;
+	$r = $s->run('RETURN 0 LIMIT 0');
+	lives_and { ok ! $r->has_next } 'no has next before';
+	lives_and { is $r->fetch, undef } 'fetch undef';
+	lives_and { ok ! $r->has_next } 'no has next after';
+};
+
+
+subtest 'stream interface: one row' => sub {
+	plan tests => 5;
+	$r = $s->run('RETURN 42');
+	lives_and { ok $r->has_next } 'has next before';
+	lives_ok { $v = 0;  $v = $r->fetch } 'fetch single row';
+	isa_ok $v, 'Neo4j::Driver::Record', 'fetch: confirmed record';
+	lives_and { ok ! $r->has_next } 'no has next after';
+	lives_and { is $r->fetch(), undef } 'fetch no second row';
+};
+
+
+subtest 'stream interface: more rows' => sub {
+	plan tests => 5;
+	$r = $s->run('RETURN 7 AS n UNION RETURN 11 AS n');
+	lives_and { ok $r->fetch } 'fetch first row';
+	lives_and { ok $r->has_next } 'has next before second';
+	lives_and { ok $r->fetch } 'fetch second row';
+	lives_and { ok ! $r->has_next } 'no has next after second';
+	lives_and { is $r->fetch(), undef } 'fetch no third row';
+};
+
+
+subtest 'list interface: zero rows' => sub {
+	plan tests => 3;
+	$r = $s->run('RETURN 0 LIMIT 0');
+	lives_and { is $r->size, 0 } 'size no rows';
+	lives_and { is_deeply scalar $r->list, [] } 'list no rows';
+	throws_ok { $r->single; } qr/\bexactly one\b/i, 'single called with 0 records';
+};
+
+
+subtest 'list interface: one row' => sub {
+	plan tests => 8;
+	$r = $s->run('RETURN 42');
+	lives_ok { $v = 0;  $v = $r->list } 'list';
+	is scalar(@$v), 1, 'list one row';
+	isa_ok $v->[0], 'Neo4j::Driver::Record', 'list: confirmed record';
+	lives_and { is $r->size, 1 } 'size one row';
+	my $single;
+	lives_ok { $single = $r->single } 'single';
+	isa_ok $single, 'Neo4j::Driver::Record', 'single called with 1 record';
+	lives_ok { $v = 0;  $v = $r->single } 'single again';
+	is_deeply $single, $v, 'single matches';
+};
+
+
+subtest 'list interface: more rows' => sub {
+	plan tests => 7;
+	$r = $s->run('RETURN 7 AS n UNION RETURN 11 AS n');
+	lives_and { is $r->size, 2 } 'size two rows';
+	my $list;
+	lives_ok { $list = $r->list } 'list';
+	is scalar @$list, 2, 'list two rows';
+	isa_ok $list->[0], 'Neo4j::Driver::Record', 'list: confirmed record';
+	throws_ok { $r->single; } qr/\bexactly one\b/i, 'single called with 2+ records';
+	lives_ok { $v = 0;  $v = $r->list } 'list again';
+	is_deeply $v, $list, 'lists match';
+};
+
+
+subtest 'list/stream interface mixed' => sub {
+	plan tests => 11;
+	$r = $s->run('RETURN 7 AS n UNION RETURN 11 AS n');
+	# fetch first row
+	lives_ok { $v = 0;  $v = $r->fetch } 'fetch first row';
+	lives_and { is $v->get('n'), 7 } 'fetched first row value';
+	lives_and { ok $r->has_next } 'has next after first';
+	# get remainder with single() (exhausts stream)
+	lives_ok { $v = 0;  $v = $r->single } 'single called with 1 record remaining';
+	lives_and { is $v->get('n'), 11 } 'fetched second row value: single';
+	# try fetching second row (fails)
+	lives_and { ok ! $r->has_next } 'no has next after list';
+	lives_and { is $r->fetch(), undef } 'fetch no next row';
+	# get list() of remainder (buffered)
+	lives_ok { $v = 0;  $v = $r->list } 'list';
+	lives_and { is $v->[0]->get('n'), 11 } 'fetched second row value: list';
+	lives_and { is scalar @$v, 1 } 'list size 1';
+	lives_and { is $r->size, 1 } 'result size 1';
 };
 
 
@@ -81,6 +157,11 @@ END
 	lives_and { is scalar @{ $transaction->run($q2, %id)->single->get }, 0 } 'collect void';
 	lives_and { ok $transaction->run($q3, %id)->single->get->[0] } 'collect true';
 };
+
+
+CLEANUP: {
+	lives_ok { $transaction->rollback } 'rollback';
+}
 
 
 done_testing;

@@ -20,7 +20,7 @@ my $s = $driver->session;
 # those features or moved elsewhere once the features are documented
 # and thus officially supported.
 
-use Test::More 0.96 tests => 10;
+use Test::More 0.96 tests => 13;
 use Test::Exception;
 use Test::Warnings qw(warnings :no_end_test);
 
@@ -31,14 +31,14 @@ my ($q, $r, @a);
 subtest 'wantarray' => sub {
 	plan tests => 19;
 	$q = <<END;
-RETURN 0 AS n UNION RETURN 1 AS n
+RETURN 7 AS n UNION RETURN 11 AS n
 END
 	lives_ok { @a = $s->run($q)->list; } 'get records as list';
-	lives_and { is $a[0]->get('n'), 0; } 'get record 0 in record list';
-	lives_and { is $a[1]->get('n'), 1; } 'get record 1 in record list';
+	lives_and { is $a[0]->get('n'), 7; } 'get record 0 in record list';
+	lives_and { is $a[1]->get('n'), 11; } 'get record 1 in record list';
 	lives_ok { @a = $s->run($q); } 'get result as list';
-	lives_and { is $a[0]->get('n'), 0; } 'get record 0 in result list';
-	lives_and { is $a[1]->get('n'), 1; } 'get record 1 in result list';
+	lives_and { is $a[0]->get('n'), 7; } 'get record 0 in result list';
+	lives_and { is $a[1]->get('n'), 11; } 'get record 1 in result list';
 	lives_ok { @a = $s->run($q)->keys; } 'get keys as list';
 	lives_and { is $a[0], 'n'; } 'get record 0 in keys list';
 	
@@ -124,6 +124,49 @@ subtest 'die_on_error = 0' => sub {
 		$d->{die_on_error} = 0;
 		$d->session->run;
 	} } 'no connection';
+};
+
+
+subtest 'result stream interface: attachment' => sub {
+	plan tests => 5;
+	$r = $s->run('RETURN 42');
+	my ($a, $c);
+	lives_ok { $a = $r->attached } 'is attached';
+	lives_ok { $c = $r->detach } 'detach';
+	is $c, ($a ? 1 : 0), 'one row detached';
+	lives_and { ok ! $r->attached } 'not attached';
+	lives_and { ok $r->has_next } 'not exhausted';
+};
+
+
+subtest 'result stream interface: discard result stream' => sub {
+	plan tests => 4;
+	$r = $s->run('RETURN 7 AS n UNION RETURN 11 AS n');
+	my $c;
+	lives_ok { $c = $r->consume } 'consume()';
+	isa_ok $c, 'Neo4j::Driver::ResultSummary', 'summary from consume()';
+	lives_and { ok ! $r->has_next } 'no has next';
+	TODO: {
+		local $TODO = 'records are not yet cheaply discarded';
+		lives_and { ok ! $r->size } 'no size';
+	};
+};
+
+
+subtest 'result stream interface: look ahead' => sub {
+	plan tests => 10;
+	$r = $s->run('RETURN 7 AS n UNION RETURN 11 AS n');
+	my ($peek, $v);
+	lives_ok { $peek = 0;  $peek = $r->peek } 'peek 1st';
+	lives_ok { $v = 0;  $v = $r->fetch } 'fetch 1st';
+	isa_ok $peek, 'Neo4j::Driver::Record', 'peek record 1st';
+	is $peek, $v, 'peek matches fetch 1st';
+	lives_ok { $peek = 0;  $peek = $r->peek } 'peek 2nd';
+	lives_ok { $v = 0;  $v = $r->fetch } 'fetch 2nd';
+	isa_ok $peek, 'Neo4j::Driver::Record', 'peek record 2nd';
+	is $peek, $v, 'peek matches fetch 2nd';
+	lives_and { ok ! $r->fetch } 'no fetch 3rd';
+	throws_ok { $r->peek } qr/\bexhausted\b/i, 'peek dies 3rd';
 };
 
 
