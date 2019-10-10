@@ -27,7 +27,12 @@ sub new {
 	}
 	
 	my $cxn = Neo4j::Bolt->connect("$uri");
-	croak 'Bolt error ' . $cxn->errnum . ' ' . $cxn->errmsg unless $cxn && $cxn->connected;
+	unless ($cxn && $cxn->connected) {
+		# libneo4j-client seems to not always report human-readable error messages, so we re-create the most important ones here
+		croak 'Bolt error -13: Unknown host' if ! $cxn->errmsg && $cxn->errnum == -13;
+		croak 'Bolt error -15: Username or password is invalid' if ! $cxn->errmsg && $cxn->errnum == -15;
+		croak 'Bolt error ' . $cxn->errnum . ' ' . $cxn->errmsg;
+	}
 	
 	return bless {
 		connection => $cxn,
