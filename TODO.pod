@@ -21,6 +21,22 @@ short as reasonably possible.
 
 =item * Should we plan to support Casual Clusters?
 
+=item * The driver should accept a setting that specifies the expected server
+version. The driver could use this to work around server bugs or known
+differences between versions, such as the Cypher parameter syntax. If not used,
+the default should be to use the most recent version. Neo4j appears to use
+SemVer versioning, but in order to avoid a C<SemVer> dependency here, it's
+probably best to rely just on C<< version->declare >>. (The exact behaviour
+must be documented.) That could look like this:
+C<< $d = Neo4j::Driver->new; $d->{server} = 'v3.2.1'; >>
+
+=item * An C<option> method could be provided to supply rarely needed settings
+to the driver or session, such as the network timeout, the expected server
+version or whether or not to request graph results. So far, such settings are
+set using attributes. An C<option> method would be chainable by returning
+C<$self>. Using it could look like this:
+C<< $d = Neo4j::Driver->new->option(timeout => 10)->basic_auth('neo4j', 'neo4j') >>
+
 =back
 
 =head2 L<Neo4j::Driver::Session>
@@ -29,17 +45,22 @@ short as reasonably possible.
 
 =item * Support for persistent connections would be nice.
 
-=item * Sessions should offer a C<close> method that automatically rolls back
-and terminates all currently open transactions. The current C<close> method is
-a no-op, which needs to be fixed.
-Bolt support B<needs> something like this!
+=item * Sessions might offer a C<close> method that automatically rolls back
+and terminates all currently open transactions. However, with Bolt in
+particular, there can be only one open (explicit) transaction at a time, so
+this really doesn't appear to be very useful. Prolly best to get rid of it.
 
 =item * Sessions of some of the official drivers can have at most one
 transaction running at a time. This restriction is not necessary for this Perl
-driver because L<REST::Client> works fine without it. Perhaps we should
-implement it anyway for consistency; however, the Python driver docs explicitly
-say that a "Session is a logical container for one or more transactional units
-of work".
+driver when HTTP is used, but perhaps we should implement it anyway for
+consistency.
+
+=item * L<DBI> uses C<begin_work> in place of C<begin_transaction> as a method
+name. Even though C<begin_work> is shorter, it should not be the main method
+name because C<begin_transaction> is well established in the official Neo4j
+drivers, and after all this is I<not> C<DBI>. However, as this is the only
+(almost) exact equivalence with C<DBI> that we have, we should perhaps offer
+C<begin_work> as an experimental alias at least.
 
 =back
 
@@ -79,7 +100,8 @@ probably be removed completely.
 C<run>. The Java and C# drivers do this.
 
 =item * Profile whether C<Tie::IxHash> or sorting C<JSON:PP> is quicker and
-adjust the code accordingly.
+adjust the code accordingly. Note, however, that the testing simulator requires
+fully sorted JSON, so C<Tie::IxHash> may not be enough.
 
 =item * Investigate which JSON module is the best. While C<Cpanel::JSON::XS>
 may have some advantages in terms of correctness (I think?), maybe
@@ -165,6 +187,8 @@ various kinds of queries. If the penalty turns out to be high, stats should
 perhaps have to be requested explicitly by clients (rather than being
 obtained by default, as with 0.13 and higher). However, using Bolt always
 provides stats, and different APIs for HTTP and Bolt seem like a bad idea.
+
+=item * Add timers.
 
 =back
 
