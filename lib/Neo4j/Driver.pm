@@ -107,7 +107,7 @@ __END__
    my $query = 'MATCH (a:Person)-[:KNOWS]->(f) '
              . 'WHERE a.name = {name} RETURN f.name';
    my $records = $driver->session->run($query, name => shift)->list;
-   forach my $record ( @$records ) {
+   foreach my $record ( @$records ) {
      say $record->get('f.name');
    }
  }
@@ -268,15 +268,18 @@ L<Try::Tiny> or similar instead.
 
 =head1 ENVIRONMENT
 
-This software currently targets Neo4j versions 2.3, 3.x and 4.x. The
-latter doesn't exist yet, but is expected to continue support for the
-Transactional HTTP endpoint that this driver uses (as opposed to the
-Legacy Cypher HTTP endpoint, which is expected to be discontinued
-starting in Neo4j 4.0 along with direct REST access to the graph
-entities).
+This software currently targets Neo4j versions 2.3, 3.x and 4.x.
 
 This software requires at least Perl 5.10, though you should consider
 using Perl 5.16 or newer if you can.
+
+=head1 PERFORMANCE
+
+Preliminary testing seems to indicate the two major bottlenecks are
+the HTTP transport to and from the Neo4j server, and the JSON
+parsing. Switching to the experimental Bolt protocol support may well
+increase the speed tenfold. You are encouraged to run your own tests
+for your specific application.
 
 =head1 DIAGNOSTICS
 
@@ -306,8 +309,8 @@ driver at present.
 =head1 SEE ALSO
 
 L<Neo4j::Driver::Session>,
-L<Neo4j Developer Manual: Drivers|https://neo4j.com/docs/developer-manual/current/drivers/#driver-use-the-driver>,
-L<Neo4j Transactional Cypher HTTP API|https://neo4j.com/docs/developer-manual/current/http-api/>,
+L<Neo4j Drivers Manual|https://neo4j.com/docs/driver-manual/current/>,
+L<Neo4j HTTP API Docs|https://neo4j.com/docs/http-api/current/>,
 L<REST::Neo4p>
 
 =cut

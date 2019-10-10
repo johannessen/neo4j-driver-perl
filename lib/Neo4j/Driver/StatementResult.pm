@@ -18,7 +18,7 @@ sub new {
 	my ($class, $result, $summary, $deep_bless) = @_;
 	
 	my $self = {
-		attached => 1,   # all records delivered by Neo4j; summary available
+		attached => 1,   # unbuffered records may exist on the stream
 		exhausted => 0,  # all records read by the client; fetch() will fail
 		result => $result,
 		buffer => [],

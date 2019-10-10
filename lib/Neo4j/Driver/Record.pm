@@ -126,13 +126,13 @@ parameters.
  my $value = $session->run('RETURN "two", "fields"')->single->get;  # fails
 
 When retrieving values from records, Neo4j types are converted to Perl
-types as shown in the following table:
+types as shown in the following table.
 
  Neo4j type      resulting Perl type
  ----------      -------------------
  Number          scalar
  String          scalar
- Boolean         JSON::PP::true, JSON::PP::false
+ Boolean         JSON::PP::true or JSON::PP::false
  null            undef
  
  Node            Neo4j::Driver::Type::Node

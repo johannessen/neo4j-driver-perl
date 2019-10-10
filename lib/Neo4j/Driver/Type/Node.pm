@@ -102,7 +102,7 @@ Nodes and relationships do not share the same ID space.
 
 =head2 labels
 
- my $labels = $node->labels;
+ my @labels = @{ $node->labels };
 
 Return all labels of this node.
 

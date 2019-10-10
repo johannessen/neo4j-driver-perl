@@ -59,7 +59,7 @@ L<Neo4j::Driver::Type::Path> implements the following methods.
 
 =head2 nodes
 
- my $nodes = $path->nodes;
+ my @nodes = @{ $path->nodes };
 
 Return all L<nodes|Neo4j::Driver::Type::Node> of this path.
 
@@ -72,7 +72,7 @@ returns, the end node is the last one.
 
 =head2 relationships
 
- my $rels = $path->relationships;
+ my @rels = @{ $path->relationships };
 
 Return all L<relationships|Neo4j::Driver::Type::Relationship>
 of this path.
