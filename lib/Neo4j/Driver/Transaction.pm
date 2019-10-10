@@ -31,7 +31,7 @@ sub new {
 sub run {
 	my ($self, $query, @parameters) = @_;
 	
-	croak 'Transaction closed' unless $self->is_open;
+	croak 'Transaction already closed' unless $self->is_open;
 	
 	my @statements;
 	if (ref $query eq 'ARRAY') {
@@ -100,7 +100,7 @@ sub _autocommit {
 sub commit {
 	my ($self) = @_;
 	
-	croak 'Transaction closed' unless $self->is_open;
+	croak 'Transaction already closed' unless $self->is_open;
 	
 	$self->{transport}->commit($self);
 	$self->{open} = 0;
@@ -110,7 +110,7 @@ sub commit {
 sub rollback {
 	my ($self) = @_;
 	
-	croak 'Transaction closed' unless $self->is_open;
+	croak 'Transaction already closed' unless $self->is_open;
 	
 	$self->{transport}->rollback($self);
 	$self->{open} = 0;
