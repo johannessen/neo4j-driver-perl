@@ -283,6 +283,12 @@ using Perl 5.16 or newer if you can.
 Neo4j::Driver currently dies as soon as an error condition is
 discovered. Use C<eval>, L<Try::Tiny> or similar to catch this.
 
+Warnings are given when deprecated or ambiguous method calls are used.
+These warnings may be disabled if desired.
+
+ no warnings 'deprecated';
+ no warnings 'ambiguous';
+
 =head1 BUGS
 
 See the F<TODO> document and Github for known issues and planned

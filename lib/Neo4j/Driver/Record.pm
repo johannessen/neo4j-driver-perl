@@ -7,7 +7,7 @@ package Neo4j::Driver::Record;
 # ABSTRACT: Container for Cypher result values
 
 
-use Carp qw(carp croak);
+use Carp qw(croak);
 use JSON::PP;
 
 use Neo4j::Driver::ResultSummary;
@@ -26,7 +26,7 @@ sub get {
 	my ($self, $field) = @_;
 	
 	if ( ! defined $field ) {
-		carp "Ambiguous get() on " . __PACKAGE__ . " with multiple fields" if @{$self->{row}} > 1;
+		warnings::warnif ambiguous => "Ambiguous get() on " . __PACKAGE__ . " with multiple fields" if @{$self->{row}} > 1;
 		return $self->{row}->[0];
 	}
 	my $key = $self->{column_keys}->key($field);
@@ -45,7 +45,7 @@ sub get {
 # superfluous.
 sub get_bool {
 	my ($self, $field) = @_;
-	carp __PACKAGE__ . "->get_bool is deprecated";
+	warnings::warnif deprecated => __PACKAGE__ . "->get_bool is deprecated";
 	
 	my $value = $self->get($field);
 	return $value if ! ref $value;
@@ -75,7 +75,7 @@ sub summary {
 
 sub stats {
 	my ($self) = @_;
-	carp __PACKAGE__ . "->stats is deprecated; use summary instead";
+	warnings::warnif deprecated => __PACKAGE__ . "->stats is deprecated; use summary instead";
 	
 	return $self->{_summary} ? $self->{_summary}->counters : {};
 }

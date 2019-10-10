@@ -7,7 +7,7 @@ package Neo4j::Driver::StatementResult;
 # ABSTRACT: Result of running a Cypher statement (a stream of records)
 
 
-use Carp qw(carp croak);
+use Carp qw(croak);
 
 use Neo4j::Driver::Record;
 use Neo4j::Driver::ResultColumns;
@@ -188,7 +188,7 @@ sub summary {
 
 sub stats {
 	my ($self) = @_;
-	carp __PACKAGE__ . "->stats is deprecated; use summary instead";
+	warnings::warnif deprecated => __PACKAGE__ . "->stats is deprecated; use summary instead";
 	
 	return $self->{result}->{stats} ? $self->summary->counters : {};
 }
