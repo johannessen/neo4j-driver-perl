@@ -15,24 +15,34 @@ use Neo4j::Driver::ResultSummary;
 
 
 sub new {
-	my ($class, $result, $summary, $deep_bless) = @_;
+	my ($class, $params) = @_;
+	
+	# Holding a reference to the Bolt connection is important, because
+	# Neo4j::Bolt automatically closes the session upon object destruction.
+	# Perl uses reference counting to control its garbage collector, so we
+	# need to hold that reference {cxn} until we detach from the stream,
+	# even though we never use the connection object directly.
 	
 	my $self = {
 		attached => 1,   # unbuffered records may exist on the stream
 		exhausted => 0,  # all records read by the client; fetch() will fail
-		result => $result,
+		result => $params->{json},
 		buffer => [],
 		columns => undef,
-		summary => $summary,
-		deep_bless => $deep_bless,
+		summary => undef,
+		deep_bless => $params->{deep_bless},
+		notifications => $params->{notifications},
+		statement => $params->{statement},
+		cxn => $params->{bolt_connection},  # important to avoid dereferencing the connection
+		stream => $params->{bolt_stream},
 	};
 	
 	# HTTP JSON results can be fully buffered immediately
-	if ($result && ! $result->{bolt}) {
-		$self->{buffer} = $result->{data};
-		$self->{columns} = Neo4j::Driver::ResultColumns->new($result);
+	if ($self->{result} && $params->{detach_stream}) {
+		$self->{buffer} = $self->{result}->{data};
+		$self->{columns} = Neo4j::Driver::ResultColumns->new($self->{result});
 		foreach my $record (@{ $self->{buffer} }) {
-			Neo4j::Driver::Record->new($record, $self->{columns}, $deep_bless);
+			Neo4j::Driver::Record->new($record, $self->{columns}, $self->{deep_bless});
 		}
 		$self->{attached} = 0;
 	}
@@ -103,8 +113,13 @@ sub _fill_buffer {
 		$count++;
 	}
 	
-	# _fetch_next was called, but didn't return records => end of stream; detached
-	$self->{attached} = 0 if ! $next;
+	# _fetch_next was called, but didn't return records => end of stream; detach
+	if (! $next) {
+		$self->{result}->{stats} = $self->{stream}->update_counts if $self->{stream};
+		$self->{cxn} = undef;  # decrease reference count, allow garbage collection
+		$self->{stream} = undef;
+		$self->{attached} = 0;
+	}
 	
 	return $count;
 }
@@ -113,13 +128,18 @@ sub _fill_buffer {
 sub _fetch_next {
 	my ($self) = @_;
 	
-#	return $stream->fetch_next;
-	
-	# Neo4j::Bolt::ResultStream support is not yet implemented,
-	# so we simulate a JSON-backed result stream
-	$self->{json_cursor} //= 0;
-	my $record = $self->{result}->{data}->[ $self->{json_cursor}++ ];
-	return undef unless $record;
+	my $record;
+	if ( $self->{stream} ) {
+		my @row = $self->{stream}->fetch_next;
+		$record = { row => \@row } if @row;
+		croak 'fetch_next Bolt error: client ' . $self->{stream}->client_errnum . ' ' . $self->{stream}->client_errmsg . '; server ' . $self->{stream}->server_errcode . ' ' . $self->{stream}->server_errmsg if $self->{stream}->failure && $self->{stream}->failure != -1;
+	}
+	else {
+		# simulate a JSON-backed result stream (only used in testing)
+		$self->{json_cursor} //= 0;
+		$record = $self->{result}->{data}->[ $self->{json_cursor}++ ];
+	}
+	return undef unless $record;  ##no critic (ProhibitExplicitReturnUndef)
 	return Neo4j::Driver::Record->new($record, $self->{columns}, $self->{deep_bless});
 }
 
@@ -127,7 +147,7 @@ sub _fetch_next {
 sub fetch {
 	my ($self) = @_;
 	
-	return undef if $self->{exhausted};  # fetch() mustn't destroy a list() buffer
+	return if $self->{exhausted};  # fetch() mustn't destroy a list() buffer
 	$self->_fill_buffer(1);
 	my $next = shift @{$self->{buffer}};
 	$self->{exhausted} = ! $next;
@@ -181,7 +201,8 @@ sub summary {
 	
 	$self->_fill_buffer;
 	
-	$self->{summary} //= Neo4j::Driver::ResultSummary->new;
+	$self->{summary} //= Neo4j::Driver::ResultSummary->new( $self->{result}, $self->{notifications}, $self->{statement} );
+	
 	return $self->{summary}->init;
 }
 
@@ -190,6 +211,7 @@ sub stats {
 	my ($self) = @_;
 	warnings::warnif deprecated => __PACKAGE__ . "->stats is deprecated; use summary instead";
 	
+	$self->_fill_buffer;
 	return $self->{result}->{stats} ? $self->summary->counters : {};
 }
 
@@ -286,10 +308,6 @@ stream.
 
 The list is internally buffered by this class. Calling this method
 multiple times returns the buffered list.
-
-Future versions of this driver may provide a performance advantage
-of C<fetch()> over C<list()> for queries with a very large number
-of result rows. The current version does not.
 
 =head2 single
 

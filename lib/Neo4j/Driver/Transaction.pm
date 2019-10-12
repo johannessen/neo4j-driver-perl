@@ -155,12 +155,12 @@ Logical container for an atomic unit of work that is either committed
 in its entirety or is rolled back on failure. A driver Transaction
 object corresponds to a server transaction.
 
-This driver currently only supports blocking transactions that are
-executed non-lazily. In other words, each call to the C<run> method
-immediately initiates an HTTP request to the Neo4j server that runs
-the given statement and waits for the result. The C<run> method does
-not return until either the statement result has been fully received
-or an error is triggered.
+Statements may be run lazily. Most of the time, you will not notice
+this, because the driver automatically waits for statements to
+complete at specific points to fulfill its contracts. If you require
+execution of a statement to have completed, you need to use the
+L<result|Neo4j::Driver::StatementResult>, for example by calling
+one of the methods C<fetch()>, C<list()> or C<summary()>.
 
 Transactions are often wrapped in a C<try> (or C<eval>) block to
 ensure that C<commit> and C<rollback> occur correctly. Note that the

@@ -16,6 +16,9 @@ use Neo4j::Bolt;
 use Neo4j::Driver::StatementResult;
 
 
+our $gather_results = 0;  # set to 1 to retrieve all data rows before creating the StatementResult (used for testing)
+
+
 sub new {
 	my ($class, $driver) = @_;
 	
@@ -59,61 +62,67 @@ sub prepare {
 sub run {
 	my ($self, $tx, @statements) = @_;
 	
-	# multiple statements not yet supported for Bolt
+	die "multiple statements not supported for Bolt" if @statements > 1;
 	my ($statement) = @statements;
 	
-	my ($stream, $json, $summary);
+	my $statement_json = {
+		statement => $statement->[0],
+		parameters => $statement->[1],
+	};
+	
+	my ($stream, $result);
 	if ($statement->[0]) {
 		$stream = $self->{connection}->run_query( @$statement );
 		
 		croak 'Bolt error ' . $self->{connection}->errnum . ' ' . $self->{connection}->errmsg unless $stream;
+		croak 'run and failure/success mismatch: ' . $stream->failure . '/' . $stream->success unless $stream->failure == -1 || $stream->success == -1 || ($stream->failure xor $stream->success);  # assertion
+		croak 'Bolt stream error: client ' . $stream->client_errnum . ' ' . $stream->client_errmsg . '; server ' . $stream->server_errcode . ' ' . $stream->server_errmsg if $stream->failure && $stream->failure != -1;
 		
-		# There is some sort of strange problem passing any data structures
-		# that come from the Neo4j::Bolt result stream along
-		# to StatementResult. As a workaround, for now we consume the full
-		# stream right here and re-create the JSON result data structure.
-		# Not sure if this issue occurs outside the tests.
-		my @names = $stream->field_names;
-		my @data = ();
-		while ( my @row = $stream->fetch_next ) {
-			
-			croak 'next true and failure/success mismatch: ' . $stream->failure . '/' . $stream->success unless $stream->failure == -1 || $stream->success == -1 || ($stream->failure xor $stream->success);  # assertion
-			croak 'next true and error: client ' . $stream->client_errnum . ' ' . $stream->client_errmsg . '; server ' . $stream->server_errcode . ' ' . $stream->server_errmsg if $stream->failure && $stream->failure != -1;
-			
-			push @data, { row => \@row, meta => [] };
+		if ($gather_results) {
+			$result = Neo4j::Driver::StatementResult->new({
+				json => $self->_gather_results($stream),
+				deep_bless => \&_deep_bless,
+				statement => $statement_json,
+			});
+			return ($result);
 		}
 		
-		croak 'next false and failure/success mismatch: ' . $stream->failure . '/' . $stream->success unless  $stream->failure == -1 || $stream->success == -1 || ($stream->failure xor $stream->success);  # assertion
-		croak 'next false and error: client ' . $stream->client_errnum . ' ' . $stream->client_errmsg . '; server ' . $stream->server_errcode . ' ' . $stream->server_errmsg if $stream->failure && $stream->failure != -1;
-		
-		my $stats = {};
-		my @counters = qw(
-			nodes_created
-			nodes_deleted
-			relationships_created
-			properties_set
-			labels_added
-			labels_removed
-			indexes_added
-			indexes_removed
-			constraints_added
-			constraints_removed
-		);
-		for my $c (@counters) { eval {$stats->{$c} = $stream->update_counts()->{$c} } }
-		eval {$stats->{relationship_deleted} = $stream->update_counts()->{relationships_deleted}};
-		
-		$json = {
-			columns => \@names,
-			data => \@data,
-			stats => $stats,
-		};
-		my $statement_summary = {statement => shift @$statement};
-		$statement_summary->{parameters} = $statement->[0];
-		$summary = Neo4j::Driver::ResultSummary->new( $json, {}, $statement_summary );
+		my @names = $stream->field_names;
+		$result = Neo4j::Driver::StatementResult->new({
+			bolt_stream => $stream,
+			bolt_connection => $self->{connection},
+			json => { columns => \@names },
+			deep_bless => \&_deep_bless,
+			statement => $statement_json,
+		});
 	}
 	
-	my $result = Neo4j::Driver::StatementResult->new( $json, $summary, \&_deep_bless );
 	return ($result);
+}
+
+
+sub _gather_results {
+	my ($self, $stream) = @_;
+	
+	my @names = $stream->field_names;
+	my @data = ();
+	while ( my @row = $stream->fetch_next ) {
+		
+		croak 'next true and failure/success mismatch: ' . $stream->failure . '/' . $stream->success unless $stream->failure == -1 || $stream->success == -1 || ($stream->failure xor $stream->success);  # assertion
+		croak 'next true and error: client ' . $stream->client_errnum . ' ' . $stream->client_errmsg . '; server ' . $stream->server_errcode . ' ' . $stream->server_errmsg if $stream->failure && $stream->failure != -1;
+		
+		push @data, { row => \@row, meta => [] };
+	}
+	
+	croak 'next false and failure/success mismatch: ' . $stream->failure . '/' . $stream->success unless  $stream->failure == -1 || $stream->success == -1 || ($stream->failure xor $stream->success);  # assertion
+	croak 'next false and error: client ' . $stream->client_errnum . ' ' . $stream->client_errmsg . '; server ' . $stream->server_errcode . ' ' . $stream->server_errmsg if $stream->failure && $stream->failure != -1;
+	
+	my $json = {
+		columns => \@names,
+		data => \@data,
+		stats => $stream->update_counts(),
+	};
+	return $json;
 }
 
 
@@ -171,7 +180,7 @@ sub address {
 sub version {
 	my ($self) = @_;
 	
-	...
+	die "Unimplemented";
 }
 
 

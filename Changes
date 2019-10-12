@@ -1,4 +1,4 @@
-0.12_06, 2019-10-07
+0.12_07, 2019-10-13
 
  - add record streaming interface to StatementResult
  - implement Cypher type system, returning Neo4j entities as blessed objects

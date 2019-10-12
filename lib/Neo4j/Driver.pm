@@ -208,9 +208,9 @@ option.
 
  $driver->close;  # no-op
 
-This driver does not support persistent connections at present. All
-connections are closed automatically. There is no need for explicit
-calls to C<close> at this time.
+All resources opened by this driver are closed automatically once
+they are no longer required. Explicit calls to C<close()> are neither
+required nor useful.
 
 =head2 HTTP Timeout
 

@@ -13,12 +13,12 @@ use Neo4j::Driver::SummaryCounters;
 
 
 sub new {
-	my ($class, $result, $response, $statement) = @_; 
+	my ($class, $result, $notifications, $statement) = @_; 
 	my $self = {};
 	if ($result && $result->{stats}) {
 		$self->{counters} = $result->{stats};
 		$self->{plan} = $result->{plan};
-		$self->{notifications} = $response->{notifications};
+		$self->{notifications} = $notifications;
 		$self->{statement} = $statement;
 	}
 	return bless $self, $class;

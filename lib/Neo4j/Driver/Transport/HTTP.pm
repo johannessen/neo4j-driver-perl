@@ -32,6 +32,8 @@ our $SERVICE_ROOT_ENDPOINT = '/db/data/';
 our $RESULT_DATA_CONTENTS = ['row', 'rest'];
 our $RESULT_DATA_CONTENTS_GRAPH = ['row', 'rest', 'graph'];
 
+our $detach_stream = 1;  # set to 0 to have StatementResult simulate an attached stream (used for testing)
+
 
 sub new {
 	my ($class, $driver) = @_;
@@ -105,9 +107,13 @@ sub run {
 	my @results = ();
 	my $result_count = defined $response->{results} ? @{$response->{results}} : 0;
 	for (my $i = 0; $i < $result_count; $i++) {
-		my $result = $response->{results}->[$i];
-		my $summary = Neo4j::Driver::ResultSummary->new( $result, $response, $statements[$i] );
-		push @results, Neo4j::Driver::StatementResult->new( $result, $summary, \&_deep_bless );
+		push @results, Neo4j::Driver::StatementResult->new({
+			json => $response->{results}->[$i],
+			notifications => $response->{notifications},
+			statement => $statements[$i],
+			deep_bless => \&_deep_bless,
+			detach_stream => $detach_stream,
+		});
 	}
 	return @results;
 }

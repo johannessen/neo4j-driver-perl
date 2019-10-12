@@ -31,14 +31,18 @@ for my $c (@counters) { *$c = sub { shift->{$c} } }
 
 # This name is a typo that drivers are supposed to fix;
 # see <https://github.com/neo4j/neo4j/issues/3421>
-sub relationships_deleted { shift->{relationship_deleted}; }
+sub relationships_deleted {
+	my $self = shift;
+	return $self->{relationships_deleted} if defined $self->{relationships_deleted};
+	return $self->{relationship_deleted};
+}
 
 # contains_updates is only present in the HTTP response;
 # we need to synthesize it from Bolt responses
 sub contains_updates {
 	my $self = shift;
 	unless (defined $self->{contains_updates}) {
-		$self->{contains_updates} = $self->{relationship_deleted} // 0;
+		$self->{contains_updates} = $self->{relationships_deleted} // 0;
 		$self->{contains_updates} += grep {$self->{$_}} @counters;
 	}
 	return !! $self->{contains_updates};
