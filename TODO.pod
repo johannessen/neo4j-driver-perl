@@ -11,8 +11,6 @@ This software has pre-release quality. The interface is not yet stable.
 
 =item * Write tests.
 
-=item * HTTPS support.
-
 =item * Remove C<close> method.
 
 =item * Consider if the 6 second timeout is too long. It should in fact be as

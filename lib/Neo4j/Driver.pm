@@ -26,6 +26,13 @@ use Neo4j::Driver::Type::Temporal;
 my %NEO4J_DEFAULT_PORT = (
 	bolt => 7687,
 	http => 7474,
+	https => 7473,
+);
+
+my %DEFAULTS = (
+	die_on_error => 1,
+	http_timeout => 6,  # seconds
+	ca_file => undef,
 );
 
 
@@ -41,7 +48,7 @@ sub new {
 			croak "Only the 'http' URI scheme is supported [$uri] (you may need to install the Neo4j::Bolt module)" if $@;
 		}
 		else {
-			croak "Only the 'http' URI scheme is supported [$uri]" if $uri->scheme ne 'http';
+			croak "Only the 'http' URI scheme is supported [$uri]" if $uri->scheme !~ m/^https?$/;
 		}
 		
 		croak "Hostname is required [$uri]" if ! $uri->host;
@@ -51,12 +58,7 @@ sub new {
 	}
 	$uri->port( $NEO4J_DEFAULT_PORT{ $uri->scheme } ) if ! $uri->_port;
 	
-	my @defaults = (
-		die_on_error => 1,
-		http_timeout => 6,  # seconds
-	);
-	
-	return bless { uri => $uri, @defaults }, $class;
+	return bless { uri => $uri, %DEFAULTS }, $class;
 }
 
 
@@ -69,6 +71,15 @@ sub basic_auth {
 		credentials => $password,
 	};
 	
+	return $self;
+}
+
+
+sub config {
+	my ($self, $key, $value) = @_;
+	
+	croak "Config option '$key' unsupported" unless grep m/^$key$/, keys %DEFAULTS;
+	$self->{$key} = $value;
 	return $self;
 }
 
@@ -160,8 +171,7 @@ Only the C<http> URI scheme is currently supported.
 If a part of the URI or even the entire URI is missing, suitable
 default values will be substituted. In particular, the host name
 C<localhost> will be used as default, along with the default port
-of the selected protocol. The default protocol might change to
-C<https> in future.
+of the selected protocol.
 
  # all of these are semantically equal
  my $driver = Neo4j::Driver->new;
@@ -203,6 +213,30 @@ Additionally, there are
 incompatibilities with other "experimental" features of this driver,
 and parts of the documentation still assume that HTTP is the only
 option.
+
+TLS encryption is disabled in early versions of L<Neo4j::Bolt>.
+If you need remote access, consider using HTTPS instead of Bolt.
+
+=head2 HTTPS support
+
+ my $driver = Neo4j::Driver->new('https://localhost');
+ $driver->config(ca_file => 'neo4j/certificates/neo4j.cert');
+
+Using HTTPS will result in an encrypted connection. In order to rule
+out a man-in-the-middle attack, the server's certificate must be
+verified. By default, this driver may be expected to use operating
+system default root certificates (not really tested yet). This
+will fail unless your Neo4j installation uses a key pair that is
+trusted and verifiable through the global CA infrastructure. For
+self-signed certificates (such as those automatically provided by
+some Neo4j versions), you need to specify the location of a local
+copy of the server certificate. The driver config option C<ca_file>
+may be used for this; it corresponds to C<SSL_ca_file> in
+L<LWP::UserAgent> and L<IO::Socket::SSL>.
+
+See also the
+L<Neo4j Operations Manual|https://neo4j.com/docs/operations-manual/current/security/>
+for details on Neo4j network security.
 
 =head2 Close method
 

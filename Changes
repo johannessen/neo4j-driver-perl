@@ -1,8 +1,9 @@
-0.12_07, 2019-10-13
+0.13, 2019-10-13
 
  - add record streaming interface to StatementResult
  - implement Cypher type system, returning Neo4j entities as blessed objects
  - change HTTP transactions to make query statistics available by default
+ - experimental support for HTTPS
 
 0.12, 2019-09-23
 

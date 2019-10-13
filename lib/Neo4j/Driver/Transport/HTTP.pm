@@ -61,6 +61,7 @@ sub new {
 		timeout => $driver->{http_timeout},
 		follow => 1,
 	});
+	$client->setCa($driver->{ca_file}) if defined $driver->{ca_file};
 	$client->addHeader('Accept', $CONTENT_TYPE);
 	$client->addHeader('Content-Type', $CONTENT_TYPE);
 	$client->addHeader('X-Stream', 'true');
