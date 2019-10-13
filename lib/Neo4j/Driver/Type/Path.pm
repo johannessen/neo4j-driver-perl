@@ -7,20 +7,24 @@ package Neo4j::Driver::Type::Path;
 # ABSTRACT: Directed sequence of relationships between two nodes
 
 
+use Carp qw(croak);
+
 
 sub nodes {
 	my ($self) = @_;
 	
+	croak 'nodes() in scalar context not supported' unless wantarray;
 	my @nodes = grep { ref eq 'Neo4j::Driver::Type::Node' } @$self;
-	return wantarray ? @nodes : [@nodes];
+	return @nodes;
 }
 
 
 sub relationships {
 	my ($self) = @_;
 	
+	croak 'relationships() in scalar context not supported' unless wantarray;
 	my @rels = grep { ref eq 'Neo4j::Driver::Type::Relationship' } @$self;
-	return wantarray ? @rels : [@rels];
+	return @rels;
 }
 
 
@@ -40,9 +44,8 @@ __END__
  my $q = "MATCH p=(a:Person)-[k:KNOWS]->(b:Person) RETURN p";
  my $path = $driver->session->run($q)->list->[0]->get('p');
  
- my $node_a = $path->nodes->[0];
- my $node_b = $path->nodes->[1];
- my $relationship_k = $path->relationships->[0];
+ my ($node_a, $node_b) = $path->nodes;
+ my ($relationship_k)  = $path->relationships;
 
 =head1 DESCRIPTION
 
@@ -59,28 +62,28 @@ L<Neo4j::Driver::Type::Path> implements the following methods.
 
 =head2 nodes
 
- my @nodes = @{ $path->nodes };
+ my @nodes = $path->nodes;
 
 Return all L<nodes|Neo4j::Driver::Type::Node> of this path.
 
 The start node of this path is the first node in the array this method
 returns, the end node is the last one.
 
- my $nodes = $path->nodes;
- my $start_node = $nodes->[0];
- my $end_node   = $nodes->[@$nodes - 1];
+ my @nodes = $path->nodes;
+ my $start_node = $nodes[0];
+ my $end_node   = $nodes[@nodes - 1];
 
 =head2 relationships
 
- my @rels = @{ $path->relationships };
+ my @rels = $path->relationships;
 
 Return all L<relationships|Neo4j::Driver::Type::Relationship>
 of this path.
 
 The length of a path is defined as the number of relationships.
 
- my $rels = $path->relationships;
- my $length = scalar @$rels;
+ my @rels = $path->relationships;
+ my $length = scalar @rels;
 
 =head1 EXPERIMENTAL FEATURES
 
@@ -89,13 +92,13 @@ features. These are subject to unannounced modification or removal
 in future versions. Expect your code to break if you depend upon
 these features.
 
-=head2 Calling in list context
+=head2 Calling in scalar context
 
- my @nodes = $node->nodes;
- my @rels  = $node->relationships;
+ my $nodes = $path->nodes;  # fails
+ my $rels  = $path->relationships;  # fails
 
-The C<nodes()> and C<relationships()> methods try to Do What You Mean
-if called in list context.
+The C<nodes()> and C<relationships()> methods C<die> if called in
+scalar context.
 
 =head2 Direct data structure access
 

@@ -25,29 +25,28 @@ use Test::Exception;
 use Test::Warnings qw(warnings :no_end_test);
 
 
-my ($q, $r, @a);
+my ($q, $r, @a, $a);
 
 
 subtest 'wantarray' => sub {
-	plan tests => 19;
+	plan tests => 15;
 	$q = <<END;
 RETURN 7 AS n UNION RETURN 11 AS n
 END
-	lives_ok { @a = $s->run($q)->list; } 'get records as list';
-	lives_and { is $a[0]->get('n'), 7; } 'get record 0 in record list';
-	lives_and { is $a[1]->get('n'), 11; } 'get record 1 in record list';
 	lives_ok { @a = $s->run($q); } 'get result as list';
 	lives_and { is $a[0]->get('n'), 7; } 'get record 0 in result list';
 	lives_and { is $a[1]->get('n'), 11; } 'get record 1 in result list';
-	lives_ok { @a = $s->run($q)->keys; } 'get keys as list';
-	lives_and { is $a[0], 'n'; } 'get record 0 in keys list';
+	lives_ok { $a = $s->run($q)->keys; } 'get keys as array';
+	lives_and { is $a->[0], 'n'; } 'get record 0 in keys array';
 	
 	# notifications
-	lives_ok { @a = $s->run($q)->summary->notifications; } 'no notifications';
+	lives_ok { $a = 0;  $a = $s->run($q)->summary->notifications; } 'no notifications';
+	lives_and { is scalar @$a, 0; } 'no notifications array size';
 	$q = <<END;
 EXPLAIN MATCH (n), (m) RETURN n, m
 END
-	lives_ok { @a = $s->run($q)->summary->notifications; } 'get notifications';
+	lives_ok { $a = 0;  $a = $s->run($q)->summary->notifications; } 'get notifications';
+	lives_and { is scalar @$a, 1; } 'get notifications array size';
 	
 	# type objects
 	my $tx = $driver->session->begin_transaction;
@@ -57,12 +56,15 @@ CREATE p=(a:Test:Want:Array)-[:TEST]->(c)
 RETURN p, a
 END
 	lives_ok { $r = $tx->run($q)->single; } 'get type objects';
-	lives_ok { @a = (); @a = $r->get('p')->nodes; } 'get path nodes as list';
-	is scalar @a, 2, 'path nodes list size';
-	lives_ok { @a = (); @a = $r->get('p')->relationships; } 'get path rels as list';
-	is scalar @a, 1, 'path rels list size';
-	lives_ok { @a = (); @a = $r->get('a')->labels; } 'get node labels as list';
-	is scalar @a, 3, 'node labels list size';
+	throws_ok {
+		 $a = $r->get('p')->nodes;
+	} qr/\bscalar context\b.*\bnot supported\b/i, 'get path nodes as scalar';
+	throws_ok {
+		 $a = $r->get('p')->relationships;
+	} qr/\bscalar context\b.*\bnot supported\b/i, 'get path rels as scalar';
+	throws_ok {
+		 $a = $r->get('a')->labels;
+	} qr/\bscalar context\b.*\bnot supported\b/i, 'get node labels as scalar';
 	
 	# multiple statements; see below
 	$q = [

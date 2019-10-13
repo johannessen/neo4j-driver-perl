@@ -2,6 +2,7 @@
 
  - add record streaming interface to StatementResult
  - implement Cypher type system, returning Neo4j entities as blessed objects
+ - methods returning lists now expect to be called in list context
  - change HTTP transactions to make query statistics available by default
  - experimental support for HTTPS
 

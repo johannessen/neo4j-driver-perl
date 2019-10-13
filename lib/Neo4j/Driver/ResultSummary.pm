@@ -98,7 +98,7 @@ __END__
  my $query  = $summary->statement->{text};
  my $params = $summary->statement->{parameters};
  my $plan   = $summary->plan;
- my @notes  = @{ $summary->notifications };
+ my @notes  = $summary->notifications;
 
 =head1 DESCRIPTION
 
@@ -155,12 +155,12 @@ features. These are subject to unannounced modification or removal
 in future versions. Expect your code to break if you depend upon
 these features.
 
-=head2 Calling in list context
+=head2 Calling in scalar context
 
- my @notifications = $summary->notifications;
+ my $notifications = $summary->notifications;  # arrayref
 
-The C<notifications> method tries to Do What You Mean if called in
-list context.
+The C<notifications()> method returns an array reference if called in
+scalar context.
 
 =head1 SEE ALSO
 

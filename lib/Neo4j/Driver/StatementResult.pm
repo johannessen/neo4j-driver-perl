@@ -234,7 +234,7 @@ __END__
  # list result records
  my $result = $session->run('MATCH (m:Movie) RETURN m.name, m.year');
  my $record_count = $result->size;
- my @records = @{ $result->list };
+ my @records = $result->list;
  
  # shortcut for results with a single record only
  my $query = 'MATCH (m:Movie) WHERE id(m) = {id} RETURN m.name';
@@ -294,13 +294,14 @@ detach the result, but will never exhaust it.
 
 =head2 keys
 
- my @keys = @{ $result->keys };
+ my @keys = $result->keys;
 
 Retrieve the column names of the records this result contains.
 
 =head2 list
 
- my @records = @{ $result->list };
+ my @records = $result->list;
+ my $records = $result->list;  # arrayref
 
 Return the entire list of all L<Record|Neo4j::Driver::Record>s that
 remain in the result stream. Calling this method exhausts the result
@@ -308,6 +309,8 @@ stream.
 
 The list is internally buffered by this class. Calling this method
 multiple times returns the buffered list.
+
+This method returns an array reference if called in scalar context.
 
 =head2 single
 
@@ -350,13 +353,12 @@ experimental features. These are subject to unannounced modification
 or removal in future versions. Expect your code to break if you
 depend upon these features.
 
-=head2 Calling in list context
+=head2 Calling in scalar context
 
- my @keys = $result->keys;
- my @records = $result->list;
+ my $keys = $result->keys;  # arrayref
 
-The C<keys> and C<list> methods try to Do What You Mean if called in
-list context.
+The C<keys()> method returns an array reference if called in scalar
+context.
 
 =head2 Control result stream attachment
 

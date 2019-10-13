@@ -43,9 +43,9 @@ EXPLAIN MATCH (n), (m) RETURN n, m
 END
 	lives_ok { $r = $s->run($q)->summary; } 'get summary with plan';
 	lives_and { is_deeply $r->statement->{parameters}, {} } 'no params';
-	my ($plan, $notifications);
+	my ($plan, @notifications);
 	lives_and { ok $plan = $r->plan; } 'get plan';
-	lives_and { ok $notifications = $r->notifications; } 'get notifications';
+	lives_and { ok @notifications = $r->notifications; } 'get notifications';
 };
 
 

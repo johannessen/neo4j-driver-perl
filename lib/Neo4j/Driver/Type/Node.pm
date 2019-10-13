@@ -7,6 +7,9 @@ package Neo4j::Driver::Type::Node;
 # ABSTRACT: Describes a node from a Neo4j graph
 
 
+use Carp qw(croak);
+
+
 sub get {
 	my ($self, $property) = @_;
 	
@@ -17,8 +20,8 @@ sub get {
 sub labels {
 	my ($self) = @_;
 	
-	return @{ $self->{_meta}->{labels} } if wantarray;
-	return $self->{_meta}->{labels};
+	croak 'labels() in scalar context not supported' unless wantarray;
+	return @{ $self->{_meta}->{labels} };
 }
 
 
@@ -56,7 +59,7 @@ __END__
  
  say 'Movie # ', $node->id(), ' :';
  say '   ', $node->get('name'), ' / ', $node->get('year');
- say '   Labels: ', join ', ', @{ $node->labels };
+ say '   Labels: ', join ', ', $node->labels;
 
 =head1 DESCRIPTION
 
@@ -102,7 +105,7 @@ Nodes and relationships do not share the same ID space.
 
 =head2 labels
 
- my @labels = @{ $node->labels };
+ my @labels = $node->labels;
 
 Return all labels of this node.
 
@@ -120,12 +123,11 @@ features. These are subject to unannounced modification or removal
 in future versions. Expect your code to break if you depend upon
 these features.
 
-=head2 Calling in list context
+=head2 Calling in scalar context
 
- my @labels = $node->labels;
+ my $labels = $node->labels;  # fails
 
-The C<labels()> method tries to Do What You Mean if called in list
-context.
+The C<labels()> method C<die>s if called in scalar context.
 
 =head2 Direct data structure access
 

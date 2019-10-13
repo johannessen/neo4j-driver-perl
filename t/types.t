@@ -140,7 +140,7 @@ subtest 'Structural types: node meta data and props' => sub {
 	isnt $n2->id, $n1->id, 'node 2 id distinct';
 	is $n1->get('test'), 'node1', 'node 1 get';
 	is $n2->properties->{test}, 'node2', 'node 2 properties';
-	ok grep(m/^Test$/, @{ $n1->labels }), 'node 1 label';
+	ok grep(m/^Test$/, $n1->labels), 'node 1 label';
 };
 
 
@@ -170,12 +170,12 @@ subtest 'Structural types: path accessors' => sub {
 	is ref $p, 'Neo4j::Driver::Type::Path', 'path blessed';
 	SKIP: {
 		skip '(path not blessed)', 6 unless ref $p eq 'Neo4j::Driver::Type::Path';
-		ok my $nodes = $p->nodes, 'get nodes';
-		ok my $rels = $p->relationships, 'get rels';
-		is scalar @$nodes, 3, 'node count';
-		is scalar @$rels, 2, 'rels count';
-		is $nodes->[0]->id, $nodes->[2]->id, 'path circular';
-		isnt $rels->[0]->id, $rels->[1]->id, 'rels distinct';
+		ok my @nodes = $p->nodes, 'get nodes';
+		ok my @rels = $p->relationships, 'get rels';
+		is scalar @nodes, 3, 'node count';
+		is scalar @rels, 2, 'rels count';
+		is $nodes[0]->id, $nodes[2]->id, 'path circular';
+		isnt $rels[0]->id, $rels[1]->id, 'rels distinct';
 	}
 };
 
