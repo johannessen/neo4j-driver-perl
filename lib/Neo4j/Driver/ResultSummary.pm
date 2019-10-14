@@ -160,7 +160,7 @@ these features.
  my $notifications = $summary->notifications;  # arrayref
 
 The C<notifications()> method returns an array reference if called in
-scalar context.
+scalar context, or C<undef> if there are no notifications.
 
 =head1 SEE ALSO
 

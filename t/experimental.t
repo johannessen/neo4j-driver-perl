@@ -41,7 +41,7 @@ END
 	
 	# notifications
 	lives_ok { $a = 0;  $a = $s->run($q)->summary->notifications; } 'no notifications';
-	lives_and { is scalar @$a, 0; } 'no notifications array size';
+	lives_and { is $a, undef; } 'no notifications array size';
 	$q = <<END;
 EXPLAIN MATCH (n), (m) RETURN n, m
 END
