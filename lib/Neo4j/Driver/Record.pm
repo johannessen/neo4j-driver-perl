@@ -198,6 +198,9 @@ server provide.
 =head1 SEE ALSO
 
 L<Neo4j::Driver>,
+L<Neo4j::Driver::Type::Node>,
+L<Neo4j::Driver::Type::Relationship>,
+L<Neo4j::Driver::Type::Path>,
 L<Neo4j Java Driver|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/v1/Record.html>,
 L<Neo4j JavaScript Driver|https://neo4j.com/docs/api/javascript-driver/current/class/src/v1/record.js~Record.html>,
 L<Neo4j .NET Driver|https://neo4j.com/docs/api/dotnet-driver/current/html/dfbf8228-17a4-99ed-58bb-81b638ae788a.htm>

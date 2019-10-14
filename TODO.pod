@@ -16,8 +16,6 @@ This software has pre-release quality. The interface is not yet stable.
 =item * Consider if the 6 second timeout is too long. It should in fact be as
 short as reasonably possible.
 
-=item * Should we plan to support Casual Clusters?
-
 =item * The driver should accept a setting that specifies the expected server
 version. The driver could use this to work around server bugs or known
 differences between versions, such as the Cypher parameter syntax. If not used,
@@ -55,6 +53,15 @@ name because C<begin_transaction> is well established in the official Neo4j
 drivers, and after all this is I<not> C<DBI>. However, as this is the only
 (almost) exact equivalence with C<DBI> that we have, we should perhaps offer
 C<begin_work> as an experimental alias at least.
+
+=item * Consider whether to offer
+L<transaction functions|https://neo4j.com/docs/driver-manual/current/sessions-transactions/#driver-transactions-transaction-functions>.
+If available, these should consist of subrefs passed to methods called
+C<write_transaction> and C<read_transaction>. These access modes are only an
+optimisation for Enterprise features. We don't target those at present, but
+C<read_transaction> could then eventually be routed to a high-performance
+read-only server once clusters are supported. It would make sense to offer
+both methods right away even though initially they'd work exactly the same.
 
 =back
 

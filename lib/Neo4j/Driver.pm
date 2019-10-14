@@ -128,10 +128,9 @@ __END__
 =head1 DESCRIPTION
 
 This is an unofficial Perl implementation of the
-L<Neo4j Driver API|https://neo4j.com/docs/developer-manual/current/drivers/#driver-use-the-driver>.
-It enables interacting with a Neo4j database server using more or
-less the same classes and method calls as the official Neo4j drivers
-do.
+L<Neo4j Driver API|https://neo4j.com/docs/driver-manual/current/>.
+It enables interacting with a Neo4j database server using the
+same classes and method calls as the official Neo4j drivers do.
 
 This driver extends the uniformity across languages, which is a
 stated goal of the Neo4j Driver API, to Perl. The downside is that
@@ -140,8 +139,19 @@ existing L<REST::Neo4p> module does. Nor does it offer any L<DBI>
 integration. However, it avoids the legacy C<cypher> endpoint,
 assuring compatibility with future Neo4j versions.
 
-B<This software has pre-release quality. There is no schedule for
-further development. The interface is not yet stable.>
+B<As of version 0.13, the interface of this software may be
+considered stable.>
+
+However, bugs may still exist. Also, experimental features may be
+changed or deprecated at any time. If you find yourself reliant on
+an experimental feature, please file a new issue requesting that it
+be made stable.
+
+There is an ongoing effort to clean up the experimental features.
+For each of them, the goal is to eventually either declare it stable
+or deprecate it. There is also ongoing work to further improve
+general stability and reliability of this software. However, there
+is no schedule for the completion of these efforts.
 
 =head1 METHODS
 

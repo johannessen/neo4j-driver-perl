@@ -176,15 +176,6 @@ transaction is open. Since it is not clear to me if this is
 intended behaviour when the Bolt protocol is used, this feature
 is listed as experimental.
 
-=head1 BUGS
-
-The implementation of sessions in this driver is incomplete. In
-particular, some of the official drivers implement restrictions on
-the count of transactions that can be used per session and offer
-additional methods to manage transactions.
-
-See the F<TODO> document and Github for details.
-
 =head1 SECURITY CONSIDERATIONS
 
 Both L<Session|Neo4j::Driver::Session> as well as

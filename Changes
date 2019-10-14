@@ -1,5 +1,6 @@
-0.13, 2019-10-13
+0.13, 2019-10-14
 
+ - declare API stable
  - add record streaming interface to StatementResult
  - implement Cypher type system, returning Neo4j entities as blessed objects
  - methods returning lists now expect to be called in list context
