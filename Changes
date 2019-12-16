@@ -1,3 +1,9 @@
+Revision history for Driver::Neo4j
+
+0.1301, 2019-12-16
+
+ - deprecate experimental close() method
+
 0.13, 2019-10-14
 
  - declare API stable

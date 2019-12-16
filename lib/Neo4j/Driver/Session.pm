@@ -43,6 +43,7 @@ sub run {
 
 
 sub close {
+	warnings::warnif deprecated => __PACKAGE__ . "->close() is deprecated";
 }
 
 
@@ -127,14 +128,6 @@ these features.
 
 The C<run> method tries to Do What You Mean if called in list
 context.
-
-=head2 Close method
-
- $session->close;  # no-op
-
-All resources opened by this driver are closed automatically once
-they are no longer required. Explicit calls to C<close()> are neither
-required nor useful.
 
 =head2 ServerInfo
 

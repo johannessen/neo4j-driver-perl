@@ -101,6 +101,7 @@ sub session {
 
 
 sub close {
+	warnings::warnif deprecated => __PACKAGE__ . "->close() is deprecated";
 }
 
 
@@ -247,14 +248,6 @@ L<LWP::UserAgent> and L<IO::Socket::SSL>.
 See also the
 L<Neo4j Operations Manual|https://neo4j.com/docs/operations-manual/current/security/>
 for details on Neo4j network security.
-
-=head2 Close method
-
- $driver->close;  # no-op
-
-All resources opened by this driver are closed automatically once
-they are no longer required. Explicit calls to C<close()> are neither
-required nor useful.
 
 =head2 HTTP Timeout
 
