@@ -20,7 +20,7 @@ my $s = $driver->session;
 # those features or moved elsewhere once the features are documented
 # and thus officially supported.
 
-use Test::More 0.96 tests => 13;
+use Test::More 0.96 tests => 12;
 use Test::Exception;
 use Test::Warnings qw(warnings :no_end_test);
 
@@ -108,24 +108,6 @@ subtest 'multiple statements as array' => sub {
 		lives_and { is $r->[1]->single->get, 23 } 'retrieve value';
 		# TODO: also check statement order in summary
 	};
-};
-
-
-subtest 'die_on_error = 0' => sub {
-	# die_on_error currently only affects upstream errors.
-	# If this option is ever officially supported, one would expect
-	# it to also affect all croaks this driver issues by itself.
-	# The latter are not yet covered by these tests.
-	plan tests => 3;
-	my $t = $driver->session->begin_transaction;
-	$t->{transport}->{die_on_error} = 0;
-	lives_and { is $t->run('RETURN 42, "live on error"')->single->get(0), 42 } 'no error';
-	lives_and { warnings { is $t->run('iced manifolds.')->size, 0 } } 'cypher syntax error';
-	lives_ok { warnings {
-		my $d = Neo4j::Test->driver_no_host;
-		$d->{die_on_error} = 0;
-		$d->session->run;
-	} } 'no connection';
 };
 
 

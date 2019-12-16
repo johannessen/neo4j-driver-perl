@@ -87,6 +87,8 @@ sub config {
 sub session {
 	my ($self) = @_;
 	
+	warnings::warnif deprecated => __PACKAGE__ . "->{die_on_error} is deprecated" unless $self->{die_on_error};
+	
 	my $transport;
 	if ($self->{uri}->scheme eq 'bolt') {
 		load 'Neo4j::Driver::Transport::Bolt';
@@ -266,7 +268,6 @@ The default timeout currently is 6 seconds.
  
  my $session1 = $driver->session;
  $driver->{http_timeout} = 30;
- $driver->{die_on_error} = 0;
  my $session2 = $driver->session;
 
 The official Neo4j drivers are explicitly designed to be immutable.
@@ -276,32 +277,6 @@ mutability, but applications shouldn't depend upon it.
 The modifications will not be picked up by existing sessions. Only
 sessions that are newly created after making the changes will be
 affected.
-
-=head2 Suppress exceptions
-
- my $driver = Neo4j::Driver->new;
- $driver->{die_on_error} = 0;
- my $result = $driver->session->run('...');
-
-The default value of the C<die_on_error> attribute is C<1>. Setting
-this to C<0> causes the driver to no longer die on I<server> errors.
-
-This is much less useful than it sounds. Not only is the
-L<StatementResult|Neo4j::Driver::StatementResult> structure not
-well-defined for such situations, but also the internal state of the
-L<Transaction|Neo4j::Driver::Transaction> object may be corrupted.
-For example, when a minor server error occurs on the first request
-(which would normally establish the connection), the expected
-C<Location> header may be missing from the error message and the
-transaction may therefore be marked as closed, even though it still
-is open.
-
-Additionally, I<client> errors (such as trying to call C<single()> on
-a result with multiple result records) currently still will cause the
-driver to die.
-
-This feature will likely be removed in a future version. Use C<eval>,
-L<Try::Tiny> or similar instead.
 
 =head1 ENVIRONMENT
 

@@ -83,14 +83,6 @@ However, this is probably slower and would likely need to be run for each and
 every POST including those with C<2xx> status codes, which might not be
 acceptable.
 
-=item * Disabling C<die_on_error> probably makes errors harder to find, but has
-no clear advantages. In particular, errors are often missing the proper header
-fields for the commit URL etc., so it's likely the failed request doesn't
-produce useful return values and the next request will fail anyway with a
-misleading error message due to the URLs being corrupted. This feature is not
-present in the official drivers anyway; it was inspired by Neo4p and should
-probably be removed completely.
-
 =item * Consider supporting re-using C<Record> objects for query parameters in
 C<run>. The Java and C# drivers do this.
 
