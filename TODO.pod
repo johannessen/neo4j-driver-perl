@@ -9,11 +9,6 @@ This software has pre-release quality. The interface is not yet stable.
 
 =over
 
-=item * Write tests.
-
-=item * Consider if the 6 second timeout is too long. It should in fact be as
-short as reasonably possible.
-
 =item * The driver should accept a setting that specifies the expected server
 version. The driver could use this to work around server bugs or known
 differences between versions, such as the Cypher parameter syntax. If not used,
@@ -23,12 +18,9 @@ probably best to rely just on C<< version->declare >>. (The exact behaviour
 must be documented.) That could look like this:
 C<< $d = Neo4j::Driver->new; $d->{server} = 'v3.2.1'; >>
 
-=item * An C<option> method could be provided to supply rarely needed settings
-to the driver or session, such as the network timeout, the expected server
-version or whether or not to request graph results. So far, such settings are
-set using attributes. An C<option> method would be chainable by returning
-C<$self>. Using it could look like this:
-C<< $d = Neo4j::Driver->new->option(timeout => 10)->basic_auth('neo4j', 'neo4j') >>
+=item * A uri string only containing protocol should yield the default host and
+port. For example, C<< Neo4j::Driver->new('bolt:') >> should be enough to get
+a driver configured for C<bolt://localhost:7687>.
 
 =back
 

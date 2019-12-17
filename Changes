@@ -1,7 +1,8 @@
 Revision history for Driver::Neo4j
 
-0.1301, 2019-12-16
+0.1302, 2019-12-18
 
+ - new syntax to specify the network timeout and other config options
  - deprecate experimental close() method
  - deprecate experimental suppression of exceptions (die_on_error = 0)
 

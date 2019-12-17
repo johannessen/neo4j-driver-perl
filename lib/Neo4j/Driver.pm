@@ -29,10 +29,13 @@ my %NEO4J_DEFAULT_PORT = (
 	https => 7473,
 );
 
+my %OPTIONS = (
+	ca_file => 'ca_file',
+	timeout => 'http_timeout',
+);
+
 my %DEFAULTS = (
 	die_on_error => 1,
-	http_timeout => 6,  # seconds
-	ca_file => undef,
 );
 
 
@@ -76,10 +79,28 @@ sub basic_auth {
 
 
 sub config {
-	my ($self, $key, $value) = @_;
+	my ($self, @options) = @_;
 	
-	croak "Config option '$key' unsupported" unless grep m/^$key$/, keys %DEFAULTS;
-	$self->{$key} = $value;
+	if (@options < 2) {
+		# get config option
+		my $key = $options[0] // '';
+		croak "Unsupported config option: $key" unless grep m/^$key$/, keys %OPTIONS;
+		return $self->{$OPTIONS{$key}};
+	}
+	
+	croak "Odd number of elements in config hash" if @options & 1;
+	my %options = @options;
+	
+	my @unsupported = ();
+	foreach my $key (keys %options) {
+		push @unsupported, $key unless grep m/^$key$/, keys %OPTIONS;
+	}
+	croak "Unsupported config option: " . join ", ", sort @unsupported if @unsupported;
+	
+	# set config option
+	foreach my $key (keys %options) {
+		$self->{$OPTIONS{$key}} = $options{$key};
+	}
 	return $self;
 }
 
@@ -170,6 +191,25 @@ chaining is possible.
 
  my $session = $driver->basic_auth('neo4j', 'password')->session;
 
+=head2 config
+
+ $driver->config( option1 => 'foo', option2 => 'bar' );
+
+Sets the specified configuration option or options on a
+L<Neo4j::Driver> object. The options are given in hash syntax.
+This method returns the modified object, so that method chaining
+is possible.
+
+ my $session = $driver->config(timeout => 60)->session;
+
+See below for an explanation of
+L<all supported configuration options|/"CONFIGURATION OPTIONS">.
+
+Calling this method with just a single parameter will return the
+current value of the config option named by the parameter.
+
+ my $timeout = $driver->config('timeout');
+
 =head2 new
 
  my $driver = Neo4j::Driver->new('http://localhost');
@@ -217,6 +257,7 @@ The design goal is for this driver to eventually offer equal support
 for Bolt and HTTP. At this time, using Bolt with this driver is not
 recommended, although it sorta-kinda works. The biggest issues
 include: Unicode is not supported in L<Neo4j::Bolt>,
+setting a custom timeout is not supported in L<Neo4j::Bolt>,
 C<libneo4j-client> error reporting is unreliable, summary
 information reported by L<Neo4j::Bolt> is incomplete, and graph meta
 data supplied by L<Neo4j::Bolt> is unreliable and has a different
@@ -251,23 +292,13 @@ See also the
 L<Neo4j Operations Manual|https://neo4j.com/docs/operations-manual/current/security/>
 for details on Neo4j network security.
 
-=head2 HTTP Timeout
-
- $driver->{http_timeout} = 10;  # seconds
-
-A timeout in seconds for making HTTP connections to the Neo4j server.
-If a connection cannot be established before timeout, a local error
-will be triggered by this client.
-
-The default timeout currently is 6 seconds.
-
 =head2 Mutability
 
  my $session1 = $driver->basic_auth('user1', 'password')->session;
  my $session2 = $driver->basic_auth('user2', 'password')->session;
  
  my $session1 = $driver->session;
- $driver->{http_timeout} = 30;
+ $driver->config(timeout => 30);
  my $session2 = $driver->session;
 
 The official Neo4j drivers are explicitly designed to be immutable.
@@ -277,6 +308,25 @@ mutability, but applications shouldn't depend upon it.
 The modifications will not be picked up by existing sessions. Only
 sessions that are newly created after making the changes will be
 affected.
+
+=head1 CONFIGURATION OPTIONS
+
+L<Neo4j::Driver> implements the following configuration options.
+
+=head2 timeout
+
+ $driver->config(timeout => 60);  # seconds
+
+Specifies the connection timeout. The semantics of this config
+option vary by network library. Its default value is therefore
+not defined here and is subject to change.
+
+For details, see L<LWP::UserAgent/"timeout"> when using HTTP or
+L<select(2)> when using Bolt.
+
+The old C<< $driver->{http_timeout} >> syntax remains supported
+for the time being in order to ensure backwards compatibility,
+but its use is discouraged and it may be deprecated in future.
 
 =head1 ENVIRONMENT
 

@@ -25,6 +25,7 @@ sub driver_maybe {
 	my $user = $ENV{TEST_NEO4J_USERNAME} || 'neo4j';
 	my $pass = $ENV{TEST_NEO4J_PASSWORD};
 	$driver->basic_auth($user, $pass);
+	$driver->config(timeout => 2);  # 2 seconds timeout may speed up testing
 	
 	$bolt = $driver->{uri} && $driver->{uri}->scheme eq 'bolt';
 	if (! $ENV{TEST_NEO4J_PASSWORD} && ! $bolt) {
