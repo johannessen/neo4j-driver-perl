@@ -257,6 +257,7 @@ The design goal is for this driver to eventually offer equal support
 for Bolt and HTTP. At this time, using Bolt with this driver is not
 recommended, although it sorta-kinda works. The biggest issues
 include: Unicode is not supported in L<Neo4j::Bolt>,
+the C<libneo4j-client> backend currently doesn't support Neo4j 4,
 setting a custom timeout is not supported in L<Neo4j::Bolt>,
 C<libneo4j-client> error reporting is unreliable, summary
 information reported by L<Neo4j::Bolt> is incomplete, and graph meta
