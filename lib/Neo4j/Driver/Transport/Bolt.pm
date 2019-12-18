@@ -41,6 +41,7 @@ sub new {
 	return bless {
 		connection => $cxn,
 		uri => $driver->{uri},
+		cypher_types => $driver->{cypher_types},
 	}, $class;
 }
 
@@ -84,6 +85,7 @@ sub run {
 				json => $self->_gather_results($stream),
 				deep_bless => \&_deep_bless,
 				statement => $statement_json,
+				cypher_types => $self->{cypher_types},
 			});
 			return ($result);
 		}
@@ -95,6 +97,7 @@ sub run {
 			json => { columns => \@names },
 			deep_bless => \&_deep_bless,
 			statement => $statement_json,
+			cypher_types => $self->{cypher_types},
 		});
 	}
 	
@@ -186,24 +189,26 @@ sub version {
 
 
 sub _deep_bless {
-	my ($data) = @_;
+	my ($cypher_types, $data) = @_;
 	
 	if (ref $data eq 'HASH' && defined $data->{_node}) {  # node
-		bless $data, 'Neo4j::Driver::Type::Node';
+		bless $data, $cypher_types->{node};
 		$data->{_meta} = {
 			id => $data->{_node},
 			labels => $data->{_labels},
 		};
+		$cypher_types->{init}->($data) if $cypher_types->{init};
 		return $data;
 	}
 	if (ref $data eq 'HASH' && defined $data->{_relationship}) {  # relationship
-		bless $data, 'Neo4j::Driver::Type::Relationship';
+		bless $data, $cypher_types->{relationship};
 		$data->{_meta} = {
 			id => $data->{_relationship},
 			start => $data->{_start},
 			end => $data->{_end},
 			type => $data->{_type},
 		};
+		$cypher_types->{init}->($data) if $cypher_types->{init};
 		return $data;
 	}
 	
@@ -216,13 +221,13 @@ sub _deep_bless {
 	
 	if (ref $data eq 'ARRAY') {  # array
 		foreach my $i ( 0 .. $#{$data} ) {
-			$data->[$i] = _deep_bless($data->[$i]);
+			$data->[$i] = _deep_bless($cypher_types, $data->[$i]);
 		}
 		return $data;
 	}
 	if (ref $data eq 'HASH') {  # and neither node nor relationship ==> map
 		foreach my $key ( keys %$data ) {
-			$data->{$key} = _deep_bless($data->{$key});
+			$data->{$key} = _deep_bless($cypher_types, $data->{$key});
 		}
 		return $data;
 	}

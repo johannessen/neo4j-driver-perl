@@ -20,7 +20,7 @@ my $s = $driver->session;
 # those features or moved elsewhere once the features are documented
 # and thus officially supported.
 
-use Test::More 0.96 tests => 12;
+use Test::More 0.96 tests => 13;
 use Test::Exception;
 use Test::Warnings qw(warnings :no_end_test);
 
@@ -277,6 +277,27 @@ END
 	lives_and {
 		ok grep {$_->{properties}->{name} eq $r->get('c')->get('name')} @$n;
 	} 'node c found';
+};
+
+
+subtest 'custom cypher types' => sub {
+	plan tests => 4;
+	my $e_exact = exp(1);
+	my $d = Neo4j::Test->driver;
+	lives_ok {
+		$d->config(cypher_types => {
+			node => 'Local::Node',
+			init => sub { my $self = shift; $self->{e_approx} = $e_exact },
+		});
+	} 'cypher types config';
+	$r = 0;
+	lives_ok {
+		my $t = $d->session->begin_transaction;
+		$r = $t->run('CREATE (a {e_approx:3}) RETURN a')->single->get('a');
+	} 'cypher types query';
+	is ref($r), 'Local::Node', 'cypher type ref';
+	is $r->{e_approx}, $e_exact, 'cypher type init';  # ->{} property access is deprecated
+	# TODO: test coverage for other types
 };
 
 

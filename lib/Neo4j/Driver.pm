@@ -31,10 +31,18 @@ my %NEO4J_DEFAULT_PORT = (
 
 my %OPTIONS = (
 	ca_file => 'ca_file',
+	cypher_types => 'cypher_types',
 	timeout => 'http_timeout',
 );
 
 my %DEFAULTS = (
+	cypher_types => {
+		node => 'Neo4j::Driver::Type::Node',
+		relationship => 'Neo4j::Driver::Type::Relationship',
+		path => 'Neo4j::Driver::Type::Path',
+		point => 'Neo4j::Driver::Type::Point',
+		temporal => 'Neo4j::Driver::Type::Temporal',
+	},
 	die_on_error => 1,
 );
 
@@ -309,6 +317,45 @@ mutability, but applications shouldn't depend upon it.
 The modifications will not be picked up by existing sessions. Only
 sessions that are newly created after making the changes will be
 affected.
+
+=head2 Type system customisation
+
+ $driver->config(cypher_types => {
+   node => 'Local::Node',
+   relationship => 'Local::Relationship',
+   path => 'Local::Path',
+   point => 'Local::Point',
+   temporal => 'Local::Temporal',
+   init => sub { my $object = shift; ... },
+ });
+
+The package names used for C<bless>ing objects in query results can be
+modified. This allows clients to add their own methods to such objects.
+
+Clients must make sure their custom type packages are subtypes of the
+base type packages that this module provides (S<e. g.> using C<@ISA>):
+
+=over
+
+=item * L<Neo4j::Driver::Type::Node>
+
+=item * L<Neo4j::Driver::Type::Relationship>
+
+=item * L<Neo4j::Driver::Type::Path>
+
+=item * L<Neo4j::Driver::Type::Point>
+
+=item * L<Neo4j::Driver::Type::Temporal>
+
+=back
+
+Clients may only use the documented API to access the data in the base
+type. Direct data structure access might also work, but is unsupported
+and discouraged because it makes your code prone to fail when any
+internals change in the implementation of Neo4j::Driver. For those
+objects that are implemented as blessed hash refs, clients may use any
+hash keys that beginn with two underscores (C<__>) to store private
+data. All other hash keys are reserved for use by Neo4j::Driver.
 
 =head1 CONFIGURATION OPTIONS
 
