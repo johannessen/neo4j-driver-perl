@@ -55,7 +55,7 @@ subtest 'die_on_error = 0' => sub {
 	# failing statement
 	$w = '';
 	lives_ok { $w = warning { is $t->run('iced manifolds.')->size, 0 }; } 'execute cypher syntax error';
-	(like $w, qr/\bStatement\b.*\bSyntax.?Error\b/i, 'cypher syntax error') or diag 'got warning(s): ', explain($w);
+	(like $w, qr/\bStatement\b.*Syntax/i, 'cypher syntax error') or diag 'got warning(s): ', explain($w);
 	# connection issue
 	$w = '';
 	lives_ok { $w = warning {
