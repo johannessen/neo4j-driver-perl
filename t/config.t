@@ -16,7 +16,7 @@ BEGIN {
 # The Neo4j::Driver package itself mostly deals with configuration
 # in the form of the server URL, auth credentials and other options.
 
-use Test::More 0.96 tests => 5 + 1;
+use Test::More 0.96 tests => 6 + 1;
 use Test::Exception;
 use Test::Warnings;
 
@@ -120,6 +120,35 @@ subtest 'illegal uris' => sub {
 	throws_ok {
 		Neo4j::Driver->new('illegal:');
 	} qr/\bOnly\b.*\bhttp\b.*\bsupported\b/i, 'illegal scheme only';
+};
+
+
+subtest 'cypher filter' => sub {
+	plan tests => 17;
+	my ($t, @q);
+	lives_ok { $d = 0; $d = Neo4j::Driver->new(); } 'new driver 1';
+	lives_ok { $d->config(cypher_filter => 'params'); } 'set filter';
+	lives_ok { $t = Neo4j::Driver::Transaction->new( $d->session ); } 'new tx 1';
+	@q = ('RETURN {ab}, {c}, {cd}', ab => 17, c => 19, cd => 23);
+	lives_ok { $r = 0; $r = $t->_prepare(@q); } 'prepare simple';
+	is $r->{statement}, 'RETURN $ab, $c, $cd', 'filtered simple';
+	@q = ('CREATE (a) RETURN {}, {a:a}, {a}, [a]', a => 17);
+	lives_ok { $r = 0; $r = $t->_prepare(@q); } 'prepare composite';
+	is $r->{statement}, 'CREATE (a) RETURN {}, {a:a}, $a, [a]', 'filtered composite';
+	lives_ok { $r = 0; $r = $t->_prepare('RETURN 42'); } 'prepare no params';
+	is $r->{statement}, 'RETURN 42', 'filtered no params';
+	lives_ok { $d = 0; $d = Neo4j::Driver->new(); } 'new driver 2';
+	lives_ok { $d->config(cypher_filter => 'coffee'); } 'set filter unkown name';
+	lives_ok { $t = 0; $t = Neo4j::Driver::Transaction->new( $d->session ); } 'new tx 2';
+	throws_ok {
+		$r = 0; $r = $t->_prepare('RETURN 42');
+	} qr/\bUnimplemented cypher filter\b/i, 'unprepared filter unkown name';
+	# no filter (for completeness)
+	lives_ok { $d = 0; $d = Neo4j::Driver->new(); } 'new driver 3';
+	lives_ok { $t = 0; $t = Neo4j::Driver::Transaction->new( $d->session ); } 'new tx 3';
+	@q = ('RETURN {a}', a => 17);
+	lives_ok { $r = 0; $r = $t->_prepare(@q); } 'prepare unfiltered';
+	is $r->{statement}, 'RETURN {a}', 'unfiltered';
 };
 
 

@@ -41,6 +41,7 @@ sub new {
 	my $self = bless {
 		die_on_error => $driver->{die_on_error},
 		cypher_types => $driver->{cypher_types},
+		cypher_filter => $driver->{cypher_filter},
 	}, $class;
 	
 	# If the Driver object knows how to create the REST client,
@@ -77,6 +78,14 @@ sub new {
 # preparing each statement individually.
 sub prepare {
 	my ($self, $tx, $query, $parameters) = @_;
+	
+	if ($self->{cypher_filter}) {
+		croak "Unimplemented cypher filter '$self->{cypher_filter}'" if $self->{cypher_filter} ne 'params';
+		if (defined $parameters) {
+			my $params = join '|', keys %$parameters;
+			$query =~ s/{($params)}/\$$1/g;
+		}
+	}
 	
 	my $json = { statement => '' . $query };
 	$json->{resultDataContents} = $RESULT_DATA_CONTENTS;

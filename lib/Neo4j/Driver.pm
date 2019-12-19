@@ -31,6 +31,7 @@ my %NEO4J_DEFAULT_PORT = (
 
 my %OPTIONS = (
 	ca_file => 'ca_file',
+	cypher_filter => 'cypher_filter',
 	cypher_types => 'cypher_types',
 	timeout => 'http_timeout',
 );
@@ -317,6 +318,15 @@ mutability, but applications shouldn't depend upon it.
 The modifications will not be picked up by existing sessions. Only
 sessions that are newly created after making the changes will be
 affected.
+
+=head2 Parameter syntax conversion
+
+ $driver->config(cypher_filter => 'params');
+
+When this option is set, the driver automatically uses a regular
+expression to convert the old Cypher parameter syntax C<{param}>
+supported by Neo4j S<versions 2 and 3> to the new syntax C<$param>
+supported by Neo4j S<versions 3 and 4>.
 
 =head2 Type system customisation
 
