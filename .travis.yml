@@ -8,19 +8,19 @@ language: perl
 matrix:
   include:
     - perl: "5.30"
-      env: NEO4J=3.5.9 JAVA=11
+      env: NEO4J=4.0.0-rc01 JAVA=11
       dist: bionic
     - perl: "5.28.2"
-      env: NEO4J=3.4.15 JAVA=8
+      env: NEO4J=3.5.13 JAVA=8
       dist: xenial
     - perl: "5.22.4"
       env: NEO4J=2.3.12 JAVA=7
       dist: trusty
     - perl: "5.10"
-      env: NEO4J=3.2.14 JAVA=8
+      env: NEO4J=3.4.17 JAVA=8
       dist: trusty
   allow_failures:
-    - perl: "5.10"
+    - env: NEO4J=4.0.0-rc01 JAVA=11
   fast_finish: true
 
 git:

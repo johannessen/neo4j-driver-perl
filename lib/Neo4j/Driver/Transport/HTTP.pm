@@ -243,9 +243,11 @@ sub address {
 sub version {
 	my ($self) = @_;
 	
-	my $json = $self->{client}->GET( $SERVICE_ROOT_ENDPOINT )->responseContent();
-	my $neo4j_version = decode_json($json)->{neo4j_version};
-	return "Neo4j/$neo4j_version";
+	foreach my $endpoint ( '/', $SERVICE_ROOT_ENDPOINT ) {
+		my $json = $self->{client}->GET( $endpoint )->responseContent();
+		my $neo4j_version = decode_json($json)->{neo4j_version};
+		return "Neo4j/$neo4j_version" if $neo4j_version;
+	}
 }
 
 
