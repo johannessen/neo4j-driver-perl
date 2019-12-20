@@ -53,6 +53,7 @@ sub new {
 	
 	if ($uri) {
 		$uri =~ s|^|http://| if $uri !~ m{:|/};
+		$uri =~ s|$|//localhost| if $uri =~ m{^[a-z]+:$};
 		$uri = URI->new($uri);
 		
 		if ($uri->scheme eq 'bolt') {
@@ -236,11 +237,12 @@ Only the C<http> URI scheme is currently supported.
 
 If a part of the URI or even the entire URI is missing, suitable
 default values will be substituted. In particular, the host name
-C<localhost> will be used as default, along with the default port
-of the selected protocol.
+C<localhost> and the protocol C<http> will be used as defaults;
+if no port is specified, the protocol's default port will be used.
 
  # all of these are semantically equal
  my $driver = Neo4j::Driver->new;
+ my $driver = Neo4j::Driver->new('http:');
  my $driver = Neo4j::Driver->new('localhost');
  my $driver = Neo4j::Driver->new('http://localhost');
  my $driver = Neo4j::Driver->new('http://localhost:7474');

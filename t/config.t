@@ -84,10 +84,8 @@ subtest 'uri variants' => sub {
 	lives_and { is $d->{uri}, 'http://test1:9999'; } 'http full uri';
 	lives_ok { $d = 0; $d = Neo4j::Driver->new('http://test2'); } 'http default port lives';
 	lives_and { is $d->{uri}, 'http://test2:7474'; } 'http default port';
-	TODO: { local $TODO = 'uri string only containing protocol should yield default host and port';
 	lives_ok { $d = 0; $d = Neo4j::Driver->new('http:'); } 'http scheme only lives';
 	lives_and { is $d->{uri}, 'http://localhost:7474'; } 'http scheme only';
-	};
 	lives_ok { $d = 0; $d = Neo4j::Driver->new('test4'); } 'host only lives';
 	lives_and { is $d->{uri}, 'http://test4:7474'; } 'host only';
 	lives_ok { $d = 0; $d = Neo4j::Driver->new(''); } 'empty lives';
@@ -97,17 +95,13 @@ subtest 'uri variants' => sub {
 	lives_and { is $d->{uri}, 'https://test6:9993'; } 'https full uri';
 	lives_ok { $d = 0; $d = Neo4j::Driver->new('https://test7'); } 'https default port lives';
 	lives_and { is $d->{uri}, 'https://test7:7473'; } 'https default port';
-	TODO: { local $TODO = 'uri string only containing protocol should yield default host and port';
 	lives_ok { $d = 0; $d = Neo4j::Driver->new('https:'); } 'https scheme only lives';
 	lives_and { is $d->{uri}, 'https://localhost:7473'; } 'https scheme only';
-	};
 	# bolt scheme
 	eval { $d = 0; $d = Neo4j::Driver->new('bolt://test9'); };
 	ok $@ =~ m/Neo4j::Bolt/ || ! $@ && $d->{uri} eq 'bolt://test9:7687', 'bolt default port';
-	TODO: { local $TODO = 'uri string only containing protocol should yield default host and port';
 	lives_ok { $d = 0; $d = Neo4j::Driver->new('bolt:'); } 'bolt scheme only lives';
 	lives_and { is $d->{uri}, 'bolt://localhost:7687'; } 'bolt scheme only';
-	};
 };
 
 
