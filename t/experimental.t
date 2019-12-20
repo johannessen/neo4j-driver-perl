@@ -283,7 +283,7 @@ END
 subtest 'custom cypher types' => sub {
 	plan tests => 4;
 	my $e_exact = exp(1);
-	my $d = Neo4j::Test->driver;
+	my $d = Neo4j::Test->driver_maybe;
 	lives_ok {
 		$d->config(cypher_types => {
 			node => 'Local::Node',

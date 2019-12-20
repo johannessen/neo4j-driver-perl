@@ -97,6 +97,7 @@ sub config {
 		return $self->{$OPTIONS{$key}};
 	}
 	
+	croak "Unsupported sequence: call config() before session()" if $self->{session};
 	croak "Odd number of elements in config hash" if @options & 1;
 	my %options = @options;
 	
@@ -127,6 +128,7 @@ sub session {
 	else {
 		$transport = Neo4j::Driver::Transport::HTTP->new($self);
 	}
+	$self->{session} = 1;
 	
 	return Neo4j::Driver::Session->new($transport);
 }
@@ -213,6 +215,8 @@ is possible.
 
 See below for an explanation of
 L<all supported configuration options|/"CONFIGURATION OPTIONS">.
+Setting configuration options on a driver is only allowed before
+creating the driver's first session.
 
 Calling this method with just a single parameter will return the
 current value of the config option named by the parameter.
@@ -301,23 +305,6 @@ L<LWP::UserAgent> and L<IO::Socket::SSL>.
 See also the
 L<Neo4j Operations Manual|https://neo4j.com/docs/operations-manual/current/security/>
 for details on Neo4j network security.
-
-=head2 Mutability
-
- my $session1 = $driver->basic_auth('user1', 'password')->session;
- my $session2 = $driver->basic_auth('user2', 'password')->session;
- 
- my $session1 = $driver->session;
- $driver->config(timeout => 30);
- my $session2 = $driver->session;
-
-The official Neo4j drivers are explicitly designed to be immutable.
-As this driver currently has a much simpler design, it can afford
-mutability, but applications shouldn't depend upon it.
-
-The modifications will not be picked up by existing sessions. Only
-sessions that are newly created after making the changes will be
-affected.
 
 =head2 Parameter syntax conversion
 

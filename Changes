@@ -1,6 +1,6 @@
 Revision history for Driver::Neo4j
 
-0.1305, 2019-12-19
+0.14, 2019-12-20
 
  - make Cypher type system customisable
  - add experimental filter to convert {param} to $param in Cypher queries
