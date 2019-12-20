@@ -5,7 +5,7 @@ language: perl
 # Other than that, no major differences between combinations of
 # distinct versions are known or expected, therefore the testing
 # matrix can be small.
-matrix:
+jobs:
   include:
     - perl: "5.30"
       env: NEO4J=4.0.0-rc01 JAVA=11
@@ -22,6 +22,10 @@ matrix:
   allow_failures:
     - env: NEO4J=4.0.0-rc01 JAVA=11
   fast_finish: true
+
+env:
+  global:
+    - TEST_NEO4J_PASSWORD=xkcd792
 
 git:
   depth: 1
@@ -43,6 +47,7 @@ before_install:
   - eval "${JAVA_HOME:-/usr}/bin/java -version"
   - curl -O https://dist.neo4j.org/neo4j-community-$NEO4J-unix.tar.gz
   - tar -xzf neo4j-community-$NEO4J-unix.tar.gz
+  - neo4j-community-$NEO4J/bin/neo4j-admin set-initial-password "$TEST_NEO4J_PASSWORD" || echo "Password change using neo4j-admin failed."
   - neo4j-community-$NEO4J/bin/neo4j start
 
 # Dist::Zilla doesn't work with Perl < 5.14, so some foo is needed
@@ -62,8 +67,8 @@ install:
 
 before_script:
   - neo4j-community-$NEO4J/bin/neo4j status
-  - curl -u neo4j:neo4j -d '{"password":"xkcd792"}' -X POST -H 'Content-Type:application/json' http://localhost:7474/user/neo4j/password
-  - export TEST_NEO4J_PASSWORD=xkcd792
+  - curl -u neo4j:neo4j -fid "{\"password\":\"$TEST_NEO4J_PASSWORD\"}" -H "Content-Type:application/json" http://localhost:7474/user/neo4j/password || echo "Password change using cURL failed."
+  - perl -Ilib -MNeo4j::Driver -e "print Neo4j::Driver->new->basic_auth(neo4j=>'$TEST_NEO4J_PASSWORD')->session->run(\"RETURN 'Connected to Neo4j\\n'\")->single->get;" || echo "Error testing Neo4j connection"
   # export AUTHOR_TESTING=1
 
 script:
