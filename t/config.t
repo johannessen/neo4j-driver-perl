@@ -78,7 +78,7 @@ subtest 'config illegal args' => sub {
 
 
 subtest 'uri variants' => sub {
-	plan tests => 19;
+	plan tests => 18;
 	# http scheme (default)
 	lives_ok { $d = 0; $d = Neo4j::Driver->new('http://test1:9999'); } 'http full uri lives';
 	lives_and { is $d->{uri}, 'http://test1:9999'; } 'http full uri';
@@ -100,8 +100,8 @@ subtest 'uri variants' => sub {
 	# bolt scheme
 	eval { $d = 0; $d = Neo4j::Driver->new('bolt://test9'); };
 	ok $@ =~ m/Neo4j::Bolt/ || ! $@ && $d->{uri} eq 'bolt://test9:7687', 'bolt default port';
-	lives_ok { $d = 0; $d = Neo4j::Driver->new('bolt:'); } 'bolt scheme only lives';
-	lives_and { is $d->{uri}, 'bolt://localhost:7687'; } 'bolt scheme only';
+	eval { $d = 0; $d = Neo4j::Driver->new('bolt:'); };
+	ok $@ =~ m/Neo4j::Bolt/ || ! $@ && $d->{uri} eq 'bolt://localhost:7687', 'bolt scheme only';
 };
 
 
