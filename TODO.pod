@@ -163,6 +163,22 @@ provides stats, and different APIs for HTTP and Bolt seem like a bad idea.
 
 =back
 
+=head2 L<Neo4j::Driver::Transport::HTTP>
+
+=over
+
+=item * Profile whether X-Stream has any performance impact. Remove if
+in doubt, as we don't implement streaming (and have no plans to in the
+future, considering that Bolt should be used when speed is important).
+
+=item * Add C<Accept-Charset: UTF-8> header, I guess.
+
+=item * Since all methods in this class are private, they should perhaps
+all have names beginning with C<_> to make this perfectly clear. This
+might also help to improve POD coverage.
+
+=back
+
 =head2 Neo4j::Driver::Type::*
 
 =over

@@ -173,7 +173,7 @@ stated goal of the Neo4j Driver API, to Perl. The downside is that
 this driver doesn't offer fully-fledged object bindings like the
 existing L<REST::Neo4p> module does. Nor does it offer any L<DBI>
 integration. However, it avoids the legacy C<cypher> endpoint,
-assuring compatibility with future Neo4j versions.
+assuring compatibility with Neo4j versions 2.3, 3.x and 4.x.
 
 B<As of version 0.13, the interface of this software may be
 considered stable.>
