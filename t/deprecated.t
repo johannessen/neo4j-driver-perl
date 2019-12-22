@@ -18,12 +18,12 @@ my $s = $driver->session;
 # functionality. If the behaviour of such functionality changes, we
 # want it to be a conscious decision, hence we test for it.
 
-use Test::More 0.96 tests => 1 + 2;
+use Test::More 0.96 tests => 1 + 3;
 use Test::Exception;
 use Test::Warnings qw(warning);
 
 
-my ($w);
+my ($d, $w, $r);
 
 
 subtest 'close()' => sub {
@@ -65,6 +65,16 @@ subtest 'die_on_error = 0' => sub {
 		$d->session->run;
 	}; } 'no connection';
 	(like $w, qr/\bNetwork\b.*\bCan't connect\b/i, 'no connection warning') or diag 'got warning(s): ', explain($w);
+};
+
+
+subtest 'driver mutability (config/auth)' => sub {
+	plan tests => 5;
+	lives_ok { $d = 0; $d = Neo4j::Test->driver_maybe; } 'get driver';
+	lives_ok { $r = 0; $r = $d->basic_auth('user1', 'password')->session; } 'get auth session';
+	lives_ok { $w = warning { $r = $d->basic_auth('user2', 'password')->session }; } 'auth mutable lives';
+	(like $w, qr/\bDeprecate.*\bbasic_auth\b.*\bsession\b/i, 'auth mutable deprecated') or diag 'got warning(s): ', explain($w);
+	is $d->{auth}->{principal}, 'user2', 'auth mutable';
 };
 
 

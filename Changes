@@ -1,5 +1,9 @@
 Revision history for Neo4j::Driver
 
+0.1401, 2019-12-22
+
+ - deprecate experimental mutability of auth credentials after session creation
+
 0.14, 2019-12-21
 
  REMINDER: Neo4j::Driver 0.13 deprecated the old syntax to access nodes,

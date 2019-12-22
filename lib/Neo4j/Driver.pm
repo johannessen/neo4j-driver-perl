@@ -78,6 +78,8 @@ sub new {
 sub basic_auth {
 	my ($self, $username, $password) = @_;
 	
+	warnings::warnif deprecated => "Deprecated sequence: call basic_auth() before session()" if $self->{session};
+	
 	$self->{auth} = {
 		scheme => 'basic',
 		principal => $username,
