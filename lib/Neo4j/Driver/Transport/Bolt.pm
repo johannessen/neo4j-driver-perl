@@ -235,6 +235,9 @@ sub _deep_bless {
 	if (ref $data eq '') {  # scalar
 		return $data;
 	}
+	if (ref $data eq 'JSON::PP::Boolean') {  # boolean
+		return $data;
+	}
 	
 	die "Assertion failed: unexpected type: " . ref $data;
 }

@@ -1,8 +1,9 @@
 Revision history for Neo4j::Driver
 
-0.1401, 2019-12-22
+0.1402, 2020-02-02
 
  - deprecate experimental mutability of auth credentials after session creation
+ - add support for booleans to Bolt
 
 0.14, 2019-12-21
 
