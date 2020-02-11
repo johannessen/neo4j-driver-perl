@@ -54,8 +54,8 @@ __END__
 
 =head1 SYNOPSIS
 
- my $query = 'MATCH (m:Movie) RETURN m LIMIT 1';
- my $node = $driver->session->run($query)->single->get('m');
+ $query = 'MATCH (m:Movie) RETURN m LIMIT 1';
+ $node = $driver->session->run($query)->single->get('m');
  
  say 'Movie # ', $node->id(), ' :';
  say '   ', $node->get('name'), ' / ', $node->get('year');
@@ -84,14 +84,14 @@ L<Neo4j::Driver::Type::Node> implements the following methods.
 
 =head2 get
 
- my $value = $node->get('property_key');
+ $value = $node->get('property_key');
 
 Retrieve the value of this node's property with the given key.
 If no such key exists, return C<undef>.
 
 =head2 id
 
- my $id = $node->id;
+ $id = $node->id;
 
 Return a unique ID for this node.
 
@@ -105,14 +105,14 @@ Nodes and relationships do not share the same ID space.
 
 =head2 labels
 
- my @labels = $node->labels;
+ @labels = $node->labels;
 
 Return all labels of this node.
 
 =head2 properties
 
- my $hashref = $node->properties;
- my $value = $hashref->{property_key};
+ $hashref = $node->properties;
+ $value = $hashref->{property_key};
 
 Return all properties of this node as a hash reference.
 
@@ -125,13 +125,13 @@ these features.
 
 =head2 Calling in scalar context
 
- my $labels = $node->labels;  # fails
+ $labels = $node->labels;  # fails
 
 The C<labels()> method C<die>s if called in scalar context.
 
 =head2 Direct data structure access
 
- my $property_value = $node->{property_key};
+ $property_value = $node->{property_key};
 
 Currently, the node's properties may be directly accessed as
 if the node was a simple hashref. This is a concession to
@@ -143,7 +143,7 @@ Use the accessor methods C<get()> and C<properties()> instead.
 
 =head2 Deletion indicator
 
- my $node_exists = ! $node->deleted;
+ $node_exists = ! $node->deleted;
 
 In some circumstances, Cypher statements using C<DELETE> may still
 C<RETURN> nodes that were deleted. To help avoid confusion in

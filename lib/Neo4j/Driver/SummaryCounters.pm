@@ -58,15 +58,15 @@ __END__
 =head1 SYNOPSIS
 
  use Neo4j::Driver;
- my $driver = Neo4j::Driver->new->basic_auth(...);
+ $driver = Neo4j::Driver->new->basic_auth(...);
  
- my $transaction = $driver->session->begin_transaction;
+ $transaction = $driver->session->begin_transaction;
  $transaction->{return_stats} = 1;
- my $query = 'MATCH (n:Novel {name:"1984"}) SET n.writer = "Orwell"';
- my $result = $transaction->run($query);
+ $query = 'MATCH (n:Novel {name:"1984"}) SET n.writer = "Orwell"';
+ $result = $transaction->run($query);
  
- my $counters = $result->summary->counters;
- my $database_modified = $counters->contains_updates;
+ $counters = $result->summary->counters;
+ $database_modified = $counters->contains_updates;
  die "That didn't work out." unless $database_modified;
 
 =head1 DESCRIPTION

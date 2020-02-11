@@ -224,22 +224,22 @@ __END__
 =head1 SYNOPSIS
 
  use Neo4j::Driver;
- my $session = Neo4j::Driver->new->basic_auth(...)->session;
+ $session = Neo4j::Driver->new->basic_auth(...)->session;
  
  # stream result records
- my $result = $session->run('MATCH (a:Actor) RETURN a.name, a.born');
- while ( my $record = $result->fetch ) {
+ $result = $session->run('MATCH (a:Actor) RETURN a.name, a.born');
+ while ( $record = $result->fetch ) {
    ...
  }
  
  # list result records
- my $result = $session->run('MATCH (m:Movie) RETURN m.name, m.year');
- my $record_count = $result->size;
- my @records = $result->list;
+ $result = $session->run('MATCH (m:Movie) RETURN m.name, m.year');
+ $record_count = $result->size;
+ @records = $result->list;
  
  # shortcut for results with a single record only
- my $query = 'MATCH (m:Movie) WHERE id(m) = {id} RETURN m.name';
- my $name = $session->run($query, id => 12)->single->get('m.name');
+ $query = 'MATCH (m:Movie) WHERE id(m) = {id} RETURN m.name';
+ $name = $session->run($query, id => 12)->single->get('m.name');
 
 =head1 DESCRIPTION
 
@@ -270,7 +270,7 @@ L<Neo4j::Driver::StatementResult> implements the following methods.
 
 =head2 fetch
 
- while (my $record = $result->fetch) {
+ while ($record = $result->fetch) {
    ...
  }
 
@@ -283,7 +283,7 @@ exhausted and C<fetch()> returns C<undef>.
 
 =head2 has_next
 
- while (my $record = $result->fetch) {
+ while ($record = $result->fetch) {
    print $record->get('field');
    print ', ' if $result->has_next;
  }
@@ -295,14 +295,14 @@ detach the result, but will never exhaust it.
 
 =head2 keys
 
- my @keys = $result->keys;
+ @keys = $result->keys;
 
 Retrieve the column names of the records this result contains.
 
 =head2 list
 
- my @records = $result->list;
- my $records = $result->list;  # arrayref
+ @records = $result->list;
+ $records = $result->list;  # arrayref
 
 Return the entire list of all L<Record|Neo4j::Driver::Record>s that
 remain in the result stream. Calling this method exhausts the result
@@ -315,7 +315,7 @@ This method returns an array reference if called in scalar context.
 
 =head2 single
 
- my $name = $session->run('... LIMIT 1')->single->get('name');
+ $name = $session->run('... LIMIT 1')->single->get('name');
 
 Return the single L<Record|Neo4j::Driver::Record> left in the result
 stream, failing if there is not exactly one record left. Calling this
@@ -326,7 +326,7 @@ method multiple times returns the buffered record.
 
 =head2 size
 
- my $record_count = $result->size;
+ $record_count = $result->size;
 
 Return the count of records that calling C<list()> would yield.
 
@@ -335,7 +335,7 @@ for use by C<list()>.
 
 =head2 summary
 
- my $result_summary = $result->summary;
+ $result_summary = $result->summary;
 
 Return a L<Neo4j::Driver::ResultSummary> object. Calling this method
 detaches the result stream, but does I<not> exhaust it.
@@ -344,8 +344,8 @@ As a special case, L<Record|Neo4j::Driver::Record>s returned by the
 C<single> method also have a C<summary> method that works the same
 way.
 
- my $record = $transaction->run('...')->single;
- my $result_summary = $record->summary;
+ $record = $transaction->run('...')->single;
+ $result_summary = $record->summary;
 
 =head1 EXPERIMENTAL FEATURES
 
@@ -356,15 +356,15 @@ depend upon these features.
 
 =head2 Calling in scalar context
 
- my $keys = $result->keys;  # arrayref
+ $keys = $result->keys;  # arrayref
 
 The C<keys()> method returns an array reference if called in scalar
 context.
 
 =head2 Control result stream attachment
 
- my $buffered = $result->attached;  # boolean
- my $count = $result->detach;  # number of records fetched
+ $buffered = $result->attached;  # boolean
+ $count = $result->detach;  # number of records fetched
 
 If necessary, C<detach()> can force the entire result stream to
 be buffered locally, so that it will be available to C<fetch()>
@@ -388,7 +388,7 @@ exhausts the result stream.
 
 As a side effect, discarding the result yields a summary of it.
 
- my $result_summary = $result->consume;
+ $result_summary = $result->consume;
 
 All of the official drivers offer this method, but it doesn't appear
 to be necessary here, since L<Neo4j::Bolt::ResultStream> reliably

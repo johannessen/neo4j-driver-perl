@@ -131,11 +131,11 @@ __END__
 =head1 SYNOPSIS
 
  use Neo4j::Driver;
- my $session = Neo4j::Driver->new->basic_auth(...)->session;
+ $session = Neo4j::Driver->new->basic_auth(...)->session;
  
  # Commit
- my $tx = $session->begin_transaction;
- my $node_id = $tx->run(
+ $tx = $session->begin_transaction;
+ $node_id = $tx->run(
    'CREATE (p:Person) RETURN id(p)'
  )->single->get;
  $tx->run(
@@ -145,8 +145,8 @@ __END__
  $tx->commit;
  
  # Rollback
- my $tx = $session->begin_transaction;
- my $tx->run('CREATE (a:Universal:Answer {value:42})');
+ $tx = $session->begin_transaction;
+ $tx->run('CREATE (a:Universal:Answer {value:42})');
  $tx->rollback;
 
 =head1 DESCRIPTION
@@ -195,7 +195,7 @@ After committing the transaction is closed and can no longer be used.
 
 =head2 is_open
 
- my $bool = $transaction->is_open;
+ $bool = $transaction->is_open;
 
 Report whether this transaction is still open, which means commit
 or rollback did not happen.
@@ -219,7 +219,7 @@ used.
 
 =head2 run
 
- my $result = $transaction->run($query, %params);
+ $result = $transaction->run($query, %params);
 
 Run a statement and return the L<StatementResult|Neo4j::Driver::StatementResult>.
 This method takes an optional set of parameters that will be injected
@@ -232,16 +232,16 @@ Parameters are given as Perl hashref. Alternatively, they may be
 given as a hash / balanced list.
 
  # all of these are semantically equal
- my $result = $transaction->run('...', {key => 'value'});
- my $result = $transaction->run('...',  key => 'value' );
- my %hash = (key => 'value');
- my $result = $transaction->run('...', \%hash);
- my $result = $transaction->run('...',  %hash);
+ $result = $transaction->run('...', {key => 'value'});
+ $result = $transaction->run('...',  key => 'value' );
+ %hash = (key => 'value');
+ $result = $transaction->run('...', \%hash);
+ $result = $transaction->run('...',  %hash);
 
 When used as parameters, Perl values are converted to Neo4j types as
 shown in the following example:
 
- my $parameters = {
+ $parameters = {
    number =>  0 + $scalar,
    string => '' . $scalar,
    true   => \1,
@@ -269,7 +269,7 @@ This feature may also be used to test the connection to the server.
 For Bolt connections, the empty result is generated locally in the
 driver.
 
- my $result = $transaction->run;
+ $result = $transaction->run;
 
 Queries are usually strings, but may also be L<REST::Neo4p::Query> or
 L<Neo4j::Cypher::Abstract> objects. Such objects are automatically
@@ -287,20 +287,20 @@ these features.
 
 =head2 Calling in list context
 
- my @records = $transaction->run('...');
- my @results = $transaction->run([...]);
+ @records = $transaction->run('...');
+ @results = $transaction->run([...]);
 
 The C<run> method tries to Do What You Mean if called in list
 context.
 
 =head2 Execute multiple statements at once
 
- my $statements = [
+ $statements = [
    [ 'RETURN 42' ],
    [ 'RETURN {value}', value => 'forty-two' ],
  ];
- my $results = $transaction->run($statements);
- foreach my $result ( @$results ) {
+ $results = $transaction->run($statements);
+ foreach $result ( @$results ) {
    say $result->single->get;
  }
 
@@ -312,9 +312,9 @@ lazy execution, similar to the official Neo4j drivers.
 
 =head2 Disable obtaining query statistics
 
- my $transaction = $session->begin_transaction;
+ $transaction = $session->begin_transaction;
  $transaction->{return_stats} = 0;
- my $result = $transaction->run('...');
+ $result = $transaction->run('...');
 
 Since version 0.13, this driver requests query statistics from the
 Neo4j server by default. When using HTTP, this behaviour can be
@@ -324,11 +324,11 @@ The ability to disable the statistics may be removed in future.
 
 =head2 Return results in graph format
 
- my $transaction = $session->begin_transaction;
+ $transaction = $session->begin_transaction;
  $transaction->{return_graph} = 1;
- my $records = $transaction->run('...')->list;
+ $records = $transaction->run('...')->list;
  for $record ( @$records ) {
-   my $graph_data = $record->{graph};
+   $graph_data = $record->{graph};
    ...
  }
 

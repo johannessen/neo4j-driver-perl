@@ -149,14 +149,14 @@ __END__
 =head1 SYNOPSIS
 
  use Neo4j::Driver;
- my $uri = 'http://localhost';
- my $driver = Neo4j::Driver->new($uri)->basic_auth('neo4j', 'password');
+ $uri = 'http://localhost';
+ $driver = Neo4j::Driver->new($uri)->basic_auth('neo4j', 'password');
  
  sub say_friends_of {
-   my $query = 'MATCH (a:Person)-[:KNOWS]->(f) '
+   $query = 'MATCH (a:Person)-[:KNOWS]->(f) '
              . 'WHERE a.name = {name} RETURN f.name';
-   my $records = $driver->session->run($query, name => shift)->list;
-   foreach my $record ( @$records ) {
+   $records = $driver->session->run($query, name => shift)->list;
+   foreach $record ( @$records ) {
      say $record->get('f.name');
    }
  }
@@ -203,7 +203,7 @@ Set basic auth credentials with a given user and password. This
 method returns the modified L<Neo4j::Driver> object, so that method
 chaining is possible.
 
- my $session = $driver->basic_auth('neo4j', 'password')->session;
+ $session = $driver->basic_auth('neo4j', 'password')->session;
 
 =head2 config
 
@@ -214,7 +214,7 @@ L<Neo4j::Driver> object. The options are given in hash syntax.
 This method returns the modified object, so that method chaining
 is possible.
 
- my $session = $driver->config(timeout => 60)->session;
+ $session = $driver->config(timeout => 60)->session;
 
 See below for an explanation of
 L<all supported configuration options|/"CONFIGURATION OPTIONS">.
@@ -224,11 +224,11 @@ creating the driver's first session.
 Calling this method with just a single parameter will return the
 current value of the config option named by the parameter.
 
- my $timeout = $driver->config('timeout');
+ $timeout = $driver->config('timeout');
 
 =head2 new
 
- my $driver = Neo4j::Driver->new('http://localhost');
+ $driver = Neo4j::Driver->new('http://localhost');
 
 Construct a new L<Neo4j::Driver> object. This object holds the
 details required to establish connections with a Neo4j database,
@@ -243,15 +243,15 @@ C<localhost> and the protocol C<http> will be used as defaults;
 if no port is specified, the protocol's default port will be used.
 
  # all of these are semantically equal
- my $driver = Neo4j::Driver->new;
- my $driver = Neo4j::Driver->new('http:');
- my $driver = Neo4j::Driver->new('localhost');
- my $driver = Neo4j::Driver->new('http://localhost');
- my $driver = Neo4j::Driver->new('http://localhost:7474');
+ $driver = Neo4j::Driver->new;
+ $driver = Neo4j::Driver->new('http:');
+ $driver = Neo4j::Driver->new('localhost');
+ $driver = Neo4j::Driver->new('http://localhost');
+ $driver = Neo4j::Driver->new('http://localhost:7474');
 
 =head2 session
 
- my $session = $driver->session;
+ $session = $driver->session;
 
 Creates and returns a new L<Session|Neo4j::Driver::Session>.
 
@@ -268,7 +268,7 @@ features.
  # https://github.com/majensen/perlbolt
  # https://github.com/majensen/perlbolt/blob/master/README
  
- my $driver = Neo4j::Driver->new('bolt://localhost');
+ $driver = Neo4j::Driver->new('bolt://localhost');
 
 Installing the XS module L<Neo4j::Bolt>
 (L<perlbolt|https://github.com/majensen/perlbolt>) adds support for
@@ -287,7 +287,7 @@ If you need remote access, consider using HTTPS instead of Bolt.
 
 =head2 HTTPS support
 
- my $driver = Neo4j::Driver->new('https://localhost');
+ $driver = Neo4j::Driver->new('https://localhost');
  $driver->config(ca_file => 'neo4j/certificates/neo4j.cert');
 
 Using HTTPS will result in an encrypted connection. In order to rule

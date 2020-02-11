@@ -86,19 +86,19 @@ __END__
 =head1 SYNOPSIS
 
  use Neo4j::Driver;
- my $driver = Neo4j::Driver->new->basic_auth(...);
- my $result = $driver->session->run('MATCH (a)-[:KNOWS]-(b) RETURN a, b');
+ $driver = Neo4j::Driver->new->basic_auth(...);
+ $result = $driver->session->run('MATCH (a)-[:KNOWS]-(b) RETURN a, b');
  
- my $summary = $result->summary;
+ $summary = $result->summary;
  
  # SummaryCounters
- my $counters = $summary->counters;
+ $counters = $summary->counters;
  
  # query information
- my $query  = $summary->statement->{text};
- my $params = $summary->statement->{parameters};
- my $plan   = $summary->plan;
- my @notes  = $summary->notifications;
+ $query  = $summary->statement->{text};
+ $params = $summary->statement->{parameters};
+ $plan   = $summary->plan;
+ @notes  = $summary->notifications;
 
 =head1 DESCRIPTION
 
@@ -117,7 +117,7 @@ L<Neo4j::Driver::ResultSummary> implements the following methods.
 
 =head2 counters
 
- my $summary_counters = $summary->counters;
+ $summary_counters = $summary->counters;
 
 Returns the L<SummaryCounters|Neo4j::Driver::SummaryCounters> with
 statistics counts for operations the statement triggered.
@@ -149,8 +149,8 @@ connection for this driver.
 
 =head2 statement
 
- my $query  = $summary->statement->{text};
- my $params = $summary->statement->{parameters};
+ $query  = $summary->statement->{text};
+ $params = $summary->statement->{parameters};
 
 The statement and parameters this summary is for.
 
@@ -163,7 +163,7 @@ these features.
 
 =head2 Calling in scalar context
 
- my $notifications = $summary->notifications;  # arrayref
+ $notifications = $summary->notifications;  # arrayref
 
 The C<notifications()> method returns an array reference if called in
 scalar context, or C<undef> if there are no notifications.

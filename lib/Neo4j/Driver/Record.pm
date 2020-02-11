@@ -88,16 +88,16 @@ __END__
 =head1 SYNOPSIS
 
  use Neo4j::Driver;
- my $session = Neo4j::Driver->new->basic_auth(...)->session;
+ $session = Neo4j::Driver->new->basic_auth(...)->session;
  
- my $query = 'MATCH (m:Movie) RETURN m.name, m.year';
- my $records = $session->run($query)->list;
- foreach my $record ( @$records ) {
+ $query = 'MATCH (m:Movie) RETURN m.name, m.year';
+ $records = $session->run($query)->list;
+ foreach $record ( @$records ) {
    say $record->get('m.name');
  }
  
  $query .= ' ORDER BY m.year LIMIT 1';
- my $record = $session->run($query)->single;
+ $record = $session->run($query)->single;
  say 'Year of oldest movie: ', $record->get(1);
 
 =head1 DESCRIPTION
@@ -113,8 +113,8 @@ L<Neo4j::Driver::Record> implements the following methods.
 
 =head2 get
 
- my $value1 = $record->get('field_key');
- my $value2 = $record->get(2);
+ $value1 = $record->get('field_key');
+ $value2 = $record->get(2);
 
 Get a value from this record, either by field key or by zero-based
 index.
@@ -122,8 +122,8 @@ index.
 If there is only a single field, C<get> may be called without
 parameters.
 
- my $value = $session->run('RETURN "It works!"')->single->get;
- my $value = $session->run('RETURN "two", "fields"')->single->get;  # fails
+ $value = $session->run('RETURN "It works!"')->single->get;
+ $value = $session->run('RETURN "two", "fields"')->single->get;  # fails
 
 When retrieving values from records, Neo4j types are converted to Perl
 types as shown in the following table.
@@ -156,8 +156,8 @@ with a future version of this driver.
 
 =head2 data
 
- my $hashref = $record->data;
- my $value = $hashref->{field_key};
+ $hashref = $record->data;
+ $value = $hashref->{field_key};
 
 Return the keys and values of this record as a hash reference.
 
@@ -170,7 +170,7 @@ these features.
 
 =head2 C<column_keys>
 
- my $size = $record->{column_keys}->count;
+ $size = $record->{column_keys}->count;
  $record->{column_keys}->add('new_field_key');
 
 Allows adding new columns to the record's field key / index
@@ -180,8 +180,8 @@ can then be accessed just like regular columns.
 
 =head2 C<graph>
 
- my $nodes = $record->{graph}->{nodes};
- my $rels  = $record->{graph}->{relationships};
+ $nodes = $record->{graph}->{nodes};
+ $rels  = $record->{graph}->{relationships};
 
 Allows accessing the graph response the Neo4j server can deliver via
 HTTP. Requires the C<return_graph> field to be set on the
@@ -190,7 +190,7 @@ before the statement is executed.
 
 =head2 C<meta>
 
- my $meta = $record->{meta};
+ $meta = $record->{meta};
 
 Allows accessing the entity meta data that some versions of the Neo4j
 server provide via HTTP.

@@ -61,13 +61,13 @@ __END__
 =head1 SYNOPSIS
 
  use Neo4j::Driver;
- my $session = Neo4j::Driver->new->basic_auth(...)->session;
+ $session = Neo4j::Driver->new->basic_auth(...)->session;
  
  # explicit transaction
- my $transaction = $session->begin_transaction;
+ $transaction = $session->begin_transaction;
  
  # autocommit transaction
- my $result = $session->run('MATCH (m:Movie) RETURN m.name, m.year');
+ $result = $session->run('MATCH (m:Movie) RETURN m.name, m.year');
 
 =head1 DESCRIPTION
 
@@ -95,13 +95,13 @@ L<Neo4j::Driver::Session> implements the following methods.
 
 =head2 begin_transaction
 
- my $transaction = $session->begin_transaction;
+ $transaction = $session->begin_transaction;
 
 Begin a new explicit L<Transaction|Neo4j::Driver::Transaction>.
 
 =head2 run
 
- my $result = $session->run('...');
+ $result = $session->run('...');
 
 Run and commit a statement using an autocommit transaction and return
 the L<StatementResult|Neo4j::Driver::StatementResult>.
@@ -110,8 +110,8 @@ This method is semantically exactly equivalent to the following code,
 but is faster because it doesn't require an extra server roundtrip to
 commit the transaction.
 
- my $transaction = $session->begin_transaction;
- my $result = $transaction->run('...');
+ $transaction = $session->begin_transaction;
+ $result = $transaction->run('...');
  $transaction->commit;
 
 =head1 EXPERIMENTAL FEATURES
@@ -123,16 +123,16 @@ these features.
 
 =head2 Calling in list context
 
- my @records = $session->run('...');
- my @results = $session->run([...]);
+ @records = $session->run('...');
+ @results = $session->run([...]);
 
 The C<run> method tries to Do What You Mean if called in list
 context.
 
 =head2 ServerInfo
 
- my $host_port = $session->server->address;
- my $version_string = $session->server->version;
+ $host_port = $session->server->address;
+ $version_string = $session->server->version;
  say "Contacting $version_string at $host_port.";
 
 For security reasons, L<ResultSummary|Neo4j::Driver::ResultSummary>
@@ -147,9 +147,9 @@ I'm really not sure if the ensuing performance penalty is worth it.
 
 =head2 Concurrent explicit transactions
 
- my $session = Neo4j::Driver->new('http://...')->basic_auth(...)->session;
- my $tx1 = $session->begin_transaction;
- my $tx2 = $session->begin_transaction;
+ $session = Neo4j::Driver->new('http://...')->basic_auth(...)->session;
+ $tx1 = $session->begin_transaction;
+ $tx2 = $session->begin_transaction;
 
 Since HTTP is a stateless protocol, the Neo4j HTTP API effectively
 allows multiple concurrently open transactions without special
@@ -161,8 +161,8 @@ The Bolt protocol does not support concurrent explicit transactions.
 
 =head2 Concurrent autocommit transactions
 
- my $tx1 = $session->begin_transaction;
- my $tx2 = $session->run(...);
+ $tx1 = $session->begin_transaction;
+ $tx2 = $session->run(...);
 
 Sessions support autocommit transactions while an explicit
 transaction is open. Since it is not clear to me if this is

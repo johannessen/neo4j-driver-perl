@@ -64,8 +64,8 @@ __END__
 
 =head1 SYNOPSIS
 
- my $q = "MATCH (a:Person)-[k:KNOWS]->(b:Person) RETURN k";
- my $rel = $driver->session->run($q)->list->[0]->get('k');
+ $q = "MATCH (a:Person)-[k:KNOWS]->(b:Person) RETURN k";
+ $rel = $driver->session->run($q)->list->[0]->get('k');
  
  print 'Person # ', $rel->start_id;
  print ' ', $rel->type;
@@ -95,14 +95,14 @@ L<Neo4j::Driver::Type::Relationship> implements the following methods.
 
 =head2 get
 
- my $value = $relationship->get('property_key');
+ $value = $relationship->get('property_key');
 
 Retrieve the value of this relationship's property with the given key.
 If no such key exists, return C<undef>.
 
 =head2 id
 
- my $id = $relationship->id;
+ $id = $relationship->id;
 
 Return a unique ID for this relationship.
 
@@ -116,26 +116,26 @@ Nodes and relationships do not share the same ID space.
 
 =head2 properties
 
- my $hashref = $relationship->properties;
- my $value = $hashref->{property_key};
+ $hashref = $relationship->properties;
+ $value = $hashref->{property_key};
 
 Return all properties of this relationship as a hash reference.
 
 =head2 start_id
 
- my $id = $relationship->start_id;
+ $id = $relationship->start_id;
 
 Return the ID of the node where this relationship starts.
 
 =head2 end_id
 
- my $id = $relationship->end_id;
+ $id = $relationship->end_id;
 
 Return the ID of the node where this relationship ends.
 
 =head2 type
 
- my $type = $relationship->type;
+ $type = $relationship->type;
 
 Return the type of this relationship.
 
@@ -148,7 +148,7 @@ depend upon these features.
 
 =head2 Direct data structure access
 
- my $property_value = $relationship->{property_key};
+ $property_value = $relationship->{property_key};
 
 Currently, the relationship's properties may be directly accessed as
 if the relationship was a simple hashref. This is a concession to
@@ -160,7 +160,7 @@ Use the accessor methods C<get()> and C<properties()> instead.
 
 =head2 Deletion indicator
 
- my $node_exists = ! $relationship->deleted;
+ $node_exists = ! $relationship->deleted;
 
 In some circumstances, Cypher statements using C<DELETE> may still
 C<RETURN> relationships that were deleted. To help avoid confusion in
