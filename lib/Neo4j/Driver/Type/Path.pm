@@ -128,7 +128,13 @@ and types. This is due to an issue in the Neo4j server.
 
 =head1 SEE ALSO
 
-L<Neo4j::Driver>,
-L<Neo4j Java Driver|https://neo4j.com/docs/api/java-driver/current/org/neo4j/driver/v1/types/Path.html>
+=over
+
+=item * L<Neo4j::Driver>
+
+=item * Equivalent documentation for the official Neo4j drivers:
+L<Path (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/types/Path.html>
+
+=back
 
 =cut

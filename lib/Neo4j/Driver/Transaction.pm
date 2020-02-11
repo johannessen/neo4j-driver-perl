@@ -338,12 +338,20 @@ the interface is not yet finalised.
 
 =head1 SEE ALSO
 
-L<Neo4j::Driver>,
-L<Neo4j::Driver::StatementResult>,
-L<Neo4j Java Driver|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/v1/Transaction.html>,
-L<Neo4j JavaScript Driver|https://neo4j.com/docs/api/javascript-driver/current/class/src/v1/transaction.js~Transaction.html>,
-L<Neo4j .NET Driver|https://neo4j.com/docs/api/dotnet-driver/current/html/ec1f5ba3-57f9-bdc6-9121-f595def04a00.htm>,
-L<Neo4j Python Driver|https://neo4j.com/docs/api/python-driver/current/transactions.html>,
-L<Neo4j Transactional Cypher HTTP API|https://neo4j.com/docs/developer-manual/3.0/http-api/>
+=over
+
+=item * L<Neo4j::Driver>
+
+=item * L<Neo4j::Driver::B<StatementResult>>
+
+=item * Equivalent documentation for the official Neo4j drivers:
+L<Transaction (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/Transaction.html>,
+L<Transaction (JavaScript)|https://neo4j.com/docs/api/javascript-driver/current/class/src/transaction.js~Transaction.html>,
+L<ITransaction (.NET)|https://neo4j.com/docs/api/dotnet-driver/4.0/html/b64c7dfe-87e9-8b85-5a02-8ff03800b67b.htm>,
+L<Sessions & Transactions (Python)|https://neo4j.com/docs/api/python-driver/current/transactions.html>
+
+=item * Neo4j L<Transactional Cypher HTTP API|https://neo4j.com/docs/developer-manual/3.0/http-api/>
+
+=back
 
 =cut

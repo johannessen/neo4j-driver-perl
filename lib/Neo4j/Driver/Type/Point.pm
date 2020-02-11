@@ -30,8 +30,15 @@ which L<Neo4j::Bolt> depends on internally. Use HTTP instead.
 
 =head1 SEE ALSO
 
-L<Neo4j::Driver>,
-L<Neo4j Java Driver|https://neo4j.com/docs/api/java-driver/current/org/neo4j/driver/v1/types/Point.html>,
-L<Neo4j Cypher Manual|https://neo4j.com/docs/cypher-manual/current/syntax/spatial/>
+=over
+
+=item * L<Neo4j::Driver>
+
+=item * Equivalent documentation for the official Neo4j drivers:
+L<Point (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/types/Point.html>
+
+=item * L<"Spatial values" in Neo4j Cypher Manual|https://neo4j.com/docs/cypher-manual/current/syntax/temporal/>
+
+=back
 
 =cut

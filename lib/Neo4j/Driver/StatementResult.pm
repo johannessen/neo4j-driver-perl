@@ -406,12 +406,19 @@ buffer and detach the result, but will never exhaust it.
 
 =head1 SEE ALSO
 
-L<Neo4j::Driver>,
-L<Neo4j::Driver::Record>,
-L<Neo4j::Driver::ResultSummary>,
-L<Neo4j Java Driver|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/v1/StatementResult.html>,
-L<Neo4j Python Driver|https://neo4j.com/docs/api/python-driver/current/results.html>,
-L<Neo4j JavaScript Driver|https://neo4j.com/docs/api/javascript-driver/current/class/src/v1/result.js~Result.html>,
-L<Neo4j .NET Driver|https://neo4j.com/docs/api/dotnet-driver/current/html/1ddb9dbe-f40f-26a3-e6f0-7be417980044.htm>
+=over
+
+=item * L<Neo4j::Driver>
+
+=item * L<Neo4j::Driver::B<Record>>,
+L<Neo4j::Driver::B<ResultSummary>>
+
+=item * Equivalent documentation for the official Neo4j drivers:
+L<Result (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/Result.html>,
+L<Results (Python)|https://neo4j.com/docs/api/python-driver/current/results.html>,
+L<Result (JavaScript)|https://neo4j.com/docs/api/javascript-driver/current/class/src/result.js~Result.html>,
+L<IResult (.NET)|https://neo4j.com/docs/api/dotnet-driver/4.0/html/f1ac31ec-c6dd-798b-b5d6-3ca0794d7502.htm>
+
+=back
 
 =cut

@@ -415,9 +415,21 @@ driver at present.
 
 =head1 SEE ALSO
 
-L<Neo4j::Driver::Session>,
+=over
+
+=item * L<Neo4j::Driver::B<Session>>
+
+=item * Official API documentation:
 L<Neo4j Drivers Manual|https://neo4j.com/docs/driver-manual/current/>,
-L<Neo4j HTTP API Docs|https://neo4j.com/docs/http-api/current/>,
+L<Neo4j HTTP API Docs|https://neo4j.com/docs/http-api/current/>
+
+=item * Other modules for working with Neo4j:
+L<DBD::Neo4p>,
+L<Neo4j::Bolt>,
+L<Neo4j::Cypher::Abstract>,
+L<REST::Cypher>,
 L<REST::Neo4p>
+
+=back
 
 =cut

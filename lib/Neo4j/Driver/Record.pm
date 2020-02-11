@@ -197,12 +197,19 @@ server provide via HTTP.
 
 =head1 SEE ALSO
 
-L<Neo4j::Driver>,
-L<Neo4j::Driver::Type::Node>,
-L<Neo4j::Driver::Type::Relationship>,
-L<Neo4j::Driver::Type::Path>,
-L<Neo4j Java Driver|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/v1/Record.html>,
-L<Neo4j JavaScript Driver|https://neo4j.com/docs/api/javascript-driver/current/class/src/v1/record.js~Record.html>,
-L<Neo4j .NET Driver|https://neo4j.com/docs/api/dotnet-driver/current/html/dfbf8228-17a4-99ed-58bb-81b638ae788a.htm>
+=over
+
+=item * L<Neo4j::Driver>
+
+=item * L<Neo4j::Driver::Type::B<Node>>,
+L<Neo4j::Driver::Type::B<Relationship>>,
+L<Neo4j::Driver::Type::B<Path>>
+
+=item * Equivalent documentation for the official Neo4j drivers:
+L<Record (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/Record.html>,
+L<Record (JavaScript)|https://neo4j.com/docs/api/javascript-driver/current/class/src/record.js~Record.html>,
+L<IRecord (.NET)|https://neo4j.com/docs/api/dotnet-driver/4.0/html/ca4ccbd1-2925-945d-fd4c-a5635f3e4b23.htm>
+
+=back
 
 =cut

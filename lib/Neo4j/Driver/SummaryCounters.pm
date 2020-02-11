@@ -107,7 +107,13 @@ probably make more sense to run a MATCH query, tedious or not.
 
 =head1 SEE ALSO
 
-L<Neo4j::Driver>,
-L<Neo4j Java Driver|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/v1/summary/SummaryCounters.html>
+=over
+
+=item * L<Neo4j::Driver>
+
+=item * Equivalent documentation for the official Neo4j drivers:
+L<SummaryCounters (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/summary/SummaryCounters.html>
+
+=back
 
 =cut

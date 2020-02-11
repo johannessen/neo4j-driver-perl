@@ -168,8 +168,14 @@ is returned instead.
 
 =head1 SEE ALSO
 
-L<Neo4j::Driver>,
-L<Neo4j Java Driver|https://neo4j.com/docs/api/java-driver/current/org/neo4j/driver/v1/types/Node.html>,
-L<Neo4j Python Driver|https://neo4j.com/docs/api/python-driver/current/types/graph.html#neo4j.types.graph.Node>
+=over
+
+=item * L<Neo4j::Driver>
+
+=item * Equivalent documentation for the official Neo4j drivers:
+L<Node (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/types/Node.html>,
+L<Node (Python)|https://neo4j.com/docs/api/python-driver/current/types/graph.html#neo4j.types.graph.Node>
+
+=back
 
 =cut

@@ -170,11 +170,18 @@ scalar context, or C<undef> if there are no notifications.
 
 =head1 SEE ALSO
 
-L<Neo4j::Driver>,
-L<Neo4j::Driver::Session>,
-L<Neo4j::Driver::SummaryCounters>,
-L<Neo4j Java Driver|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/v1/summary/ResultSummary.html>,
-L<Neo4j JavaScript Driver|https://neo4j.com/docs/api/javascript-driver/current/class/src/v1/result-summary.js~ResultSummary.html>,
-L<Neo4j .NET Driver|https://neo4j.com/docs/api/dotnet-driver/current/html/859dfa7c-80b8-f754-c0d3-359a0df5d33b.htm>
+=over
+
+=item * L<Neo4j::Driver>
+
+=item * L<Neo4j::Driver::B<Session>>,
+L<Neo4j::Driver::B<SummaryCounters>>
+
+=item * Equivalent documentation for the official Neo4j drivers:
+L<ResultSummary (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/summary/ResultSummary.html>,
+L<ResultSummary (JavaScript)|https://neo4j.com/docs/api/javascript-driver/current/class/src/result-summary.js~ResultSummary.html>,
+L<IResultSummary (.NET)|https://neo4j.com/docs/api/dotnet-driver/4.0/html/17958e2b-d923-ab62-bb96-697556493c2e.htm>
+
+=back
 
 =cut

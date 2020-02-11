@@ -32,7 +32,12 @@ which L<Neo4j::Bolt> depends on internally. Use HTTP instead.
 
 =head1 SEE ALSO
 
-L<Neo4j::Driver>,
-L<Neo4j Cypher Manual|https://neo4j.com/docs/cypher-manual/current/syntax/temporal/>
+=over
+
+=item * L<Neo4j::Driver>
+
+=item * L<"Temporal values" in Neo4j Cypher Manual|https://neo4j.com/docs/cypher-manual/current/syntax/temporal/>
+
+=back
 
 =cut

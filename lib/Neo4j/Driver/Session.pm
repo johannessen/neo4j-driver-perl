@@ -182,11 +182,18 @@ regard.
 
 =head1 SEE ALSO
 
-L<Neo4j::Driver>,
-L<Neo4j::Driver::Transaction>,
-L<Neo4j::Driver::StatementResult>,
-L<Neo4j Java Driver|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/v1/Session.html>,
-L<Neo4j JavaScript Driver|https://neo4j.com/docs/api/javascript-driver/current/class/src/v1/session.js~Session.html>,
-L<Neo4j .NET Driver|https://neo4j.com/docs/api/dotnet-driver/current/html/bd812bce-8d2c-f29e-6c2a-cf93bd3d85d7.htm>
+=over
+
+=item * L<Neo4j::Driver>
+
+=item * L<Neo4j::Driver::B<Transaction>>,
+L<Neo4j::Driver::B<StatementResult>>
+
+=item * Equivalent documentation for the official Neo4j drivers:
+L<Session (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/Session.html>,
+L<Session (JavaScript)|https://neo4j.com/docs/api/javascript-driver/current/class/src/session.js~Session.html>,
+L<ISession (.NET)|https://neo4j.com/docs/api/dotnet-driver/4.0/html/6bcf5d8c-98e7-b521-03e7-210cd6155850.htm>
+
+=back
 
 =cut
