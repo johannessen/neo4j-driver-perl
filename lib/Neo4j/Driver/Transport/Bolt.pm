@@ -184,13 +184,37 @@ sub address {
 sub version {
 	my ($self) = @_;
 	
-	die "Unimplemented";
+	return $self->{connection}->server_id;
 }
 
 
 sub _deep_bless {
 	my ($cypher_types, $data) = @_;
 	
+	if (ref $data eq 'Neo4j::Bolt::Node') {  # node
+		my $node = $data->{properties} // {};
+		bless $node, $cypher_types->{node};
+		$node->{_meta} = {
+			id => $data->{id},
+			labels => $data->{labels},
+		};
+		$cypher_types->{init}->($node) if $cypher_types->{init};
+		return $node;
+	}
+	if (ref $data eq 'Neo4j::Bolt::Relationship') {  # relationship
+		my $rel = $data->{properties} // {};
+		bless $rel, $cypher_types->{relationship};
+		$rel->{_meta} = {
+			id => $data->{id},
+			start => $data->{start},
+			end => $data->{end},
+			type => $data->{type},
+		};
+		$cypher_types->{init}->($rel) if $cypher_types->{init};
+		return $rel;
+	}
+	
+	# support for Neo4j::Bolt 0.01 data structures (to be phased out)
 	if (ref $data eq 'HASH' && defined $data->{_node}) {  # node
 		bless $data, $cypher_types->{node};
 		$data->{_meta} = {
@@ -212,12 +236,13 @@ sub _deep_bless {
 		return $data;
 	}
 	
-# 	if (ref $data eq 'ARRAY' && ref $rest eq 'HASH' && defined $rest->{length}) {  # path
-# 		# unimplemented:
-# 		# no discernible difference to array in Neo4j::Bolt
-# 		bless $data, 'Neo4j::Driver::Type::Path';
-# 		return;
-# 	}
+	if (ref $data eq 'Neo4j::Bolt::Path') {  # path
+		bless $data, $cypher_types->{path};
+		foreach my $i ( 0 .. $#{$data} ) {
+			$data->[$i] = _deep_bless($cypher_types, $data->[$i]);
+		}
+		return $data;
+	}
 	
 	if (ref $data eq 'ARRAY') {  # array
 		foreach my $i ( 0 .. $#{$data} ) {

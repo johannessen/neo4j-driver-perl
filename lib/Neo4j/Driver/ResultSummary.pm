@@ -133,6 +133,9 @@ or other valuable information that can be presented in a client.
 Unlike failures or errors, notifications do not affect the execution
 of a statement.
 
+At time of this writing, notifications are not supported on a Bolt
+connection for this driver.
+
 =head2 plan
 
  use Data::Dumper;
@@ -140,6 +143,9 @@ of a statement.
 
 This describes how the database will execute your statement.
 Available if this is the summary of a Cypher C<EXPLAIN> statement.
+
+At time of this writing, execution plans are not supported on a Bolt
+connection for this driver.
 
 =head2 statement
 

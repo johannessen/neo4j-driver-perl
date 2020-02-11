@@ -193,7 +193,7 @@ before the statement is executed.
  my $meta = $record->{meta};
 
 Allows accessing the entity meta data that some versions of the Neo4j
-server provide.
+server provide via HTTP.
 
 =head1 SEE ALSO
 

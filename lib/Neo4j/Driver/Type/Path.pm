@@ -126,11 +126,6 @@ When paths are returned via HTTP, the objects accessible via
 C<nodes()> and C<relationships()> lack meta data for their labels
 and types. This is due to an issue in the Neo4j server.
 
-When paths are returned via Bolt, they end up as array references
-instead of L<Neo4j::Driver::Type::Path> objects. This is due to
-an issue in C<Neo4j::Bolt>
-(L<#11|https://github.com/majensen/perlbolt/issues/11>).
-
 =head1 SEE ALSO
 
 L<Neo4j::Driver>,

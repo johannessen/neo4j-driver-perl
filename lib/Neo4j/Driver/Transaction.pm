@@ -197,14 +197,14 @@ After committing the transaction is closed and can no longer be used.
 
  my $bool = $transaction->is_open;
 
-Detect whether this transaction is still open, which means commit
+Report whether this transaction is still open, which means commit
 or rollback did not happen.
 
-Note that this method does not request the transaction status from
-the Neo4j server. Instead, it uses the status information the server
-provided along with its previous response, which may be outdated. In
-particular, a transaction can timeout on the server due to
-inactivity, in which case it may in fact be closed even though
+Transactions can also be closed by the server independently if there
+is an error in a request. This is typically detected by the driver
+on HTTP connections, but not on Bolt connections. Additionally, on
+HTTP connections, a transaction can timeout on the server due to
+inactivity. In both cases, it may in fact be closed even though
 this method returns a true value. The Neo4j server default
 C<dbms.transaction_timeout> is 60 seconds.
 
@@ -262,10 +262,12 @@ of strings using regular expressions. If necessary, you can force
 conversion of such values into the correct type using unary coercions
 as shown in the example above.
 
-Running empty queries is supported. Such queries establish a
-connection with the Neo4j server, which returns a result with zero
-records. This feature may be used to reset the transaction timeout
-or test the connection to the server.
+Running empty queries is supported. They yield an empty result
+(having zero records). With HTTP connections, the empty result is
+retrieved from the server, which resets the transaction timeout.
+This feature may also be used to test the connection to the server.
+For Bolt connections, the empty result is generated locally in the
+driver.
 
  my $result = $transaction->run;
 

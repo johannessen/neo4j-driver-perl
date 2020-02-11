@@ -264,27 +264,23 @@ features.
 
 =head2 Bolt support
 
+ # For this to work, Neo4j::Bolt must be installed:
+ # https://github.com/majensen/perlbolt
+ # https://github.com/majensen/perlbolt/blob/master/README
+ 
  my $driver = Neo4j::Driver->new('bolt://localhost');
 
-Thanks to L<Neo4j::Bolt>, there is now skeletal support for the
-L<Bolt Protocol|https://boltprotocol.org/>, which can be used as
-an alternative to HTTP to connect to the Neo4j server.
+Installing the XS module L<Neo4j::Bolt>
+(L<perlbolt|https://github.com/majensen/perlbolt>) adds support for
+the L<Bolt Protocol|https://boltprotocol.org/>, which can be used as
+an alternative to HTTP to connect to the Neo4j server. The design
+goal for this driver is to offer equal support for Bolt and HTTP.
+Where differences are unavoidable, they are documented.
 
-The design goal is for this driver to eventually offer equal support
-for Bolt and HTTP. At this time, using Bolt with this driver is not
-recommended, although it sorta-kinda works. The biggest issues
-include: Unicode is not supported in L<Neo4j::Bolt>,
-the C<libneo4j-client> backend currently doesn't support Neo4j 4,
-setting a custom timeout is not supported in L<Neo4j::Bolt>,
-C<libneo4j-client> error reporting is unreliable, summary
-information reported by L<Neo4j::Bolt> is incomplete, and graph meta
-data supplied by L<Neo4j::Bolt> is unreliable and has a different
-format than when the HTTP transport is used.
-
-Additionally, there are
-incompatibilities with other "experimental" features of this driver,
-and parts of the documentation still assume that HTTP is the only
-option.
+Using Bolt is much faster than HTTP, but at time of this writing the
+L<libneo4j-client|https://neo4j-client.net/#libneo4j-client> backend
+library that Neo4j::Bolt uses to connect to the database server only
+supports Neo4j version 3.x.
 
 TLS encryption is disabled in early versions of L<Neo4j::Bolt>.
 If you need remote access, consider using HTTPS instead of Bolt.
