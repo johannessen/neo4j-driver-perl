@@ -23,7 +23,7 @@ use Neo4j::Driver::StatementResult;
 # https://neo4j.com/docs/http-api/current/
 our $TRANSACTION_ENDPOINT = '/db/data/transaction';
 our $COMMIT_ENDPOINT = '/db/data/transaction/commit';
-our $CONTENT_TYPE = 'application/json; charset=UTF-8';
+our $CONTENT_TYPE = 'application/json';
 
 # https://neo4j.com/docs/rest-docs/current/#rest-api-service-root
 our $SERVICE_ROOT_ENDPOINT = '/db/data/';
