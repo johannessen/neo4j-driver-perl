@@ -206,7 +206,7 @@ on HTTP connections, but not on Bolt connections. Additionally, on
 HTTP connections, a transaction can timeout on the server due to
 inactivity. In both cases, it may in fact be closed even though
 this method returns a true value. The Neo4j server default
-C<dbms.transaction_timeout> is 60 seconds.
+C<dbms.rest.transaction.idle_timeout> is 60 seconds.
 
 =head2 rollback
 

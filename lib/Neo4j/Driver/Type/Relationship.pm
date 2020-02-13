@@ -155,7 +155,7 @@ if the relationship was a simple hashref. This is a concession to
 backwards compatibility, as the data structure only started being
 blessed as an object in version 0.13.
 
-Relying on this implementation detail is not deprecated.
+Relying on this implementation detail is now deprecated.
 Use the accessor methods C<get()> and C<properties()> instead.
 
 =head2 Deletion indicator

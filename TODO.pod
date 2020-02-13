@@ -55,7 +55,7 @@ L<Neo4j::Driver::Record/"graph">: make driver config option
 (very large integers, -0.0, ±Inf, ±NaN).
 
 =item * Try to modify the way the data is stored to verify the tests fix in 0.13.
-In particular, the URLs prolly should be parsed by the new type classes instead
+In particular, the URLs maybe should be parsed by the new type classes instead
 of C<deep_bless>.
 
 =item * Convert tests in C<xt/compatibility> to use L<Module::Load>, so that
@@ -226,7 +226,7 @@ in doubt, as we don't implement streaming (and have no plans to in the
 future, considering that Bolt should be used when speed is important).
 
 =item * Make L<REST::Client> code more robust by checking the private method
-C<{_res}->status_line> return value (possibly using C<ref()>) and fall back to
+C<< {_res}->status_line >> return value (possibly using C<ref()>) and fall back to
 just the status code if necessary.
 
 =item * An alternative to using C<< $client->{_res}->status_line >>
@@ -257,5 +257,6 @@ for ID comparison on nodes and relationships.
 =item * Consider whether to use C<use overload '%{}'> to allow direct
 access to e. g. properties using the pre-0.13 hashref syntax. See
 L<https://metacpan.org/pod/overload#Two-face-References> for an example.
+L<perltie> might perhaps also work.
 
 =back

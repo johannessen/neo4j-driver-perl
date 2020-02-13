@@ -351,7 +351,7 @@ type. Direct data structure access might also work, but is unsupported
 and discouraged because it makes your code prone to fail when any
 internals change in the implementation of Neo4j::Driver. For those
 objects that are implemented as blessed hash refs, clients may use any
-hash keys that beginn with two underscores (C<__>) to store private
+hash keys that begin with two underscores (C<__>) to store private
 data. All other hash keys are reserved for use by Neo4j::Driver.
 
 =head1 CONFIGURATION OPTIONS
