@@ -7,7 +7,6 @@ package Neo4j::Driver::Session;
 # ABSTRACT: Context of work for database interactions
 
 
-use Cpanel::JSON::XS 3.0201 qw(decode_json);
 use URI 1.25;
 
 use Neo4j::Driver::Transaction;

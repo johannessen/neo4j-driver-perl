@@ -143,14 +143,6 @@ both methods right away even though initially they'd work exactly the same.
 =item * Consider supporting re-using C<Record> objects for query parameters in
 C<run>. The Java and C# drivers do this.
 
-=item * Profile whether C<Tie::IxHash> or sorting C<JSON:PP> is quicker and
-adjust the code accordingly. Note, however, that the testing simulator requires
-fully sorted JSON, so C<Tie::IxHash> may not be enough.
-
-=item * Investigate which JSON module is the best. While C<Cpanel::JSON::XS>
-may have some advantages in terms of correctness (I think?), maybe
-C<JSON::MaybeXS> is more compatible.
-
 =item * Run statements lazily: Just like with the official drivers, statements
 passed to C<run> should be gathered until their results are actually accessed.
 Then, and only then, all statements gathered so far should be sent to the
@@ -244,6 +236,11 @@ is typically I/O (querying Neo4j itself instead of the RAM-cached response let
 the performance for the very same query drop down to 650/s when executed over
 HTTP). So this optimisation may not be worth it (OTOH, Bolt performance was
 something like 7000/s, so optimising C<deep_bless> may be more useful there).
+
+=item * Consider making the JSON module configurable. For example, clients
+might wish to use L<Mojo::JSON> instead of L<JSON::MaybeXS>; it also prefers
+L<Cpanel::JSON::XS> where available, but in Pure Perl it may be faster than
+L<JSON::PP>. Also, there is L<JSON::Tiny>.
 
 =back
 

@@ -8,7 +8,7 @@ package Neo4j::Driver::Record;
 
 
 use Carp qw(croak);
-use JSON::PP;
+use JSON::MaybeXS qw(is_bool);
 
 use Neo4j::Driver::ResultSummary;
 
@@ -48,8 +48,8 @@ sub get_bool {
 	warnings::warnif deprecated => __PACKAGE__ . "->get_bool is deprecated";
 	
 	my $value = $self->get($field);
-	return $value if ! ref $value;
-	return $value if $value != JSON::PP::false;
+	return $value if ! is_bool $value;
+	return $value if !! $value;
 	return undef;  ##no critic (ProhibitExplicitReturnUndef)
 }
 
