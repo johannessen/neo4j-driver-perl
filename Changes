@@ -1,6 +1,6 @@
 Revision history for Neo4j::Driver
 
-0.1404  2020-02-14
+0.1405  2020-02-15
 
 REMINDER: Neo4j::Driver 0.13 deprecated the old syntax to access nodes,
 relationships and paths. You need to use the new accessor methods introduced
@@ -9,6 +9,7 @@ in 0.13, or else your code will fail with a future version of this software.
  - improved support for Bolt (new type system in Neo4j::Bolt 0.02)
  - remove XS dependency to support Pure Perl environments (HTTP only)
  - improve performance of running queries over HTTP
+ - improve robustness of URL parsing
  - deprecate experimental mutability of auth credentials after session creation
 
 0.14  2019-12-21

@@ -78,6 +78,7 @@ sub driver_no_auth {
 # used for the ResultSummary/ServerInfo test
 sub server_address {
 	return 'localhost:7474' unless $ENV{TEST_NEO4J_SERVER};
+	return 'localhost:7687' if $ENV{TEST_NEO4J_SERVER} =~ m{^bolt:(?://(?:localhost\b)?)?}i;
 	return '' . URI->new( $ENV{TEST_NEO4J_SERVER} )->host_port;
 }
 

@@ -53,18 +53,21 @@ sub new {
 	
 	if ($uri) {
 		$uri =~ s|^|http://| if $uri !~ m{:|/};
-		$uri =~ s|$|//localhost| if $uri =~ m{^[a-z]+:$};
+		$uri =~ s|^|http:| if $uri =~ m{^//};
 		$uri = URI->new($uri);
 		
+		if (! $uri->scheme || $uri->scheme !~ m/^https?|bolt$/) {
+			croak sprintf "URI scheme '%s' unsupported; use 'http'", $uri->scheme // "";
+		}
 		if ($uri->scheme eq 'bolt') {
 			eval { load 'Neo4j::Bolt' };
-			croak "Only the 'http' URI scheme is supported [$uri] (you may need to install the Neo4j::Bolt module)" if $@;
-		}
-		else {
-			croak "Only the 'http' URI scheme is supported [$uri]" if $uri->scheme !~ m/^https?$/;
+			croak "URI scheme 'bolt' requires Neo4j::Bolt. Can't locate Neo4j/Bolt.pm in \@INC " .
+			      "(you may need to install the Neo4j::Bolt module) (\@INC contains: @INC)" if $@;
 		}
 		
-		croak "Hostname is required [$uri]" if ! $uri->host;
+		$uri->host('localhost') unless $uri->host;
+		$uri->path('') if $uri->path_query eq '/';
+		$uri->fragment(undef);
 	}
 	else {
 		$uri = URI->new("http://localhost");
@@ -293,7 +296,7 @@ If you need remote access, consider using HTTPS instead of Bolt.
 Using HTTPS will result in an encrypted connection. In order to rule
 out a man-in-the-middle attack, the server's certificate must be
 verified. By default, this driver may be expected to use operating
-system default root certificates (not really tested yet). This
+system default root certificates. This
 will fail unless your Neo4j installation uses a key pair that is
 trusted and verifiable through the global CA infrastructure. For
 self-signed certificates (such as those automatically provided by

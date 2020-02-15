@@ -107,6 +107,11 @@ statement.
 
 =over
 
+=item * Make the URL a config option, so that it can be queried (and changed).
+
+=item * Allow passing config options directly to the constructor, e. g. in
+place of the URL (C<< Neo4j::Driver->new({ url=>"bolt:", timeout=>30 }) >>).
+
 =back
 
 =head2 L<Neo4j::Driver::Session>
