@@ -336,7 +336,7 @@ sub _deep_bless {
 	if (ref $data eq '' && ref $rest eq '') {  # scalar
 		return $data;
 	}
-	if (ref $data eq 'JSON::PP::Boolean' && ref $rest eq 'JSON::PP::Boolean') {  # boolean
+	if ( JSON::MaybeXS::is_bool($data) && JSON::MaybeXS::is_bool($rest) ) {  # boolean
 		return $data;
 	}
 	
