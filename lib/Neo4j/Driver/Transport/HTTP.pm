@@ -60,7 +60,13 @@ sub new {
 		timeout => $driver->{http_timeout},
 		follow => 1,
 	});
-	$client->setCa($driver->{ca_file}) if defined $driver->{ca_file};
+	if ($uri->scheme eq 'https') {
+		$client->setCa($driver->{tls_ca});
+		croak "HTTPS does not support unencrypted communication; use HTTP" if defined $driver->{tls} && ! $driver->{tls};
+	}
+	else {
+		croak "HTTP does not support encrypted communication; use HTTPS" if $driver->{tls};
+	}
 	$client->addHeader('Accept', $CONTENT_TYPE);
 	$client->addHeader('Content-Type', $CONTENT_TYPE);
 	$client->addHeader('X-Stream', 'true');

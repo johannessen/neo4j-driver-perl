@@ -29,7 +29,14 @@ sub new {
 		$uri->userinfo( $driver->{auth}->{principal} . ':' . $driver->{auth}->{credentials} );
 	}
 	
-	my $cxn = Neo4j::Bolt->connect("$uri");
+	my $cxn;
+	if ($driver->{tls}) {
+		my $options = { ca_file => $driver->{tls_ca} };
+		$cxn = Neo4j::Bolt->connect_tls("$uri", $options);
+	}
+	else {
+		$cxn = Neo4j::Bolt->connect("$uri");
+	}
 	unless ($cxn && $cxn->connected) {
 		# libneo4j-client seems to not always report human-readable error messages, so we re-create the most important ones here
 		croak 'Bolt error -13: Unknown host' if ! $cxn->errmsg && $cxn->errnum == -13;

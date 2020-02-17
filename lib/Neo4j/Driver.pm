@@ -34,6 +34,8 @@ my %OPTIONS = (
 	cypher_filter => 'cypher_filter',
 	cypher_types => 'cypher_types',
 	timeout => 'http_timeout',
+	tls => 'tls',
+	tls_ca => 'tls_ca',
 );
 
 my %DEFAULTS = (
@@ -238,7 +240,7 @@ details required to establish connections with a Neo4j database,
 including server URIs, credentials and other configuration.
 
 The URI passed to this method determines the type of driver created. 
-Only the C<http> URI scheme is currently supported.
+Only the C<http> and C<https> URI schemes are currently supported.
 
 If a part of the URI or even the entire URI is missing, suitable
 default values will be substituted. In particular, the host name
@@ -284,30 +286,6 @@ Using Bolt is much faster than HTTP, but at time of this writing the
 L<libneo4j-client|https://neo4j-client.net/#libneo4j-client> backend
 library that Neo4j::Bolt uses to connect to the database server only
 supports Neo4j version 3.x.
-
-TLS encryption is disabled in early versions of L<Neo4j::Bolt>.
-If you need remote access, consider using HTTPS instead of Bolt.
-
-=head2 HTTPS support
-
- $driver = Neo4j::Driver->new('https://localhost');
- $driver->config(ca_file => 'neo4j/certificates/neo4j.cert');
-
-Using HTTPS will result in an encrypted connection. In order to rule
-out a man-in-the-middle attack, the server's certificate must be
-verified. By default, this driver may be expected to use operating
-system default root certificates. This
-will fail unless your Neo4j installation uses a key pair that is
-trusted and verifiable through the global CA infrastructure. For
-self-signed certificates (such as those automatically provided by
-some Neo4j versions), you need to specify the location of a local
-copy of the server certificate. The driver config option C<ca_file>
-may be used for this; it corresponds to C<SSL_ca_file> in
-L<LWP::UserAgent> and L<IO::Socket::SSL>.
-
-See also the
-L<Neo4j Operations Manual|https://neo4j.com/docs/operations-manual/current/security/>
-for details on Neo4j network security.
 
 =head2 Parameter syntax conversion
 
@@ -375,6 +353,44 @@ L<select(2)> when using Bolt.
 The old C<< $driver->{http_timeout} >> syntax remains supported
 for the time being in order to ensure backwards compatibility,
 but its use is discouraged and it may be deprecated in future.
+
+=head2 tls
+
+ $driver->config(tls => 1);
+
+Specifies whether to use secure communication using TLS. This
+L<implies|IO::Socket::SSL/"Essential Information About SSL/TLS">
+not just encryption, but also verification of the server's identity.
+
+By default, the local system's trust store will be used to verify
+the server's identity. This will fail unless your Neo4j installation
+uses a key pair that is trusted and verifiable through the global
+CA infrastructure. If that's not the case, you may need to
+additionally use the C<tls_ca> option.
+
+This option defaults to C<0> (no encryption). This is generally what
+you want if you connect to a server on C<localhost>.
+
+This option is only useful for Bolt connections. For HTTP
+connections, the use of TLS encryption is governed by the chosen
+URI scheme (C<http> / C<https>).
+
+=head2 tls_ca
+
+ $driver->config(tls_ca => 'neo4j/certificates/neo4j.cert');
+
+Specifies the path to a file containing one or more trusted TLS
+certificates. When this option is given, encrypted connections will
+only be accepted if the server's identity can be verified using the
+certificates provided.
+
+The certificates in the file must in PEM encoding. They are expected
+to be "root" certificates, S<i. e.> the S<"CA bit"> needs to be set
+and the certificate presented by the server must be signed by one of
+the certificates in this file (or by an intermediary).
+
+Self-signed certificates (such as those automatically provided by
+some Neo4j versions) should also work if their S<"CA bit"> is set.
 
 =head1 ENVIRONMENT
 
