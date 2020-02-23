@@ -13,7 +13,7 @@ use Try::Tiny;
 
 use URI 1.25;
 use REST::Client 134;
-use JSON::MaybeXS qw();
+use JSON::MaybeXS 1.002004 qw(JSON);
 
 use Neo4j::Driver::ResultSummary;
 use Neo4j::Driver::StatementResult;
@@ -97,7 +97,7 @@ sub prepare {
 	my $json = { statement => '' . $query };
 	$json->{resultDataContents} = $RESULT_DATA_CONTENTS;
 	$json->{resultDataContents} = $RESULT_DATA_CONTENTS_GRAPH if $self->{return_graph};
-	$json->{includeStats} = JSON::MaybeXS::true if $self->{return_stats};
+	$json->{includeStats} = JSON()->true if $self->{return_stats};
 	$json->{parameters} = $parameters if defined $parameters;
 	
 	return $json;

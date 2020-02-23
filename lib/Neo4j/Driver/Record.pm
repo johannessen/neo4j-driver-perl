@@ -8,7 +8,7 @@ package Neo4j::Driver::Record;
 
 
 use Carp qw(croak);
-use JSON::MaybeXS qw(is_bool);
+use JSON::MaybeXS 1.002004 qw(is_bool);
 
 use Neo4j::Driver::ResultSummary;
 
