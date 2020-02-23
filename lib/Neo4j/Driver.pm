@@ -8,7 +8,6 @@ package Neo4j::Driver;
 
 
 use Carp qw(croak);
-use Module::Load;
 
 use URI 1.25;
 use Neo4j::Driver::Transport::HTTP;
@@ -30,7 +29,7 @@ my %NEO4J_DEFAULT_PORT = (
 );
 
 my %OPTIONS = (
-	ca_file => 'ca_file',
+	ca_file => 'tls_ca',
 	cypher_filter => 'cypher_filter',
 	cypher_types => 'cypher_types',
 	timeout => 'http_timeout',
@@ -59,10 +58,10 @@ sub new {
 		$uri = URI->new($uri);
 		
 		if (! $uri->scheme || $uri->scheme !~ m/^https?|bolt$/) {
-			croak sprintf "URI scheme '%s' unsupported; use 'http'", $uri->scheme // "";
+			croak sprintf "URI scheme '%s' unsupported; use 'http' or 'bolt'", $uri->scheme // "";
 		}
 		if ($uri->scheme eq 'bolt') {
-			eval { load 'Neo4j::Bolt' };
+			eval { require Neo4j::Bolt; };
 			croak "URI scheme 'bolt' requires Neo4j::Bolt. Can't locate Neo4j/Bolt.pm in \@INC " .
 			      "(you may need to install the Neo4j::Bolt module) (\@INC contains: @INC)" if $@;
 		}
@@ -130,7 +129,7 @@ sub session {
 	
 	my $transport;
 	if ($self->{uri}->scheme eq 'bolt') {
-		load 'Neo4j::Driver::Transport::Bolt';
+		require Neo4j::Driver::Transport::Bolt;
 		$transport = Neo4j::Driver::Transport::Bolt->new($self);
 	}
 	else {
@@ -154,6 +153,7 @@ __END__
 =head1 SYNOPSIS
 
  use Neo4j::Driver;
+ $uri = 'bolt://localhost';  # requires Neo4::Bolt
  $uri = 'http://localhost';
  $driver = Neo4j::Driver->new($uri)->basic_auth('neo4j', 'password');
  
@@ -181,6 +181,13 @@ this driver doesn't offer fully-fledged object bindings like the
 existing L<REST::Neo4p> module does. Nor does it offer any L<DBI>
 integration. However, it avoids the legacy C<cypher> endpoint,
 assuring compatibility with Neo4j versions 2.3, 3.x and 4.x.
+
+The HTTP and Bolt protocols are supported for connecting to Neo4j.
+Bolt requires installing the XS module L<Neo4j::Bolt>. Using Bolt
+is much faster than HTTP, but at time of this writing the
+L<libneo4j-client|https://neo4j-client.net/#libneo4j-client> backend
+library that L<Neo4j::Bolt> uses to connect to the database server
+only supports Neo4j version 3.x.
 
 B<As of version 0.13, the interface of this software may be
 considered stable.>
@@ -240,7 +247,8 @@ details required to establish connections with a Neo4j database,
 including server URIs, credentials and other configuration.
 
 The URI passed to this method determines the type of driver created. 
-Only the C<http> and C<https> URI schemes are currently supported.
+The C<http>, C<https>, and C<bolt> URI schemes are supported.
+Use of C<bolt> URIs requires L<Neo4::Bolt> to be installed.
 
 If a part of the URI or even the entire URI is missing, suitable
 default values will be substituted. In particular, the host name
@@ -266,26 +274,6 @@ L<Neo4j::Driver> implements the following experimental features.
 These are subject to unannounced modification or removal in future
 versions. Expect your code to break if you depend upon these
 features.
-
-=head2 Bolt support
-
- # For this to work, Neo4j::Bolt must be installed:
- # https://github.com/majensen/perlbolt
- # https://github.com/majensen/perlbolt/blob/master/README
- 
- $driver = Neo4j::Driver->new('bolt://localhost');
-
-Installing the XS module L<Neo4j::Bolt>
-(L<perlbolt|https://github.com/majensen/perlbolt>) adds support for
-the L<Bolt Protocol|https://boltprotocol.org/>, which can be used as
-an alternative to HTTP to connect to the Neo4j server. The design
-goal for this driver is to offer equal support for Bolt and HTTP.
-Where differences are unavoidable, they are documented.
-
-Using Bolt is much faster than HTTP, but at time of this writing the
-L<libneo4j-client|https://neo4j-client.net/#libneo4j-client> backend
-library that Neo4j::Bolt uses to connect to the database server only
-supports Neo4j version 3.x.
 
 =head2 Parameter syntax conversion
 
@@ -398,14 +386,6 @@ This software currently targets Neo4j versions 2.3, 3.x and 4.x.
 
 This software requires at least Perl 5.10, though you should consider
 using Perl 5.16 or newer if you can.
-
-=head1 PERFORMANCE
-
-Preliminary testing seems to indicate the two major bottlenecks are
-the HTTP transport to and from the Neo4j server, and the JSON
-parsing. Switching to the experimental Bolt protocol support may well
-increase the speed tenfold. You are encouraged to run your own tests
-for your specific application.
 
 =head1 DIAGNOSTICS
 

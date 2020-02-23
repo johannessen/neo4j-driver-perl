@@ -162,25 +162,6 @@ execution of a statement to have completed, you need to use the
 L<result|Neo4j::Driver::StatementResult>, for example by calling
 one of the methods C<fetch()>, C<list()> or C<summary()>.
 
-Transactions are often wrapped in a C<try> (or C<eval>) block to
-ensure that C<commit> and C<rollback> occur correctly. Note that the
-server will automatically roll back the transaction if any database
-errors occur while executing statements.
-
- use Try::Tiny;
- try {
-   $result = $tx->run($query, \%parameters);
-   $tx->commit;
- }
- catch {
-   say "Database error: $_";
-   say "Transaction closed by server." if ! $tx->is_open;
- };
-
-After C<commit> or C<rollback>, the transaction is automatically
-closed by the server and can no longer be used. The C<is_open> method
-can be used to determine the server-side transaction status.
-
 =head1 METHODS
 
 L<Neo4j::Driver::Transaction> implements the following methods.
@@ -200,12 +181,9 @@ After committing the transaction is closed and can no longer be used.
 Report whether this transaction is still open, which means commit
 or rollback did not happen.
 
-Transactions can also be closed by the server independently if there
-is an error in a request. This is typically detected by the driver
-on HTTP connections, but not on Bolt connections. Additionally, on
-HTTP connections, a transaction can timeout on the server due to
-inactivity. In both cases, it may in fact be closed even though
-this method returns a true value. The Neo4j server default
+On HTTP connections, a transaction can timeout on the server due
+to inactivity. In this case, it may in fact be closed even though
+this method returns a truthy value. The Neo4j server default
 C<dbms.rest.transaction.idle_timeout> is 60 seconds.
 
 =head2 rollback
@@ -277,6 +255,35 @@ converted to strings before they are sent to the Neo4j server.
 
  $transaction->run( REST::Neo4p::Query->new('RETURN 42') );
  $transaction->run( Neo4j::Cypher::Abstract->new->return(42) );
+
+=head1 ERROR HANDLING
+
+This driver always reports all errors using C<die()>. Error messages
+received from the Neo4j server are passed on as-is.
+
+Transactions are rolled back and closed automatically if the Neo4j
+server encounters an error when running a query. However, if an
+I<internal> error occurs in the driver or in one of its supporting
+modules, explicit transactions remain open.
+
+Typically, no particular handling of error conditions is required.
+But if you wrap your transaction in a C<try> (or C<eval>) block,
+you intend to continue using the same session even after an error
+condition, I<and> you want to be absolutely sure the session is in
+a defined state, you can roll back a failed transaction manually:
+
+ use Try::Tiny;
+ $tx = $session->begin_transaction;
+ try {
+   ...;
+   $tx->commit;
+ }
+ catch {
+   say "Database error: $_";
+   ...;
+   $tx->rollback if $tx->is_open;
+ };
+ # at this point, $session is safe to use
 
 =head1 EXPERIMENTAL FEATURES
 

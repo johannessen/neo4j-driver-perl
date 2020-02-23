@@ -29,6 +29,9 @@ for clarity. Create an instance on creation of the driver's first session,
 so that it's relatively cheap and can safely be handed down to the
 L<ResultSummary|Neo4j::Driver::ResultSummary>. Get server version with Bolt.
 
+=item * L<Neo4j::Driver/"Parameter syntax conversion">: make stable and move
+filter implementation to C<Transaction> in preparation of Bolt v3 support
+
 =item * L<Neo4j::Driver::Record/"meta">: remove
 
 =item * L<Neo4j::Driver::Session/"Calling in list context">: make illegal

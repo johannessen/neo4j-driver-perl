@@ -133,7 +133,14 @@ sub _fetch_next {
 	if ( $self->{stream} ) {
 		my @row = $self->{stream}->fetch_next;
 		$record = { row => \@row } if @row;
-		croak 'fetch_next Bolt error: client ' . $self->{stream}->client_errnum . ' ' . $self->{stream}->client_errmsg . '; server ' . $self->{stream}->server_errcode . ' ' . $self->{stream}->server_errmsg if $self->{stream}->failure && $self->{stream}->failure != -1;
+		
+		unless ($self->{stream}->success) {
+			# success() == -1 is not an error condition; it simply
+			# means that there are no more records on the stream
+			my $stream = $self->{stream};
+			croak sprintf "Bolt error %i: %s", $stream->client_errnum, $stream->client_errmsg unless $stream->server_errcode || $stream->server_errmsg;
+			croak sprintf "%s:\n%s\nBolt error %i: %s", $stream->server_errcode, $stream->server_errmsg, $stream->client_errnum, $stream->client_errmsg;
+		}
 	}
 	else {
 		# simulate a JSON-backed result stream (only used in testing)

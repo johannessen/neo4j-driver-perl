@@ -31,14 +31,16 @@ sub new {
 	
 	my $cxn;
 	if ($driver->{tls}) {
-		my $options = { ca_file => $driver->{tls_ca} };
-		$cxn = Neo4j::Bolt->connect_tls("$uri", $options);
+		$cxn = Neo4j::Bolt->connect_tls("$uri", {
+			timeout => $driver->{http_timeout},
+			ca_file => $driver->{tls_ca},
+		});
 	}
 	else {
-		$cxn = Neo4j::Bolt->connect("$uri");
+		$cxn = Neo4j::Bolt->connect( "$uri", $driver->{http_timeout} );
 	}
 	unless ($cxn && $cxn->connected) {
-		# libneo4j-client seems to not always report human-readable error messages, so we re-create the most important ones here
+		# Neo4j::Bolt < 0.10 didn't report human-readable error messages (perlbolt#24), so we re-create the most important ones here
 		croak 'Bolt error -13: Unknown host' if ! $cxn->errmsg && $cxn->errnum == -13;
 		croak 'Bolt error -14: Could not agree on a protocol version' if ! $cxn->errmsg && $cxn->errnum == -14;
 		croak 'Bolt error -15: Username or password is invalid' if ! $cxn->errmsg && $cxn->errnum == -15;
@@ -83,9 +85,16 @@ sub run {
 	if ($statement->[0]) {
 		$stream = $self->{connection}->run_query( @$statement );
 		
-		croak 'Bolt error ' . $self->{connection}->errnum . ' ' . $self->{connection}->errmsg unless $stream;
-		croak 'run and failure/success mismatch: ' . $stream->failure . '/' . $stream->success unless $stream->failure == -1 || $stream->success == -1 || ($stream->failure xor $stream->success);  # assertion
-		croak 'Bolt stream error: client ' . $stream->client_errnum . ' ' . $stream->client_errmsg . '; server ' . $stream->server_errcode . ' ' . $stream->server_errmsg if $stream->failure && $stream->failure != -1;
+		if (! $stream) {
+			croak sprintf "Bolt error %i: %s", $self->{connection}->errnum, $self->{connection}->errmsg;
+		}
+		if ($stream->failure) {
+			# failure() == -1 is an error condition because run_query_()
+			# always calls update_errstate_rs_obj()
+			croak sprintf "Bolt error %i: %s", $stream->client_errnum, $stream->client_errmsg unless $stream->server_errcode || $stream->server_errmsg;
+			eval { $tx->rollback; };  # if rollback fails, too, report the primary error only
+			croak sprintf "%s:\n%s\nBolt error %i: %s", $stream->server_errcode, $stream->server_errmsg, $stream->client_errnum, $stream->client_errmsg;
+		}
 		
 		if ($gather_results) {
 			$result = Neo4j::Driver::StatementResult->new({
