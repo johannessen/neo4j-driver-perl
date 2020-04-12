@@ -24,9 +24,15 @@ BEGIN { $JSON_CODER = sub {
 	return JSON::MaybeXS->new(utf8 => 1, allow_nonref => 0);
 }}
 
-# https://neo4j.com/docs/http-api/current/
-our $TRANSACTION_ENDPOINT = '/db/data/transaction';
-our $COMMIT_ENDPOINT = '/db/data/transaction/commit';
+our %ENDPOINTS_NEO4J_3 = (  # https://neo4j.com/docs/http-api/3.5/
+	new_transaction => '/db/data/transaction',
+	new_commit => '/db/data/transaction/commit',
+);
+our %ENDPOINTS_NEO4J_4 = (  # https://neo4j.com/docs/http-api/4.0/
+	new_transaction => '/db/{databaseName}/tx',
+	new_commit => '/db/{databaseName}/tx/commit',
+);
+
 our $CONTENT_TYPE = 'application/json';
 
 # https://neo4j.com/docs/rest-docs/current/#rest-api-service-root
@@ -46,6 +52,7 @@ sub new {
 		die_on_error => $driver->{die_on_error},
 		cypher_types => $driver->{cypher_types},
 		cypher_filter => $driver->{cypher_filter},
+		endpoints => \%ENDPOINTS_NEO4J_3,
 	}, $class;
 	
 	my $uri = $driver->{uri};
@@ -77,6 +84,16 @@ sub new {
 	$driver->{client_factory}->($self) if $driver->{client_factory};  # used for testing
 	
 	return $self;
+}
+
+
+# Switch to using the specified database (Neo4j >= 4 only).
+sub _database {
+	my ($self, $db) = @_;
+	
+	$self->{endpoints} = { %ENDPOINTS_NEO4J_4 };
+	$self->{endpoints}->{new_transaction} =~ s/{databaseName}/$db/;
+	$self->{endpoints}->{new_commit} =~ s/{databaseName}/$db/;
 }
 
 
@@ -139,7 +156,8 @@ sub _request {
 	
 	my $client = $self->{client};
 	
-	my $tx_endpoint = $tx->{transaction_endpoint} // URI->new( $TRANSACTION_ENDPOINT );
+	my $tx_endpoint = $tx->{transaction_endpoint};
+	$tx_endpoint //= URI->new( $self->{endpoints}->{new_transaction} );
 	$client->request( $method, "$tx_endpoint", $content );
 	
 	my $content_type = $client->responseHeader('Content-Type');
@@ -151,7 +169,7 @@ sub _request {
 			push @errors, $client->responseContent();
 		}
 		elsif ($self->{die_on_error}) {
-			croak $errors[0];
+			croak "$errors[0] on $method to $tx_endpoint";
 		}
 	}
 	if ($content_type && $content_type =~ m|^application/json\b|) {
@@ -198,7 +216,8 @@ sub begin {
 sub autocommit {
 	my ($self, $tx) = @_;
 	
-	$tx->{transaction_endpoint} = $tx->{commit_endpoint} // URI->new( $COMMIT_ENDPOINT );
+	$tx->{transaction_endpoint} = $tx->{commit_endpoint};
+	$tx->{transaction_endpoint} //= URI->new( $self->{endpoints}->{new_commit} );
 }
 
 
