@@ -10,4 +10,5 @@
 
 /t/simulator/*.txt
 
+/neo4j-community-*
 /Stuff
