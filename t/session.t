@@ -21,12 +21,13 @@ use Test::Exception;
 
 
 subtest 'ServerInfo' => sub {
-	plan tests => 3;
-	lives_and { my $a = $s->server->address; like(Neo4j::Test->server_address, qr/$a/) } 'server address';
-	my $neo4j_version;
-	lives_ok { $neo4j_version = $s->server->version } 'get server version';
-	like $neo4j_version, qr(^Neo4j/\d+\.\d+\.\d), 'server version syntax';
-	diag $neo4j_version if $ENV{AUTHOR_TESTING};  # give feedback about which Neo4j version is being tested
+	plan tests => 4;
+	my $server;
+	lives_ok { $server = $s->server } 'get ServerInfo';
+	isa_ok $server, 'Neo4j::Driver::ServerInfo', 'isa ServerInfo';
+	lives_and { my $a = $server->address; like(Neo4j::Test->server_address, qr/$a/) } 'server address';
+	like $server->version, qr(^Neo4j/\d+\.\d+\.\d), 'server version syntax';
+	diag $server->version if $ENV{AUTHOR_TESTING};  # give feedback about which Neo4j version is being tested
 };
 
 

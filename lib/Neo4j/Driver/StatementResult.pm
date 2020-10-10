@@ -36,6 +36,7 @@ sub new {
 		statement => $params->{statement},
 		cxn => $params->{bolt_connection},  # important to avoid dereferencing the connection
 		stream => $params->{bolt_stream},
+		server_info => $params->{server_info},
 	};
 	
 	# HTTP JSON results can be fully buffered immediately
@@ -209,7 +210,7 @@ sub summary {
 	
 	$self->_fill_buffer;
 	
-	$self->{summary} //= Neo4j::Driver::ResultSummary->new( $self->{result}, $self->{notifications}, $self->{statement} );
+	$self->{summary} //= Neo4j::Driver::ResultSummary->new( $self->{result}, $self->{notifications}, $self->{statement}, $self->{server_info} );
 	
 	return $self->{summary}->init;
 }

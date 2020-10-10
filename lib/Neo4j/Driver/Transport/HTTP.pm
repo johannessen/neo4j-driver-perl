@@ -16,6 +16,7 @@ use REST::Client 134;
 use JSON::MaybeXS 1.003003 qw();
 
 use Neo4j::Driver::ResultSummary;
+use Neo4j::Driver::ServerInfo;
 use Neo4j::Driver::StatementResult;
 
 
@@ -26,17 +27,12 @@ BEGIN { $JSON_CODER = sub {
 
 our %ENDPOINTS_NEO4J_3 = (  # https://neo4j.com/docs/http-api/3.5/
 	new_transaction => '/db/data/transaction',
-	new_commit => '/db/data/transaction/commit',
-);
-our %ENDPOINTS_NEO4J_4 = (  # https://neo4j.com/docs/http-api/4.0/
-	new_transaction => '/db/{databaseName}/tx',
-	new_commit => '/db/{databaseName}/tx/commit',
 );
 
 our $CONTENT_TYPE = 'application/json';
 
-# https://neo4j.com/docs/rest-docs/current/#rest-api-service-root
-our $SERVICE_ROOT_ENDPOINT = '/db/data/';
+our $DISCOVERY_ENDPOINT = '/';
+our $COMMIT_ENDPOINT = 'commit';
 
 # use 'rest' in place of broken 'meta', see neo4j #12306
 our $RESULT_DATA_CONTENTS = ['row', 'rest'];
@@ -52,7 +48,6 @@ sub new {
 		die_on_error => $driver->{die_on_error},
 		cypher_types => $driver->{cypher_types},
 		cypher_filter => $driver->{cypher_filter},
-		endpoints => \%ENDPOINTS_NEO4J_3,
 	}, $class;
 	
 	my $uri = $driver->{uri};
@@ -69,6 +64,7 @@ sub new {
 	});
 	if ($uri->scheme eq 'https') {
 		$client->setCa($driver->{tls_ca});
+		croak "TLS CA file '$driver->{tls_ca}' doesn't exist (or is not a plain file)" if defined $driver->{tls_ca} && ! -f $driver->{tls_ca};  # REST::Client 273 doesn't support symbolic links
 		croak "HTTPS does not support unencrypted communication; use HTTP" if defined $driver->{tls} && ! $driver->{tls};
 	}
 	else {
@@ -87,13 +83,47 @@ sub new {
 }
 
 
-# Switch to using the specified database (Neo4j >= 4 only).
-sub _database {
-	my ($self, $db) = @_;
+# Use the REST service discovery API to obtain ServerInfo and the
+# correct endpoints depending on the server version.
+sub _connect {
+	my ($self, $database) = @_;
 	
-	$self->{endpoints} = { %ENDPOINTS_NEO4J_4 };
-	$self->{endpoints}->{new_transaction} =~ s/{databaseName}/$db/;
-	$self->{endpoints}->{new_commit} =~ s/{databaseName}/$db/;
+	my ($neo4j_version, $tx_endpoint);
+	my @discovery_queue = ($DISCOVERY_ENDPOINT);
+	while (@discovery_queue) {
+		my $tx = { transaction_endpoint => shift @discovery_queue };
+		my $service = $self->_request($tx, 'GET');
+		
+		$neo4j_version = $service->{neo4j_version};
+		$tx_endpoint = $service->{transaction};
+		last if $neo4j_version && $tx_endpoint;
+		
+		# a different discovery endpoint existed in Neo4j < 4.0
+		if ($service->{data}) {
+			push @discovery_queue, URI->new( $service->{data} )->path;
+		}
+	}
+	
+	croak "Neo4j server not found (ServerInfo discovery failed)" unless $neo4j_version && $tx_endpoint;
+	
+	$self->{server_info} = Neo4j::Driver::ServerInfo->new({
+		uri => $self->{client}->getHost(),
+		version => "Neo4j/$neo4j_version",
+	});
+	
+	if ($neo4j_version !~ m{^[23]\.}) {
+		if (defined $database) {
+			$tx_endpoint =~ s/{databaseName}/$database/;
+		}
+		else {  # this seems to work most of the time (see GH#6)
+			$tx_endpoint = $ENDPOINTS_NEO4J_3{new_transaction};
+		}
+	}
+	
+	$self->{endpoints} = {
+		new_transaction => "$tx_endpoint",
+		new_commit => "$tx_endpoint/$COMMIT_ENDPOINT",
+	};
 }
 
 
@@ -145,6 +175,7 @@ sub run {
 			deep_bless => \&_deep_bless,
 			detach_stream => $detach_stream,
 			cypher_types => $self->{cypher_types},
+			server_info => $self->{server_info},
 		});
 	}
 	return @results;
@@ -157,7 +188,7 @@ sub _request {
 	my $client = $self->{client};
 	
 	my $tx_endpoint = $tx->{transaction_endpoint};
-	$tx_endpoint //= URI->new( $self->{endpoints}->{new_transaction} );
+	$tx_endpoint //= URI->new( $self->{endpoints}->{new_transaction} )->path;
 	$client->request( $method, "$tx_endpoint", $content );
 	
 	my $content_type = $client->responseHeader('Content-Type');
@@ -217,7 +248,7 @@ sub autocommit {
 	my ($self, $tx) = @_;
 	
 	$tx->{transaction_endpoint} = $tx->{commit_endpoint};
-	$tx->{transaction_endpoint} //= URI->new( $self->{endpoints}->{new_commit} );
+	$tx->{transaction_endpoint} //= URI->new( $self->{endpoints}->{new_commit} )->path;
 }
 
 
@@ -244,33 +275,6 @@ sub rollback {
 }
 
 
-sub server_info {
-	my ($self) = @_;
-	
-	# That the ServerInfo is provided by the same object
-	# is an implementation detail that might change in future.
-	return $self;
-}
-
-
-# server_info->
-sub address {
-	my ($self) = @_;
-	
-	return URI->new( $self->{client}->getHost() )->host_port;
-}
-
-
-# server_info->
-sub version {
-	my ($self) = @_;
-	
-	foreach my $endpoint ( '/', $SERVICE_ROOT_ENDPOINT ) {
-		my $json = $self->{client}->GET( $endpoint )->responseContent();
-		my $neo4j_version = $self->{json_coder}->decode($json)->{neo4j_version};
-		return "Neo4j/$neo4j_version" if $neo4j_version;
-	}
-}
 
 
 sub _deep_bless {

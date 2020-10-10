@@ -134,7 +134,7 @@ sub session {
 	}
 	else {
 		$transport = Neo4j::Driver::Transport::HTTP->new($self);
-		$transport->_database($options{database}) if defined $options{database};
+		$transport->_connect($options{database});
 	}
 	$self->{session} = 1;
 	
