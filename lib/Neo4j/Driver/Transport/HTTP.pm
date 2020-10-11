@@ -282,14 +282,14 @@ sub _deep_bless {
 	
 	# "meta" is broken, so we primarily use "rest", see neo4j #12306
 	
-	if (ref $data eq 'HASH' && ref $rest eq 'HASH' && ref $rest->{metadata} eq 'HASH' && $rest->{self} && $rest->{self} =~ m|/db/data/node/|) {  # node
+	if (ref $data eq 'HASH' && ref $rest eq 'HASH' && ref $rest->{metadata} eq 'HASH' && $rest->{self} && $rest->{self} =~ m|/db/[^/]+/node/|) {  # node
 		bless $data, $cypher_types->{node};
 		$data->{_meta} = $rest->{metadata};
 		$data->{_meta}->{deleted} = $meta->{deleted} if ref $meta eq 'HASH';
 		$cypher_types->{init}->($data) if $cypher_types->{init};
 		return $data;
 	}
-	if (ref $data eq 'HASH' && ref $rest eq 'HASH' && ref $rest->{metadata} eq 'HASH' && $rest->{self} && $rest->{self} =~ m|/db/data/relationship/|) {  # relationship
+	if (ref $data eq 'HASH' && ref $rest eq 'HASH' && ref $rest->{metadata} eq 'HASH' && $rest->{self} && $rest->{self} =~ m|/db/[^/]+/relationship/|) {  # relationship
 		bless $data, $cypher_types->{relationship};
 		$data->{_meta} = $rest->{metadata};
 		$rest->{start} =~ m|/([0-9]+)$|;
