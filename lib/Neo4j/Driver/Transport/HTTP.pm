@@ -25,10 +25,6 @@ BEGIN { $JSON_CODER = sub {
 	return JSON::MaybeXS->new(utf8 => 1, allow_nonref => 0);
 }}
 
-our %ENDPOINTS_NEO4J_3 = (  # https://neo4j.com/docs/http-api/3.5/
-	new_transaction => '/db/data/transaction',
-);
-
 our $CONTENT_TYPE = 'application/json';
 
 our $DISCOVERY_ENDPOINT = '/';
@@ -114,8 +110,16 @@ sub _connect {
 	if ($neo4j_version !~ m{^[23]\.}) {
 		if (! defined $database) {
 			# discover default database on Neo4j >= 4
-			# TODO (see GH#6), but this acually works most of the time:
-			$tx_endpoint = $ENDPOINTS_NEO4J_3{new_transaction};
+			eval {
+				my $endpoint = "$tx_endpoint/$COMMIT_ENDPOINT";
+				$endpoint =~ s/{databaseName}/system/;
+				my ($result) = $self->run(
+					{ transaction_endpoint => URI->new( $endpoint )->path },
+					{ statement => 'SHOW DEFAULT DATABASE', resultDataContents => $RESULT_DATA_CONTENTS },
+				);
+				$database = $result->single->get('name');
+			};
+			croak $@ . "The default database could not be determined" unless defined $database;
 		}
 		$database = URI::Escape::uri_escape_utf8 $database;
 		$tx_endpoint =~ s/{databaseName}/$database/;
