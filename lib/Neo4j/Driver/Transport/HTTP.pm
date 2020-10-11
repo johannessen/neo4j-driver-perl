@@ -11,7 +11,7 @@ use Carp qw(carp croak);
 our @CARP_NOT = qw(Neo4j::Driver::Transaction);
 use Try::Tiny;
 
-use URI 1.25;
+use URI 1.31;
 use REST::Client 134;
 use JSON::MaybeXS 1.003003 qw();
 
@@ -112,12 +112,13 @@ sub _connect {
 	});
 	
 	if ($neo4j_version !~ m{^[23]\.}) {
-		if (defined $database) {
-			$tx_endpoint =~ s/{databaseName}/$database/;
-		}
-		else {  # this seems to work most of the time (see GH#6)
+		if (! defined $database) {
+			# discover default database on Neo4j >= 4
+			# TODO (see GH#6), but this acually works most of the time:
 			$tx_endpoint = $ENDPOINTS_NEO4J_3{new_transaction};
 		}
+		$database = URI::Escape::uri_escape_utf8 $database;
+		$tx_endpoint =~ s/{databaseName}/$database/;
 	}
 	
 	$self->{endpoints} = {

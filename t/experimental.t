@@ -20,7 +20,7 @@ my $s = $driver->session;
 # those features or moved elsewhere once the features are documented
 # and thus officially supported.
 
-use Test::More 0.96 tests => 13;
+use Test::More 0.96 tests => 12;
 use Test::Exception;
 use Test::Warnings qw(warnings :no_end_test);
 
@@ -115,11 +115,6 @@ subtest 'multiple statements as array' => sub {
 		lives_and { is $r->[1]->single->get, 23 } 'retrieve value';
 		# TODO: also check statement order in summary
 	};
-};
-
-
-subtest 'database selection' => sub {
-	pass;  # difficult to test right now, and we'll make a change here anyway very soon
 };
 
 

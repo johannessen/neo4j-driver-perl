@@ -30,11 +30,6 @@ C<0> and C<get('0')> would mean I<key> C<0>. The JS driver uses this concept.
 
 =over
 
-=item * L<Neo4j::Driver/"Database selection">: Make stable. While running
-multiple databases is mostly an enterprise feature, even the community edition
-comes with the C<system> database in addition to the main/default database,
-thus switching databases must be possible somehow.
-
 =item * L<Neo4j::Driver/"Parameter syntax conversion">: make stable and move
 filter implementation to C<Transaction> in preparation of Bolt v3 support
 
