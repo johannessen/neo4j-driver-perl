@@ -25,8 +25,6 @@ and L<https://github.com/makamaka/JSON-PP/commit/81dd25b>.
 
 =item * Add timers to L<Neo4j::Driver::ResultSummary> (see C<Neo4j::Bolt>).
 
-=item * Make sure accessing a database that has authentication disabled works.
-
 =back
 
 =head2 Experimental features
@@ -115,6 +113,14 @@ statement.
 =over
 
 =item * Make the URL a config option, so that it can be queried (and changed).
+
+=item * Make the auth data a config option, so that it can be queried. As
+alternative ways to I<set> the auth data, C<basic_auth()> should continue
+to be supported as an alias and the user info should be parsed from the URL
+if given (however, URLs without user info should not change the auth data
+stored in the driver). A possible implementation would be to create a new
+L<AuthToken|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/AuthTokens.html>
+module that would offer suitable methods, but this seems like overkill.
 
 =item * Allow passing config options directly to the constructor, e. g. in
 place of the URL (C<< Neo4j::Driver->new({ url=>"bolt:", timeout=>30 }) >>).
