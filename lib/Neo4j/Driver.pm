@@ -284,8 +284,6 @@ Each session connects to a single database, which may be specified
 using the C<database> option. If no defined value is given for this
 option, the driver will select the default database configured
 in F<neo4j.conf>.
-(As of S<L<Neo4j::Driver> 0.16>, selecting the default database
-sometimes doesn't work reliably with Neo4j 4.x (see L</BUGS>).)
 
  $session = $driver->session( database => 'system' );
 
@@ -423,16 +421,6 @@ These warnings may be disabled if desired.
  no warnings 'ambiguous';
 
 =head1 BUGS
-
-There is a known issue
-(L<#6|https://github.com/johannessen/neo4j-driver-perl/issues/6>)
-that may prevent automatic selection of the default database on
-some Neo4j 4.0 installations. In these cases, L<Neo4j::Driver> will
-report C<Network error: 404 Not Found> when you try to run any
-statement. As a workaround, you can select the default database
-(usually named C<neo4j> or C<graph.db>) manually like this:
-
- $session = $driver->session(database => 'neo4j');
 
 See the F<TODO> document and Github for known issues and planned
 improvements. Please report new issues and other feedback on Github.
