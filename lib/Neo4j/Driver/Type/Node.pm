@@ -174,7 +174,7 @@ is returned instead.
 
 =item * Equivalent documentation for the official Neo4j drivers:
 L<Node (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/types/Node.html>,
-L<Node (Python)|https://neo4j.com/docs/api/python-driver/current/types/graph.html#neo4j.types.graph.Node>
+L<Node (Python)|https://neo4j.com/docs/api/python-driver/current/api.html#node>
 
 =back
 

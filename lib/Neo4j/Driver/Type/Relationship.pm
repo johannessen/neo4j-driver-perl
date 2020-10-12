@@ -191,7 +191,7 @@ is returned instead.
 
 =item * Equivalent documentation for the official Neo4j drivers:
 L<Relationship (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/types/Relationship.html>,
-L<Relationship (Python)|https://neo4j.com/docs/api/python-driver/current/types/graph.html#neo4j.types.graph.Relationship>
+L<Relationship (Python)|https://neo4j.com/docs/api/python-driver/current/api.html#relationship>
 
 =back
 

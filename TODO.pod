@@ -18,6 +18,9 @@ the scalar's FLAGS (namely, C<POK>/C<IOK>; see L<Devel::Peek/"EXAMPLES"> and
 L<JSON::PP>'s C<_looks_like_number>). Then C<get(0)> would mean I<index>
 C<0> and C<get('0')> would mean I<key> C<0>. The JS driver uses this concept.
 
+See also L<https://github.com/makamaka/JSON-PP/commit/87bd6a4>
+and L<https://github.com/makamaka/JSON-PP/commit/81dd25b>.
+
 =item * Implement spatial and temporal types.
 
 =item * Add timers to L<Neo4j::Driver::ResultSummary> (see C<Neo4j::Bolt>).
@@ -171,6 +174,8 @@ priority.
 =head2 L<Neo4j::Driver::StatementResult>
 
 =over
+
+=item * Rename C<Result>, in line with the official drivers.
 
 =back
 

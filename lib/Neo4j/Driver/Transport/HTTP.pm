@@ -270,8 +270,7 @@ sub commit {
 sub rollback {
 	my ($self, $tx) = @_;
 	
-	# Explicitly marking this transaction as closed by removing the commit
-	# URL is only necessary for transactions that never have been used.
+	# Transactions that never have been used have no endpoint of their own.
 	# These would initially contact the server's root transaction endpoint,
 	# DELETE'ing which fails (as it should). But calling rollback on an
 	# open transaction should never fail. Hence we need to special-case

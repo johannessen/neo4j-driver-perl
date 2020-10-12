@@ -259,7 +259,7 @@ including server URIs, credentials and other configuration.
 
 The URI passed to this method determines the type of driver created. 
 The C<http>, C<https>, and C<bolt> URI schemes are supported.
-Use of C<bolt> URIs requires L<Neo4::Bolt> to be installed.
+Use of C<bolt> URIs requires L<Neo4j::Bolt> to be installed.
 
 If a part of the URI or even the entire URI is missing, suitable
 default values will be substituted. In particular, the host name
@@ -396,7 +396,7 @@ certificates. When this option is given, encrypted connections will
 only be accepted if the server's identity can be verified using the
 certificates provided.
 
-The certificates in the file must in PEM encoding. They are expected
+The certificates in the file must be PEM encoded. They are expected
 to be "root" certificates, S<i. e.> the S<"CA bit"> needs to be set
 and the certificate presented by the server must be signed by one of
 the certificates in this file (or by an intermediary).

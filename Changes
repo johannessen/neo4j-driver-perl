@@ -1,6 +1,6 @@
 Revision history for Neo4j::Driver
 
-0.1605  2020-10-11
+0.17  2020-10-12
 
 REMINDER: Neo4j::Driver 0.13 deprecated the old syntax to access nodes,
 relationships and paths. You need to use the new accessor methods introduced

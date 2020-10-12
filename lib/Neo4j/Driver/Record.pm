@@ -121,7 +121,7 @@ index.
 
 When called without parameters, C<get()> will return the first
 field. If there is more than a single field, a warning in the
-category `ambiguous` will be issued.
+category C<ambiguous> will be issued.
 
  $value = $session->run('RETURN "It works!"')->single->get;
  $value = $session->run('RETURN "warning", "ambiguous"')->single->get;
