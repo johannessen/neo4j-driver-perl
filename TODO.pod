@@ -11,16 +11,6 @@ See L<https://github.com/johannessen/neo4j-driver-perl/issues>.
 
 =over
 
-=item * B<Bugfix:> The C<get> method behaves unpredictably for queries
-that have fields with conflicting indexes and keys such as C<RETURN 1, 0>.
-It should be possible to distinguish between a key and an index by inspecting
-the scalar's FLAGS (namely, C<POK>/C<IOK>; see L<Devel::Peek/"EXAMPLES"> and
-L<JSON::PP>'s C<_looks_like_number>). Then C<get(0)> would mean I<index>
-C<0> and C<get('0')> would mean I<key> C<0>. The JS driver uses this concept.
-
-See also L<https://github.com/makamaka/JSON-PP/commit/87bd6a4>
-and L<https://github.com/makamaka/JSON-PP/commit/81dd25b>.
-
 =item * Implement spatial and temporal types.
 
 =item * Add timers to L<Neo4j::Driver::ResultSummary> (see C<Neo4j::Bolt>).
@@ -204,8 +194,7 @@ L<https://github.com/neo4j/neo4j-python-driver/wiki/1.6-changelog#160a1>.
 
 =over
 
-=item * The C<list> implementation is quite ugly and probably has bugs with
-regards to index/key collisions.
+=item * The entire package can probably be removed now.
 
 =back
 

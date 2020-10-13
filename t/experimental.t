@@ -20,7 +20,7 @@ my $s = $driver->session;
 # those features or moved elsewhere once the features are documented
 # and thus officially supported.
 
-use Test::More 0.96 tests => 12;
+use Test::More 0.96 tests => 11;
 use Test::Exception;
 use Test::Warnings qw(warnings :no_end_test);
 
@@ -225,21 +225,6 @@ END
 	warnings { is $r->get_bool(6), undef, 'get_bool false'; };
 	warnings { ok $r->get_bool(5), 'get_bool true'; };
 	warnings { is $r->get_bool(3), 0, 'get_bool 0'; };
-};
-
-
-subtest 'support for get_person in LOMS plugin' => sub {
-	plan tests => 6;
-	$r = $s->run('RETURN 1 AS one, 2 AS two')->single;
-	lives_and { is $r->{column_keys}->count, 2 } 'ResultColumns count 2';
-	lives_and { is $r->{column_keys}->add('three'), 2 } 'ResultColumns add';
-	lives_and { is $r->{column_keys}->count, 3 } 'ResultColumns count 3';
-	$r->{row}->[2] = 'Three!';
-	lives_and { is $r->get(2), 'Three!' } 'ResultColumns get col by index';
-	lives_and { is $r->get('three'), 'Three!' } 'ResultColumns get col by name';
-	throws_ok {
-		$s->run('')->_column_keys;
-	} qr/missing columns/i, 'result missing columns';
 };
 
 

@@ -16,28 +16,38 @@ my $s = $driver->session;
 
 # The following tests are for details of the Record class.
 
-use Test::More 0.96 tests => 2;
+use Test::More 0.96 tests => 2 + 1;
 use Test::Exception;
-use Test::Warnings qw(warnings :no_end_test);
+use Test::Warnings qw(warnings);
 
 
 my ($q, $r);
 
 
-subtest 'wrong/missing field names for get()' => sub {
-	plan tests => 7;
+subtest 'wrong/ambiguous field names for get()' => sub {
+	plan tests => 3 + 6 + 6;
+	lives_ok { $r = 0; $r = $s->run('RETURN 2, 1 AS NaN, 0')->single; } 'query lives';
 	TODO: {
 		local $TODO = 'fix to not simply return the first field';
 		throws_ok {
-			warnings { $s->run('RETURN 1 AS one, 2 AS two')->single->get; }
+			warnings { $r->get; }
 		} qr/\bambiguous\b.*\bget\b.*\bfield/i, 'ambiguous get without field';
 	}
+	lives_and { is $r->get( 1.0 ), 1 } 'get(1.0)';
+	# index/key collisions
+	is $r->get( 0 ), 2, 'get( 0 )';
+	is $r->get("0"), 0, 'get("0")';
+	is $r->get( 2 ), 0, 'get( 2 )';
+	is $r->get("2"), 2, 'get("2")';
+	dies_ok { $r->get("1"); } 'get("1") dies';
+	is $r->get(0+"NaN"), 1, 'get(NaN)';
 	$q = 'RETURN 1 AS a';
-	lives_ok { is 1, $s->run($q)->single->get; } 'unambiguous get without field';
+	lives_and { is $s->run($q)->single->get(), 1 } 'unambiguous get without field';
 	dies_ok { $s->run($q)->single->get({}); } 'non-scalar field';
 	dies_ok { $s->run($q)->single->get(1); } 'index out of bounds';
 	dies_ok { $s->run($q)->single->get(-1); } 'index negative';
-	dies_ok { $s->run($q)->single->get('b'); } 'field not present';
+	dies_ok { $s->run($q)->single->get(.1); } 'index not integer';
+	dies_ok { $s->run($q)->single->get("\N{U+0100}"); } 'field not present';
 };
 
 

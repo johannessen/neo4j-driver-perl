@@ -1,5 +1,10 @@
 Revision history for Neo4j::Driver
 
+0.1701  2020-10-13
+
+ - fix handling of index/key collisions in field names
+ - deprecate experimental Record->{column_keys} access
+
 0.17  2020-10-12
 
 REMINDER: Neo4j::Driver 0.13 deprecated the old syntax to access nodes,

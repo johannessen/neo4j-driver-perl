@@ -18,7 +18,7 @@ my $s = $driver->session;
 # functionality. If the behaviour of such functionality changes, we
 # want it to be a conscious decision, hence we test for it.
 
-use Test::More 0.96 tests => 1 + 4;
+use Test::More 0.96 tests => 1 + 5;
 use Test::Exception;
 use Test::Warnings qw(warning warnings);
 
@@ -86,6 +86,21 @@ subtest 'stats' => sub {
 	lives_and { warnings { is scalar keys %{$r->stats}, 0 } } 'no stats: none';
 	lives_and { warnings { is ref $r->single->stats, 'HASH' } } 'no single stats: type';
 	lives_and { warnings { is scalar keys %{$r->single->stats}, 0 } } 'no single stats: none';
+};
+
+
+subtest 'support for get_person in LOMS plugin' => sub {
+	plan tests => 6;
+	$r = $s->run('RETURN 1 AS one, 2 AS two')->single;
+	lives_and { warnings { is $r->{column_keys}->count, 2 } } 'ResultColumns count 2';
+	lives_and { warnings { is $r->{column_keys}->add('three'), 2 } } 'ResultColumns add';
+	lives_and { warnings { is $r->{column_keys}->count, 3 } } 'ResultColumns count 3';
+	$r->{row}->[2] = 'Three!';
+	lives_and { is $r->get(2), 'Three!' } 'ResultColumns get col by index';
+	lives_and { is $r->get('three'), 'Three!' } 'ResultColumns get col by name';
+	throws_ok {
+		$s->run('')->_column_keys;
+	} qr/missing columns/i, 'result missing columns';
 };
 
 

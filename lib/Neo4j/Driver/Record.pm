@@ -22,6 +22,24 @@ sub new {
 }
 
 
+# Based on _looks_like_number() in JSON:PP 4.05, originally by HAARG.
+# Modified on 2020 OCT 13 to detect only integers (column index).
+sub _looks_like_int {
+	my $value = shift;
+	# if the utf8 flag is on, it almost certainly started as a string
+	return if utf8::is_utf8($value);
+	# detect numbers
+	# string & "" -> ""
+	# number & "" -> 0 (with warning)
+	# nan and inf can detect as numbers, so check with * 0
+	no warnings 'numeric';
+	return unless length((my $dummy = "") & $value);
+	return unless $value eq int $value;
+	return unless $value * 0 == 0;
+	return 1;
+}
+
+
 sub get {
 	my ($self, $field) = @_;
 	
@@ -29,6 +47,12 @@ sub get {
 		warnings::warnif ambiguous => "Ambiguous get() on " . __PACKAGE__ . " with multiple fields" if @{$self->{row}} > 1;
 		return $self->{row}->[0];
 	}
+	
+	if ( _looks_like_int $field ) {
+		croak "Field $field not present in query result" if $field < 0 || $field >= @{$self->{row}};
+		return $self->{row}->[$field];
+	}
+	
 	my $key = $self->{column_keys}->key($field);
 	croak "Field '$field' not present in query result" if ! defined $key;
 	return $self->{row}->[$key];
@@ -58,7 +82,7 @@ sub data {
 	my ($self) = @_;
 	
 	my %data = ();
-	foreach my $key ( $self->{column_keys}->list ) {
+	foreach my $key (keys %{ $self->{column_keys} }) {
 		$data{$key} = $self->{row}->[ $self->{column_keys}->key($key) ];
 	}
 	return \%data;
@@ -168,16 +192,6 @@ L<Neo4j::Driver::Record> implements the following experimental
 features. These are subject to unannounced modification or removal
 in future versions. Expect your code to break if you depend upon
 these features.
-
-=head2 C<column_keys>
-
- $size = $record->{column_keys}->count;
- $record->{column_keys}->add('new_field_key');
-
-Allows adding new columns to the record's field key / index
-resolution used by the C<get> method. Can be used to synthesize
-'virtual' fields based on other data in the result. The new fields
-can then be accessed just like regular columns.
 
 =head2 C<graph>
 
