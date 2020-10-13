@@ -1,3 +1,5 @@
+# PODNAME: Neo4j::Driver::TODO
+# ABSTRACT: Information on planned improvements to Neo4j::Driver
 
 =encoding utf8
 
