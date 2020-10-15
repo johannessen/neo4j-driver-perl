@@ -14,6 +14,7 @@ use Try::Tiny;
 use URI 1.31;
 use REST::Client 134;
 use JSON::MaybeXS 1.003003 qw();
+use Scalar::Util qw(blessed);
 
 use Neo4j::Driver::ResultSummary;
 use Neo4j::Driver::ServerInfo;
@@ -200,7 +201,9 @@ sub _request {
 	my $response;
 	my @errors = ();
 	if ($client->responseCode() =~ m/^[^2]\d\d$/) {
-		push @errors, 'Network error: ' . $client->{_res}->status_line;  # there is no other way than using {_res} to get the error message
+		push @errors, 'Network error: ' .
+			( blessed $client->{_res} && $client->{_res}->can('status_line') ?
+			  $client->{_res}->status_line : $client->responseCode() );
 		if ($content_type && $content_type =~ m|^text/plain\b|) {
 			push @errors, $client->responseContent();
 		}

@@ -228,17 +228,6 @@ provides stats, and different APIs for HTTP and Bolt seem like a bad idea.
 in doubt, as we don't implement streaming (and have no plans to in the
 future, considering that Bolt should be used when speed is important).
 
-=item * Make L<REST::Client> code more robust by checking the private method
-C<< {_res}->status_line >> return value (possibly using C<ref()>) and fall back to
-just the status code if necessary.
-
-=item * An alternative to using C<< $client->{_res}->status_line >>
-(to get the HTTP error message) might be to call
-C<< $client->getUseragent->add_handler(response_header => sub { $status_line = shift->status_line }) >>.
-However, this is probably slower and would likely need to be run for each and
-every POST including those with C<2xx> status codes, which might not be
-acceptable.
-
 =item * Consider unrolling C<deep_bless> recursion. Based on initial profiling,
 this may save up to about 5% CPU time (for a specific HTTP test query cached in
 RAM, performance went from about 2700/s to 2850/s when skipping the call to
