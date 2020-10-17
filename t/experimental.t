@@ -258,13 +258,18 @@ END
 
 
 subtest 'custom cypher types' => sub {
-	plan tests => 4;
+	plan tests => 5 + 5;
+	# fully test nodes
 	my $e_exact = exp(1);
 	my $d = Neo4j::Test->driver_maybe;
 	lives_ok {
 		$d->config(cypher_types => {
 			node => 'Local::Node',
-			init => sub { my $self = shift; $self->{e_approx} = $e_exact },
+			init => sub {
+				my $self = shift;
+				no warnings 'deprecated';
+				$self->{e_approx} = $e_exact;
+			},
 		});
 	} 'cypher types config';
 	$r = 0;
@@ -273,9 +278,30 @@ subtest 'custom cypher types' => sub {
 		$r = $t->run('CREATE (a {e_approx:3}) RETURN a')->single->get('a');
 	} 'cypher types query';
 	is ref($r), 'Local::Node', 'cypher type ref';
-	is $r->{e_approx}, $e_exact, 'cypher type init';  # ->{} property access is deprecated
-	# TODO: test coverage for other types
+	is $r->get('e_approx'), $e_exact, 'cypher type init';
+	lives_and { is ref($r->_private->{_meta}), 'HASH' } 'node _private access';
+	# test _private access for other types
+	lives_ok {
+		my $tx = $driver->session->begin_transaction;
+		$tx->{return_stats} = 0;  # optimise sim
+		$q = <<END;
+CREATE p=(a:Test:Want:Array)-[:TEST]->(c)
+RETURN p, a
+END
+		$r = $tx->run($q)->single;
+		$tx->rollback;
+	} 'more types query';
+	ok my $e = ($r->get('p')->relationships)[0], 'get rel';
+	lives_and { is ref($e->_private->{_meta}), 'HASH' } 'rel _private access';
+	lives_ok { $r->get('p')->_private->{__foo} = 42; } 'path _private set';
+	lives_and { is $r->get('p')->_private->{__foo}, 42 } 'path _private get';
+	# TODO: fully test other types
 };
 
 
 done_testing;
+
+
+# for 'custom cypher types' test
+package Local::Node;
+BEGIN { our @ISA = qw(Neo4j::Driver::Type::Node) };

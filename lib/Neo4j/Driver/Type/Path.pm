@@ -7,6 +7,8 @@ package Neo4j::Driver::Type::Path;
 # ABSTRACT: Directed sequence of relationships between two nodes
 
 
+use overload '@{}' => \&_array, fallback => 1;
+
 use Carp qw(croak);
 
 
@@ -14,8 +16,8 @@ sub nodes {
 	my ($self) = @_;
 	
 	croak 'nodes() in scalar context not supported' unless wantarray;
-	my @nodes = grep { ref eq 'Neo4j::Driver::Type::Node' } @$self;
-	return @nodes;
+	my $i = 0;
+	return grep { ++$i & 1 } @{$self->{path}};
 }
 
 
@@ -23,15 +25,32 @@ sub relationships {
 	my ($self) = @_;
 	
 	croak 'relationships() in scalar context not supported' unless wantarray;
-	my @rels = grep { ref eq 'Neo4j::Driver::Type::Relationship' } @$self;
-	return @rels;
+	my $i = 0;
+	return grep { $i++ & 1 } @{$self->{path}};
 }
 
 
 sub path {
 	my ($self) = @_;
 	
-	return [ @$self ];
+	return [ @{$self->{path}} ];
+}
+
+
+sub _array {
+	my ($self) = @_;
+	
+	warnings::warnif deprecated => "Direct array access of " . __PACKAGE__ . " is deprecated";
+	return $self->{path};
+}
+
+
+# for experimental Cypher type system customisation only
+sub _private {
+	my ($self) = @_;
+	
+	$self->{private} //= {};
+	return $self->{private};
 }
 
 

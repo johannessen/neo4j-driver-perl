@@ -7,38 +7,41 @@ package Neo4j::Driver::Type::Relationship;
 # ABSTRACT: Describes a relationship from a Neo4j graph
 
 
+use overload '%{}' => \&_hash, fallback => 1;
+
+
 sub get {
 	my ($self, $property) = @_;
 	
-	return $self->{$property};
+	return $$self->{$property};
 }
 
 
 sub type {
 	my ($self) = @_;
 	
-	return $self->{_meta}->{type};
+	return $$self->{_meta}->{type};
 }
 
 
 sub start_id {
 	my ($self) = @_;
 	
-	return $self->{_meta}->{start};
+	return $$self->{_meta}->{start};
 }
 
 
 sub end_id {
 	my ($self) = @_;
 	
-	return $self->{_meta}->{end};
+	return $$self->{_meta}->{end};
 }
 
 
 sub properties {
 	my ($self) = @_;
 	
-	my $properties = { %$self };
+	my $properties = { %$$self };
 	delete $properties->{_meta};
 	return $properties;
 }
@@ -47,14 +50,30 @@ sub properties {
 sub id {
 	my ($self) = @_;
 	
-	return $self->{_meta}->{id};
+	return $$self->{_meta}->{id};
 }
 
 
 sub deleted {
 	my ($self) = @_;
 	
-	return $self->{_meta}->{deleted};
+	return $$self->{_meta}->{deleted};
+}
+
+
+sub _hash {
+	my ($self) = @_;
+	
+	warnings::warnif deprecated => "Direct hash access is deprecated; use " . __PACKAGE__ . "->properties()";
+	return $$self;
+}
+
+
+# for experimental Cypher type system customisation only
+sub _private {
+	my ($self) = @_;
+	
+	return $$self;
 }
 
 

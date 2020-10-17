@@ -7,13 +7,15 @@ package Neo4j::Driver::Type::Node;
 # ABSTRACT: Describes a node from a Neo4j graph
 
 
+use overload '%{}' => \&_hash, fallback => 1;
+
 use Carp qw(croak);
 
 
 sub get {
 	my ($self, $property) = @_;
 	
-	return $self->{$property};
+	return $$self->{$property};
 }
 
 
@@ -21,14 +23,14 @@ sub labels {
 	my ($self) = @_;
 	
 	croak 'labels() in scalar context not supported' unless wantarray;
-	return @{ $self->{_meta}->{labels} };
+	return @{ $$self->{_meta}->{labels} };
 }
 
 
 sub properties {
 	my ($self) = @_;
 	
-	my $properties = { %$self };
+	my $properties = { %$$self };
 	delete $properties->{_meta};
 	return $properties;
 }
@@ -37,14 +39,30 @@ sub properties {
 sub id {
 	my ($self) = @_;
 	
-	return $self->{_meta}->{id};
+	return $$self->{_meta}->{id};
 }
 
 
 sub deleted {
 	my ($self) = @_;
 	
-	return $self->{_meta}->{deleted};
+	return $$self->{_meta}->{deleted};
+}
+
+
+sub _hash {
+	my ($self) = @_;
+	
+	warnings::warnif deprecated => "Direct hash access is deprecated; use " . __PACKAGE__ . "->properties()";
+	return $$self;
+}
+
+
+# for experimental Cypher type system customisation only
+sub _private {
+	my ($self) = @_;
+	
+	return $$self;
 }
 
 

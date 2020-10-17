@@ -169,16 +169,19 @@ subtest 'Structural types: relation meta data and props' => sub {
 
 subtest 'Structural types: path accessors' => sub {
 	plan skip_all => '(query failed)' if ! $r0;
-	plan tests => 8 if $r0;
+	plan tests => 14 if $r0;
 	ok my $p = $r0->get('p1'), 'get path';
 	is ref $p, 'Neo4j::Driver::Type::Path', 'path blessed';
 	SKIP: {
-		skip '(path not blessed)', 6 unless ref $p eq 'Neo4j::Driver::Type::Path';
+		skip '(path not blessed)', 12 unless ref $p eq 'Neo4j::Driver::Type::Path';
 		ok my @nodes = $p->nodes, 'get nodes';
 		ok my @rels = $p->relationships, 'get rels';
 		is scalar @nodes, 3, 'node count';
 		is scalar @rels, 2, 'rels count';
+		is ref $_, 'Neo4j::Driver::Type::Node', 'node blessed' for @nodes;
+		is ref $_, 'Neo4j::Driver::Type::Relationship', 'rel blessed' for @rels;
 		is $nodes[0]->id, $nodes[2]->id, 'path circular';
+		isnt $nodes[0]->id, $nodes[1]->id, 'nodes distinct';
 		isnt $rels[0]->id, $rels[1]->id, 'rels distinct';
 	}
 };

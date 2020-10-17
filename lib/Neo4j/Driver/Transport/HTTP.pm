@@ -290,33 +290,34 @@ sub _deep_bless {
 	# "meta" is broken, so we primarily use "rest", see neo4j #12306
 	
 	if (ref $data eq 'HASH' && ref $rest eq 'HASH' && ref $rest->{metadata} eq 'HASH' && $rest->{self} && $rest->{self} =~ m|/db/[^/]+/node/|) {  # node
-		bless $data, $cypher_types->{node};
+		my $node = bless \$data, $cypher_types->{node};
 		$data->{_meta} = $rest->{metadata};
 		$data->{_meta}->{deleted} = $meta->{deleted} if ref $meta eq 'HASH';
-		$cypher_types->{init}->($data) if $cypher_types->{init};
-		return $data;
+		$cypher_types->{init}->($node) if $cypher_types->{init};
+		return $node;
 	}
 	if (ref $data eq 'HASH' && ref $rest eq 'HASH' && ref $rest->{metadata} eq 'HASH' && $rest->{self} && $rest->{self} =~ m|/db/[^/]+/relationship/|) {  # relationship
-		bless $data, $cypher_types->{relationship};
+		my $rel = bless \$data, $cypher_types->{relationship};
 		$data->{_meta} = $rest->{metadata};
 		$rest->{start} =~ m|/([0-9]+)$|;
 		$data->{_meta}->{start} = 0 + $1;
 		$rest->{end} =~ m|/([0-9]+)$|;
 		$data->{_meta}->{end} = 0 + $1;
 		$data->{_meta}->{deleted} = $meta->{deleted} if ref $meta eq 'HASH';
-		$cypher_types->{init}->($data) if $cypher_types->{init};
-		return $data;
+		$cypher_types->{init}->($rel) if $cypher_types->{init};
+		return $rel;
 	}
 	
 	if (ref $data eq 'ARRAY' && ref $rest eq 'HASH') {  # path
 		die "Assertion failed: path length mismatch: ".(scalar @$data).">>1/$rest->{length}" if @$data >> 1 != $rest->{length};  # uncoverable branch true
+		my $path = [];
 		for my $n ( 0 .. $#{ $rest->{nodes} } ) {
 			my $i = $n * 2;
 			my $uri = $rest->{nodes}->[$n];
 			$uri =~ m|/([0-9]+)$|;
 			$data->[$i]->{_meta} = { id => 0 + $1 };
 			$data->[$i]->{_meta}->{deleted} = $meta->[$i]->{deleted} if ref $meta eq 'ARRAY';
-			$data->[$i] = bless $data->[$i], 'Neo4j::Driver::Type::Node';
+			$path->[$i] = bless \( $data->[$i] ), $cypher_types->{node};
 		}
 		for my $r ( 0 .. $#{ $rest->{relationships} } ) {
 			my $i = $r * 2 + 1;
@@ -327,11 +328,11 @@ sub _deep_bless {
 			$data->[$i]->{_meta}->{start} = $data->[$i - 1 * $rev]->{_meta}->{id};
 			$data->[$i]->{_meta}->{end} =   $data->[$i + 1 * $rev]->{_meta}->{id};
 			$data->[$i]->{_meta}->{deleted} = $meta->[$i]->{deleted} if ref $meta eq 'ARRAY';
-			$data->[$i] = bless $data->[$i], 'Neo4j::Driver::Type::Relationship';
+			$path->[$i] = bless \( $data->[$i] ), $cypher_types->{relationship};
 		}
-		bless $data, $cypher_types->{path};
-		$cypher_types->{init}->($data) if $cypher_types->{init};
-		return $data;
+		$path = bless { path => $path }, $cypher_types->{path};
+		$cypher_types->{init}->($_) for $cypher_types->{init} ? ( @$path, $path ) : ();
+		return $path;
 	}
 	
 	if (ref $data eq 'HASH' && ref $rest eq 'HASH' && ref $rest->{crs} eq 'HASH') {  # spatial
