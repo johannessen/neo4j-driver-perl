@@ -4,6 +4,7 @@ Revision history for Neo4j::Driver
 
  - fix handling of index/key collisions in field names
  - deprecate experimental Record->{column_keys} access
+ - deprecate experimental Record->{meta} access
  - deprecate experimental Path->path() method
  - warn when accessing the internals of node/rel/path objects (see issue #8)
 

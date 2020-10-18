@@ -26,8 +26,6 @@ See L<https://github.com/johannessen/neo4j-driver-perl/issues>.
 =item * L<Neo4j::Driver/"Parameter syntax conversion">: make stable and move
 filter implementation to C<Transaction> in preparation of Bolt v3 support
 
-=item * L<Neo4j::Driver::Record/"meta">: remove
-
 =item * L<Neo4j::Driver::Session/"Calling in list context">: make illegal
 
 =item * L<Neo4j::Driver::Transaction/"Calling in list context">: make illegal

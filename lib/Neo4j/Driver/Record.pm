@@ -203,13 +203,6 @@ HTTP. Requires the C<return_graph> field to be set on the
 L<Transaction|Neo4j::Driver::Transaction>
 before the statement is executed.
 
-=head2 C<meta>
-
- $meta = $record->{meta};
-
-Allows accessing the entity meta data that some versions of the Neo4j
-server provide via HTTP.
-
 =head1 SEE ALSO
 
 =over
