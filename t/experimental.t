@@ -29,7 +29,7 @@ my ($q, $r, @a, $a);
 
 
 subtest 'wantarray' => sub {
-	plan tests => 17;
+	plan tests => 5 + 6 + 5 + 2;
 	$q = <<END;
 RETURN 7 AS n UNION RETURN 11 AS n
 END
@@ -60,6 +60,9 @@ CREATE p=(a:Test:Want:Array)-[:TEST]->(c)
 RETURN p, a
 END
 	lives_ok { $r = $tx->run($q)->single; } 'get type objects';
+	throws_ok {
+		 $a = $r->get('p')->elements;
+	} qr/\bscalar context\b.*\bnot supported\b/i, 'get path elements as scalar';
 	throws_ok {
 		 $a = $r->get('p')->nodes;
 	} qr/\bscalar context\b.*\bnot supported\b/i, 'get path nodes as scalar';

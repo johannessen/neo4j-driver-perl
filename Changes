@@ -1,9 +1,10 @@
 Revision history for Neo4j::Driver
 
-0.1702  2020-10-13
+0.1703  2020-10-18
 
  - fix handling of index/key collisions in field names
  - deprecate experimental Record->{column_keys} access
+ - deprecate experimental Path->path() method
  - warn when accessing the internals of node/rel/path objects (see issue #8)
 
 0.17  2020-10-12

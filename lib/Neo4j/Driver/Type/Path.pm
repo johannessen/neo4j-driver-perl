@@ -30,9 +30,18 @@ sub relationships {
 }
 
 
+sub elements {
+	my ($self) = @_;
+	
+	croak 'elements() in scalar context not supported' unless wantarray;
+	return @{$self->{path}};
+}
+
+
 sub path {
 	my ($self) = @_;
 	
+	warnings::warnif deprecated => __PACKAGE__ . "->path() is deprecated; use elements()";
 	return [ @{$self->{path}} ];
 }
 
@@ -40,7 +49,7 @@ sub path {
 sub _array {
 	my ($self) = @_;
 	
-	warnings::warnif deprecated => "Direct array access of " . __PACKAGE__ . " is deprecated";
+	warnings::warnif deprecated => "Direct array access is deprecated; use " . __PACKAGE__ . "->elements()";
 	return $self->{path};
 }
 
@@ -65,6 +74,8 @@ __END__
  
  ($node_a, $node_b) = $path->nodes;
  ($relationship_k)  = $path->relationships;
+ 
+ ($a, $k, $b) = $path->elements;
 
 =head1 DESCRIPTION
 
@@ -78,6 +89,13 @@ start and the end of the path.
 =head1 METHODS
 
 L<Neo4j::Driver::Type::Path> implements the following methods.
+
+=head2 elements
+
+ @all = $path->elements;
+
+Return the path as a list alternating between nodes
+and relationships in path sequence order.
 
 =head2 nodes
 
@@ -113,11 +131,12 @@ these features.
 
 =head2 Calling in scalar context
 
+ $all   = $path->elements;  # fails
  $nodes = $path->nodes;  # fails
  $rels  = $path->relationships;  # fails
 
-The C<nodes()> and C<relationships()> methods C<die> if called in
-scalar context.
+The C<elements()>, C<nodes()>, and C<relationships()> methods
+C<die> if called in scalar context.
 
 =head2 Direct data structure access
 
@@ -129,21 +148,13 @@ compatibility, as the data structure only started being blessed
 as an object in version 0.13.
 
 Relying on this implementation detail is deprecated.
-Use the accessor methods C<nodes> and C<relationships> instead.
-
-=head2 Path as alternating array
-
- $array = $path->path;
-
-Return the path as an array reference, alternating between nodes
-and relationships in path sequence order. This is similar to
-L<REST::Neo4p::Path>'s C<as_simple()> method.
+Use the method C<elements> instead.
 
 =head1 BUGS
 
 When paths are returned via HTTP, the objects accessible via
-C<nodes()> and C<relationships()> lack meta data for their labels
-and types. This is due to an issue in the Neo4j server.
+C<elements()>, C<nodes()>, and C<relationships()> lack meta data for
+their labels and types. This is due to an issue in the Neo4j server.
 
 =head1 SEE ALSO
 

@@ -18,7 +18,7 @@ my $s = $driver->session;
 # functionality. If the behaviour of such functionality changes, we
 # want it to be a conscious decision, hence we test for it.
 
-use Test::More 0.96 tests => 6 + 2;
+use Test::More 0.96 tests => 7 + 3;
 use Test::Exception;
 use Test::Warnings qw(warning warnings);
 my $transaction = $driver->session->begin_transaction;
@@ -28,10 +28,8 @@ $transaction->{return_stats} = 0;  # optimise sim
 my ($d, $w, $r);
 
 
-subtest 'direct node/rel/path access' => sub {
-	plan tests => 13;
-	# query from types.t (structural types)
-	my $q = <<END;
+# query from types.t
+my $q = <<END;
 CREATE (n1:Test {test: 'node1'}), (n2:Test {test: 'node2'})
 CREATE p1=(n1)-[e1:TEST]->(n2)<-[e2:TEST]-(n1)
 CREATE (n3:Test {_node: -1, _labels: 'special'})
@@ -39,7 +37,12 @@ CREATE p2=(n3)-[e3:TEST {_relationship: 'yes', _test: 1}]->(n4)
 SET e1.test = 'rel1', e2.test = 'rel2'
 RETURN n1, n2, e1, e2, id(n1), id(e1), p1, n3, n4, e3
 END
-	lives_ok { $r = 0; $r = $transaction->run($q)->single; } 'run query';
+lives_ok { $r = 0; $r = $transaction->run($q)->single; } 'run query (structural types)';
+
+
+subtest 'direct node/rel/path access' => sub {
+	plan skip_all => '(query failed)' if ! $r;
+	plan tests => 12;
 	ok my $n = $r->get('n4'), 'get node';
 	lives_ok { $w = ''; $w = warning { $n->{answer} = 42; }; } 'set node prop';
 	(like $w, qr/\bdeprecate/, 'node access deprecated') or diag 'got warning(s): ', explain($w);
@@ -52,6 +55,18 @@ END
 	lives_ok { $w = ''; $w = warning { $p->[2] = 'foo'; }; } 'modify path';
 	(like $w, qr/\bdeprecate/, 'path access deprecated') or diag 'got warning(s): ', explain($w);
 	is $n = ($p->nodes)[1], 'foo', 'get modified path';
+};
+
+
+subtest 'path()' => sub {
+	plan skip_all => '(query failed)' if ! $r;
+	plan tests => 5;
+	ok my $p = $r->get('p1'), 'get path';
+	ok my @all = $p->elements, 'get elements';
+	my $path;
+	lives_ok { $w = ''; $w = warning { $path = $p->path; }; } 'path method';
+	(like $w, qr/\bdeprecate/, 'path method deprecated') or diag 'got warning(s): ', explain($w);
+	is_deeply $path, \@all, 'path method matches elements';
 };
 
 
