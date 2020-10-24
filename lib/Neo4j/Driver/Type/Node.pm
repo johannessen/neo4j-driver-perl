@@ -147,18 +147,6 @@ these features.
 
 The C<labels()> method C<die>s if called in scalar context.
 
-=head2 Direct data structure access
-
- $property_value = $node->{property_key};
-
-Currently, the node's properties may be directly accessed as
-if the node was a simple hashref. This is a concession to
-backwards compatibility, as the data structure only started being
-blessed as an object in version 0.13.
-
-Relying on this implementation detail is deprecated.
-Use the accessor methods C<get()> and C<properties()> instead.
-
 =head2 Deletion indicator
 
  $node_exists = ! $node->deleted;

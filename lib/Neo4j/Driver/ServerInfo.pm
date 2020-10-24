@@ -13,6 +13,7 @@ use URI 1.25;
 sub new {
 	my ($class, $server_info) = @_;
 	
+	# don't store the full URI here - it may contain auth credentials
 	return bless [
 		URI->new( $server_info->{uri} )->host_port,
 		$server_info->{version},

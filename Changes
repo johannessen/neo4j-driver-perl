@@ -1,6 +1,6 @@
 Revision history for Neo4j::Driver
 
-0.1703  2020-10-18
+0.18  2020-10-24
 
  - fix handling of index/key collisions in field names
  - deprecate experimental Record->{column_keys} access

@@ -138,18 +138,6 @@ these features.
 The C<elements()>, C<nodes()>, and C<relationships()> methods
 C<die> if called in scalar context.
 
-=head2 Direct data structure access
-
- $start_node = $path->[0];
-
-Currently, the paths's sequence may be directly accessed as if
-the path was a simple arrayref. This is a concession to backwards
-compatibility, as the data structure only started being blessed
-as an object in version 0.13.
-
-Relying on this implementation detail is deprecated.
-Use the method C<elements> instead.
-
 =head1 BUGS
 
 When paths are returned via HTTP, the objects accessible via

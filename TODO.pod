@@ -38,8 +38,6 @@ are typically fetched I<before> the next statement is run.
 =item * L<Neo4j::Driver::Transaction/"Return results in graph format">,
 L<Neo4j::Driver::Record/"graph">: make driver config option
 
-=item * L<Neo4j::Driver::Type::Path/"Path as alternating array">: make stable
-
 =back
 
 =head2 Tests, code quality, documentation
@@ -94,6 +92,12 @@ could filter out.
 The internals test "transaction: REST 404 error handling" should run a distinct
 statement.
 
+=item * Try to change "no connection" tests such that no C<NXDOMAIN> responses
+are required by (ab)using a particular port number on localhost; the port could
+be checked beforehand and the test skipped if it happens to be open for some
+reason. Alternatively, the tests in question could be changed to a simulated
+connection failure.
+
 =back
 
 =head1 Other ideas for specific modules
@@ -114,6 +118,11 @@ module that would offer suitable methods, but this seems like overkill.
 
 =item * Allow passing config options directly to the constructor, e. g. in
 place of the URL (C<< Neo4j::Driver->new({ url=>"bolt:", timeout=>30 }) >>).
+
+=item * Consider writing a concrete example that re-creates LOMS logic by
+re-blessing the structural types into custom types from the business logic
+using C<< $cypher_types->{init} >>. (For example, check for Neo4j nodes that
+are labelled C<:Person> and re-bless those as C<Local::Person> or whatever.)
 
 =back
 
@@ -172,6 +181,13 @@ priority.
 =over
 
 =item * Rename C<Result>, in line with the official drivers.
+
+=item * Perhaps C<fetch()> should always buffer two records instead of just
+one. With the current implementation, the bolt connection might remain
+attached longer than desirable in cases where the client knows in advance
+how many records there will be and calls C<fetch()> exactly that number of
+times. (Such a change might even slightly improve performance if the driver
+successfully uses Perl threads to fill the buffer in the background.)
 
 =back
 
@@ -253,5 +269,9 @@ for ID comparison on nodes and relationships.
 access to e. g. properties using the pre-0.13 hashref syntax. See
 L<https://metacpan.org/pod/overload#Two-face-References> for an example.
 L<perltie> might perhaps also work.
+
+=item * Try to refactor L<Neo4j::Driver::Type::Path>'s internal representation
+to allow either elements or nodes+rels. Have one autogenerate from the other,
+then cache the results. May not actually have advantages for deep_bless though.
 
 =back
