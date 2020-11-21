@@ -7,7 +7,7 @@ my $driver;
 use Neo4j::Test;
 BEGIN {
 	unless ($driver = Neo4j::Test->driver) {
-		print qq{1..0 # SKIP no connection to Neo4j server\n};
+		print qq{1..0 # SKIP $Neo4j::Test::error\n};
 		exit;
 	}
 }

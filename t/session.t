@@ -27,7 +27,7 @@ subtest 'ServerInfo' => sub {
 	my $server;
 	lives_ok { $server = $driver->session->server } 'get ServerInfo';
 	isa_ok $server, 'Neo4j::Driver::ServerInfo', 'isa ServerInfo';
-	lives_and { my $a = $server->address; like(Neo4j::Test->server_address, qr/$a/) } 'server address';
+	lives_and { my $a = Neo4j::Test->server_address; like($server->address, qr/$a$/) } 'server address';
 	like $server->version, qr(^Neo4j/\d+\.\d+\.\d), 'server version syntax';
 	diag $server->version if $ENV{AUTHOR_TESTING};  # give feedback about which Neo4j version is being tested
 };
@@ -46,9 +46,7 @@ subtest 'database selection' => sub {
 	if ($version >= 4) {
 		# this test assumes that the default database is always named neo4j
 		# (which is probably reasonable for the community edition)
-		TODO: { local $TODO = 'default database unimplemented';
 		like $s->{transport}->{endpoints}->{new_transaction}, qr(/db/neo4j/tx$), 'default selected';
-		}
 	}
 	else {
 		like $s->{transport}->{endpoints}->{new_transaction}, qr(/db/data/transaction$), 'default ignored';
@@ -90,7 +88,7 @@ subtest 'error handling' => sub {
 	
 	# this really just tests Neo4j::Driver
 	throws_ok {
-		Neo4j::Test->driver_no_host->session->run('');
+		Neo4j::Test->driver_no_connect->session->run('');
 	} qr/\bCan't connect\b|\bUnknown host\b/i, 'no connection';
 	throws_ok {
 		Neo4j::Test->driver_no_auth->session->run('');

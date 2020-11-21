@@ -7,6 +7,8 @@ use Neo4j::Driver;
 use Neo4j::Sim;
 
 
+our $error = '';
+
 # may be used for conditional testing
 our $bolt;
 our $sim;
@@ -49,7 +51,7 @@ sub driver {
 		$driver->session->run('');
 	};
 	if ($@) {
-#		die $@;  # easier debugging of "no connection to Neo4j server" issues
+		$error = $@;
 		return;
 	}
 	
@@ -58,9 +60,10 @@ sub driver {
 
 
 # returns a driver that is expected to fail (no connection)
-sub driver_no_host {
+sub driver_no_connect {
+	# NXDOMAIN via DNS is slow; Port 14 is unassigned and should be closed
 	driver_maybe;  # init $bolt
-	my $driver = Neo4j::Driver->new(($bolt ? 'bolt' : 'http') . '://none.invalid');
+	my $driver = Neo4j::Driver->new(($bolt ? 'bolt' : 'http') . '://localhost:14');
 	return $driver;
 }
 
@@ -68,7 +71,7 @@ sub driver_no_host {
 # returns a driver that is expected to fail (unauthorized)
 sub driver_no_auth {
 	my $driver = driver_maybe;
-	$driver->basic_auth('nobody', '');  # relies on Driver mutability and on empty passwords not being allowed by Neo4j
+	$driver->{auth} = { scheme => 'basic', principal => "no\tuser", credentials => "no\tpass" };
 	$driver->{client_factory} = Neo4j::Sim->factory(auth => 0) if $sim;
 	return $driver;
 }
@@ -91,7 +94,7 @@ sub transaction_unconnected {
 sub server_address {
 	return 'localhost:7474' unless $ENV{TEST_NEO4J_SERVER};
 	return 'localhost:7687' if $ENV{TEST_NEO4J_SERVER} =~ m{^bolt:(?://(?:localhost\b)?)?}i;
-	return '' . URI->new( $ENV{TEST_NEO4J_SERVER} )->host_port;
+	return '' . (URI->new( $ENV{TEST_NEO4J_SERVER} )->host_port // '');
 }
 
 
