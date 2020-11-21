@@ -10,14 +10,17 @@ jobs:
     - perl: "5.32.0"
       env: NEO4J=4.2.0 JAVA=11
       dist: focal
-    - perl: "5.28.3"
+    - perl: "5.30.3"
       env: NEO4J=3.5.24 JAVA=8
       dist: bionic
-    - perl: "5.10"
-      env: NEO4J=2.3.12 JAVA=7
+    - perl: "5.24.3"
+      env: NEO4J=2.3.12 JAVA=8
       dist: xenial
+    - perl: "5.10"
+      env: NEO4J=3.3.9 JAVA=8
+      dist: trusty
   allow_failures:
-    - dist: focal
+    - dist: trusty
   fast_finish: true
 
 env:
@@ -34,13 +37,10 @@ git:
 # Therefore JAVA_HOME must be configured manually here.
 before_install:
   - perlbrew list
+  - perlbrew available  # not all of these are installable in Travis
   - if [[ "$JAVA" = "8" ]] ; then sudo apt-get -y install openjdk-8-jre-headless ; fi
-  - if [[ "$JAVA" = "7" ]] ; then sudo apt-get -y install openjdk-7-jre-headless ; fi
-#  - update-java-alternatives --list || true
-#  - update-alternatives --display java
   - if [[ "$JAVA" = "11" && -d /usr/local/lib/jvm/openjdk11 ]] ; then echo "Java 11 OpenJDK" ; export JAVA_HOME=/usr/local/lib/jvm/openjdk11 ; fi
   - if [[ "$JAVA" = "8" && -d /usr/lib/jvm/java-8-openjdk-amd64/jre ]] ; then echo "Java 8 OpenJDK" ; export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre ; elif [[ "$JAVA" = "8" && -d /usr/lib/jvm/java-8-oracle/jre ]] ; then echo "Java 8 Oracle" ; export JAVA_HOME=/usr/lib/jvm/java-8-oracle/jre ; fi
-  - if [[ "$JAVA" = "7" && -d /usr/lib/jvm/java-7-openjdk-amd64/jre ]] ; then echo "Java 7 OpenJDK" ; export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64/jre ; elif [[ "$JAVA" = "7" && -d /usr/lib/jvm/java-7-oracle/jre ]] ; then echo "Java 7 Oracle" ; export JAVA_HOME=/usr/lib/jvm/java-7-oracle/jre ; fi
   - eval "${JAVA_HOME:-/usr}/bin/java -version"
   - curl -O https://dist.neo4j.org/neo4j-community-$NEO4J-unix.tar.gz
   - tar -xzf neo4j-community-$NEO4J-unix.tar.gz
