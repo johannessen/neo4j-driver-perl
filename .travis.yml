@@ -7,20 +7,17 @@ language: perl
 # matrix can be small.
 jobs:
   include:
-    - perl: "5.30.1"
-      env: NEO4J=4.0.0 JAVA=11
+    - perl: "5.32.0"
+      env: NEO4J=4.2.0 JAVA=11
+      dist: focal
+    - perl: "5.28.3"
+      env: NEO4J=3.5.24 JAVA=8
       dist: bionic
-    - perl: "5.28.2"
-      env: NEO4J=3.5.14 JAVA=8
-      dist: xenial
-    - perl: "5.22.4"
+    - perl: "5.10"
       env: NEO4J=2.3.12 JAVA=7
-      dist: trusty
-    - perl: "5.10"
-      env: NEO4J=3.3.9 JAVA=8
-      dist: trusty
+      dist: xenial
   allow_failures:
-    - perl: "5.10"
+    - dist: focal
   fast_finish: true
 
 env:

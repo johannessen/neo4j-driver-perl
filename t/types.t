@@ -98,9 +98,9 @@ subtest 'Property types: use as parameters' => sub {
 	my @params = (
 		number =>  0 + $scalar,
 		string => '' . $scalar,
-		true   => \1,
-		false  => \0,
-		null   => undef,
+		yeah   => \1,
+		nope   => \0,
+		void   => undef,
 		list   => [17, 31],
 		map    => {half => .5},
 	);
@@ -108,9 +108,9 @@ subtest 'Property types: use as parameters' => sub {
 RETURN
 {number} = 47,
 {string} = '47',
-{true} = true,
-{false} = false,
-{null} IS NULL,
+{yeah} = true,
+{nope} = false,
+{void} IS NULL,
 {list} = [17, 31],
 {map} = {half: 0.5}
 END
