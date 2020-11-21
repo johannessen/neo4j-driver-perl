@@ -101,14 +101,14 @@ sub _connect {
 		}
 	}
 	
-	croak "Neo4j server not found (ServerInfo discovery failed)" unless $neo4j_version && $tx_endpoint;
+	croak "Neo4j server not found (ServerInfo discovery failed)" unless $neo4j_version;
 	
 	$self->{server_info} = Neo4j::Driver::ServerInfo->new({
 		uri => $self->{client}->getHost(),
 		version => "Neo4j/$neo4j_version",
 	});
 	
-	if ($neo4j_version !~ m{^[23]\.}) {
+	if ($neo4j_version !~ m{^[123]\.}) {
 		if (! defined $database) {
 			# discover default database on Neo4j >= 4
 			eval {
@@ -129,7 +129,7 @@ sub _connect {
 	$self->{endpoints} = {
 		new_transaction => "$tx_endpoint",
 		new_commit => "$tx_endpoint/$COMMIT_ENDPOINT",
-	};
+	} if $tx_endpoint;
 }
 
 
