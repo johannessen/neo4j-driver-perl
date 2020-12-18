@@ -176,11 +176,9 @@ priority.
 
 =back
 
-=head2 L<Neo4j::Driver::StatementResult>
+=head2 L<Neo4j::Driver::Result>
 
 =over
-
-=item * Rename C<Result>, in line with the official drivers.
 
 =item * Perhaps C<fetch()> should always buffer two records instead of just
 one. With the current implementation, the bolt connection might remain
@@ -198,7 +196,7 @@ successfully uses Perl threads to fill the buffer in the background.)
 =item * Consider whether to implement methods to query the list of fields for
 this record (C<keys>, C<has>, C<size>) and/or a mapping function for all fields
 (C<map>/C<forEach>). Given that this data should easily be available through
-the StatementResult object, these seem slightly superfluous though.
+the Result object, these seem slightly superfluous though.
 
 =item * Implement C<graph>; see
 L<https://github.com/neo4j/neo4j/blob/3.5/community/server/src/main/java/org/neo4j/server/rest/transactional/GraphExtractionWriter.java>,

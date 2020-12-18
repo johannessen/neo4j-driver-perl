@@ -11,7 +11,7 @@ use Carp qw(croak);
 our @CARP_NOT = qw(Neo4j::Driver::Session Neo4j::Driver);
 use Scalar::Util qw(blessed);
 
-use Neo4j::Driver::StatementResult;
+use Neo4j::Driver::Result;
 
 
 sub new {
@@ -49,7 +49,7 @@ sub run {
 	my @results = $self->{transport}->run($self, @statements);
 	
 	if (scalar @statements <= 1) {
-		my $result = $results[0] // Neo4j::Driver::StatementResult->new;
+		my $result = $results[0] // Neo4j::Driver::Result->new;
 		return wantarray ? $result->list : $result;
 	}
 	return wantarray ? @results : \@results;
@@ -159,7 +159,7 @@ Statements may be run lazily. Most of the time, you will not notice
 this, because the driver automatically waits for statements to
 complete at specific points to fulfill its contracts. If you require
 execution of a statement to have completed, you need to use the
-L<result|Neo4j::Driver::StatementResult>, for example by calling
+L<Result|Neo4j::Driver::Result>, for example by calling
 one of the methods C<fetch()>, C<list()> or C<summary()>.
 
 =head1 METHODS
@@ -199,7 +199,7 @@ used.
 
  $result = $transaction->run($query, %params);
 
-Run a statement and return the L<StatementResult|Neo4j::Driver::StatementResult>.
+Run a statement and return the L<Result|Neo4j::Driver::Result>.
 This method takes an optional set of parameters that will be injected
 into the Cypher statement by Neo4j. Using parameters is highly
 encouraged: It helps avoid dangerous Cypher injection attacks and
@@ -349,7 +349,7 @@ the interface is not yet finalised.
 
 =item * L<Neo4j::Driver>
 
-=item * L<Neo4j::Driver::B<StatementResult>>
+=item * L<Neo4j::Driver::B<Result>>
 
 =item * Equivalent documentation for the official Neo4j drivers:
 L<Transaction (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/Transaction.html>,

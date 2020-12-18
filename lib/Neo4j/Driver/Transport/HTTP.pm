@@ -18,7 +18,7 @@ use Scalar::Util qw(blessed);
 
 use Neo4j::Driver::ResultSummary;
 use Neo4j::Driver::ServerInfo;
-use Neo4j::Driver::StatementResult;
+use Neo4j::Driver::Result;
 
 
 our $JSON_CODER;
@@ -35,7 +35,7 @@ our $COMMIT_ENDPOINT = 'commit';
 our $RESULT_DATA_CONTENTS = ['row', 'rest'];
 our $RESULT_DATA_CONTENTS_GRAPH = ['row', 'rest', 'graph'];
 
-our $detach_stream = 1;  # set to 0 to have StatementResult simulate an attached stream (used for testing)
+our $detach_stream = 1;  # set to 0 to have Result simulate an attached stream (used for testing)
 
 
 sub new {
@@ -174,7 +174,7 @@ sub run {
 	my @results = ();
 	my $result_count = defined $response->{results} ? @{$response->{results}} : 0;
 	for (my $i = 0; $i < $result_count; $i++) {
-		push @results, Neo4j::Driver::StatementResult->new({
+		push @results, Neo4j::Driver::Result->new({
 			json => $response->{results}->[$i],
 			notifications => $response->{notifications},
 			statement => $statements[$i],

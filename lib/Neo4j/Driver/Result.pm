@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use utf8;
 
-package Neo4j::Driver::StatementResult;
+package Neo4j::Driver::Result;
 # ABSTRACT: Result of running a Cypher statement (a stream of records)
 
 
@@ -272,9 +272,11 @@ an explicit transaction) until the transaction is closed, whichever
 comes first. When a result stream has become invalid I<before> it
 was detached, calling any methods in this class may fail.
 
+Until version 0.18, this module was named C<StatementResult>.
+
 =head1 METHODS
 
-L<Neo4j::Driver::StatementResult> implements the following methods.
+L<Neo4j::Driver::Result> implements the following methods.
 
 =head2 fetch
 
@@ -357,7 +359,7 @@ way.
 
 =head1 EXPERIMENTAL FEATURES
 
-L<Neo4j::Driver::StatementResult> implements the following
+L<Neo4j::Driver::Result> implements the following
 experimental features. These are subject to unannounced modification
 or removal in future versions. Expect your code to break if you
 depend upon these features.

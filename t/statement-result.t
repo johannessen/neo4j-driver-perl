@@ -14,7 +14,7 @@ BEGIN {
 my $s = $driver->session;
 
 
-# The purpose of these tests is to check the behaviour of the StatementResult
+# The purpose of these tests is to check the behaviour of the Result
 # class, particularly for input that is legal, but unusual -- for example,
 # due to coding errors on the client's part.
 
@@ -30,8 +30,8 @@ my ($q, $r, $v, @a);
 subtest 'result with no statement' => sub {
 	plan tests => 2;
 	# It is legal to run zero statements, in which case the run method,
-	# which normally gives one StatementResult object each for every
-	# statement run, must produce an empty StatementResult object for a
+	# which normally gives one Result object each for every
+	# statement run, must produce an empty Result object for a
 	# statement that never existed. This ensures a safe interface that
 	# doesn't unexpectedly blow up in the client's face.
 	lives_and { is $s->run->size, 0 } 'no query';

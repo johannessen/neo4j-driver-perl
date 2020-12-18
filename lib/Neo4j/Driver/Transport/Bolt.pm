@@ -14,10 +14,10 @@ use URI 1.25;
 use Neo4j::Bolt;
 
 use Neo4j::Driver::ServerInfo;
-use Neo4j::Driver::StatementResult;
+use Neo4j::Driver::Result;
 
 
-our $gather_results = 0;  # set to 1 to retrieve all data rows before creating the StatementResult (used for testing)
+our $gather_results = 0;  # set to 1 to retrieve all data rows before creating the Result (used for testing)
 
 
 sub new {
@@ -101,7 +101,7 @@ sub run {
 		}
 		
 		if ($gather_results) {
-			$result = Neo4j::Driver::StatementResult->new({
+			$result = Neo4j::Driver::Result->new({
 				json => $self->_gather_results($stream),
 				deep_bless => \&_deep_bless,
 				statement => $statement_json,
@@ -112,7 +112,7 @@ sub run {
 		}
 		
 		my @names = $stream->field_names;
-		$result = Neo4j::Driver::StatementResult->new({
+		$result = Neo4j::Driver::Result->new({
 			bolt_stream => $stream,
 			bolt_connection => $self->{connection},
 			json => { columns => \@names },

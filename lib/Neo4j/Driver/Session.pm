@@ -103,7 +103,7 @@ Begin a new explicit L<Transaction|Neo4j::Driver::Transaction>.
  $result = $session->run('...');
 
 Run and commit a statement using an autocommit transaction and return
-the L<StatementResult|Neo4j::Driver::StatementResult>.
+the L<Result|Neo4j::Driver::Result>.
 
 This method is semantically exactly equivalent to the following code,
 but is faster because it doesn't require an extra server roundtrip to
@@ -168,7 +168,7 @@ references to the authentication credentials used to contact the
 Neo4j server. Objects of these classes should therefore not be
 passed to untrusted modules. However, objects of the
 L<ServerInfo|Neo4j::Driver::ServerInfo> class and the
-L<StatementResult|Neo4j::Driver::StatementResult> class do not
+L<Result|Neo4j::Driver::Result> class do not
 contain a reference to these credentials and are safe in this
 regard.
 
@@ -180,7 +180,7 @@ regard.
 
 =item * L<Neo4j::Driver::B<Transaction>>,
 L<Neo4j::Driver::B<ServerInfo>>,
-L<Neo4j::Driver::B<StatementResult>>
+L<Neo4j::Driver::B<Result>>
 
 =item * Equivalent documentation for the official Neo4j drivers:
 L<Session (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/Session.html>,
