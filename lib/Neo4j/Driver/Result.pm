@@ -7,6 +7,8 @@ package Neo4j::Driver::Result;
 # ABSTRACT: Result of running a Cypher statement (a stream of records)
 
 
+use parent 'Neo4j::Driver::StatementResult';
+
 use Carp qw(croak);
 
 use Neo4j::Driver::Record;
