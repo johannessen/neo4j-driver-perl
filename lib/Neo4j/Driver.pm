@@ -4,17 +4,14 @@ use warnings;
 use utf8;
 
 package Neo4j::Driver;
-# ABSTRACT: Perl implementation of the Neo4j Driver API
+# ABSTRACT: Perl Neo4j driver for Bolt and HTTP
 
 
 use Carp qw(croak);
 
 use URI 1.25;
-use Neo4j::Driver::Transport::HTTP;
 use Neo4j::Driver::Session;
 
-# The following packages are never used directly anywhere. We mention them
-# here so that a simple `use Neo4j::Driver;` will make them available.
 use Neo4j::Driver::Type::Node;
 use Neo4j::Driver::Type::Relationship;
 use Neo4j::Driver::Type::Path;
@@ -32,6 +29,7 @@ my %OPTIONS = (
 	ca_file => 'tls_ca',
 	cypher_filter => 'cypher_filter',
 	cypher_types => 'cypher_types',
+	net_module => 'net_module',
 	timeout => 'http_timeout',
 	tls => 'tls',
 	tls_ca => 'tls_ca',
@@ -59,11 +57,6 @@ sub new {
 		
 		if (! $uri->scheme || $uri->scheme !~ m/^https?|bolt$/) {
 			croak sprintf "URI scheme '%s' unsupported; use 'http' or 'bolt'", $uri->scheme // "";
-		}
-		if ($uri->scheme eq 'bolt') {
-			eval { require Neo4j::Bolt; };
-			croak "URI scheme 'bolt' requires Neo4j::Bolt. Can't locate Neo4j/Bolt.pm in \@INC " .
-			      "(you may need to install the Neo4j::Bolt module) (\@INC contains: @INC)" if $@;
 		}
 		
 		$uri->host('localhost') unless $uri->host;
@@ -121,23 +114,15 @@ sub session {
 	warnings::warnif deprecated => __PACKAGE__ . "->{die_on_error} is deprecated" unless $self->{die_on_error};
 	my %options = $self->_parse_options('session', ['database'], @options);
 	
-	my $transport;
-	if ($self->{uri}->scheme eq 'bolt') {
-		require Neo4j::Driver::Transport::Bolt;
-		$transport = Neo4j::Driver::Transport::Bolt->new($self);
-	}
-	else {
-		$transport = Neo4j::Driver::Transport::HTTP->new($self);
-		$transport->_connect($options{database});
-	}
 	$self->{session} = 1;
 	
-	return Neo4j::Driver::Session->new($transport);
+	my $session = Neo4j::Driver::Session->new($self);
+	return $session->_connect($options{database});
 }
 
 
 sub _parse_options {
-	my ($self, $context, $supported, @options) = @_;
+	my (undef, $context, $supported, @options) = @_;
 	
 	croak "Odd number of elements in $context options hash" if @options & 1;
 	my %options = @options;

@@ -18,6 +18,7 @@ my $s = $driver->session;  # only for autocommit transactions
 
 use Test::More 0.96 tests => 5 + 3;
 use Test::Exception;
+use URI;
 my $undo_id;
 
 
@@ -55,7 +56,7 @@ END
 };
 
 
-subtest 'error handling' => sub {
+subtest 'query error handling' => sub {
 	plan tests => 3;
 	throws_ok { $s->run('iced manifolds.'); } qr/syntax/i, 'cypher syntax error';
 	my $q = 'RETURN 42';
@@ -67,31 +68,39 @@ subtest 'error handling' => sub {
 };
 
 
-subtest 'nested transactions: autocommit' => sub {
-	plan tests => 2;
-	my $session = $driver->session;
-	my $value;
-	lives_ok {
-		my $t = $session->begin_transaction;
-		$t->run("CREATE (explicit1:Test)");
-		$value = $session->run("RETURN 42")->single->get(0);
-		$t->run("CREATE (explicit2:Test)");
-		$t->rollback;
-	} 'nested autocommit transactions: success';
-	is $value, 42, 'nested autocommit transactions: result';
+subtest 'transaction status on error (HTTP)' => sub {
+	plan skip_all => '(currently testing Bolt)' if $Neo4j::Test::bolt;
+	plan tests => 5;
+	my $session = $driver->session; 
+	my $good_uri = $session->{net}->{http_agent}->{client}->getHost;
+	my $bad_uri = URI->new($good_uri);
+	$bad_uri->userinfo("no\tuser:no\tpass");
+	my $t = $session->begin_transaction;
+	$session->{net}->{http_agent}->{client}->setHost("$bad_uri") unless $Neo4j::Test::sim;
+	$session->{net}->{http_agent}->{client}->{auth} = 0 if $Neo4j::Test::sim;
+	throws_ok { $t->run('RETURN "Ugly"') } qr/Unauthorized/i, 'HTTP network error';
+	ok $t->is_open, 'network error keeps open';  # see neo4j #12651
+	ok $t->{unused}, 'network error keeps unused';
+	$session->{net}->{http_agent}->{client}->setHost("$good_uri") unless $Neo4j::Test::sim;
+	$session->{net}->{http_agent}->{client}->{auth} = 1 if $Neo4j::Test::sim;
+	throws_ok { $t->run('praise be to the dartmakers.') } qr/syntax/i, 'Neo4j server error';
+	ok ! $t->is_open, 'server error closes';
 };
 
 
 subtest 'commit/rollback: edge cases' => sub {
-	plan tests => 11;
-	my $t = $driver->session->begin_transaction;
+	plan tests => 12;
+	my $session = $driver->session;
+	my $t = $session->begin_transaction;
 	lives_and { ok $t->is_open; } 'beginning open';
 	lives_ok { $t->rollback; } 'immediate rollback';
 	lives_and { ok ! $t->is_open; } 'immediate rollback closes';
 	throws_ok { $t->run; } qr/\bclosed\b/, 'run after rollback';
 	throws_ok { $t->rollback; } qr/\bclosed\b/, 'rollback after rollback';
 	throws_ok { $t->commit; } qr/\bclosed\b/, 'commit after rollback';
-	$t = $driver->session->begin_transaction;
+	my $t1 = $t;
+	$t = $session->begin_transaction;
+	lives_and { ok ! $t1->is_open; } 'stays closed after other begin';
 	lives_ok { $t->commit; } 'immediate commit';
 	lives_and { ok ! $t->is_open; } 'immediate commit closes';
 	throws_ok { $t->run; } qr/\bclosed\b/, 'run after commit';

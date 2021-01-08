@@ -8,7 +8,11 @@ package Neo4j::Driver::Transaction;
 
 
 use Carp qw(croak);
-our @CARP_NOT = qw(Neo4j::Driver::Session Neo4j::Driver);
+our @CARP_NOT = qw(
+	Neo4j::Driver::Session
+	Neo4j::Driver::Session::Bolt
+	Neo4j::Driver::Session::HTTP
+);
 use Scalar::Util qw(blessed);
 
 use Neo4j::Driver::Result;
@@ -18,8 +22,10 @@ sub new {
 	my ($class, $session) = @_;
 	
 	my $transaction = {
-		transport => $session->{transport},
-		open => 1,
+		cypher_filter => $session->{driver}->{cypher_filter},
+		net => $session->{net},
+		unused => 1,  # for HTTP only
+		closed => 0,
 		return_graph => 0,
 		return_stats => 1,
 	};
@@ -46,7 +52,7 @@ sub run {
 		@statements = ();
 	}
 	
-	my @results = $self->{transport}->run($self, @statements);
+	my @results = $self->{net}->_run($self, @statements);
 	
 	if (scalar @statements <= 1) {
 		my $result = $results[0] // Neo4j::Driver::Result->new;
@@ -75,35 +81,140 @@ sub _prepare {
 		$params = {@parameters};
 	}
 	
-	$self->{transport}->{return_graph} = $self->{return_graph};
-	$self->{transport}->{return_stats} = $self->{return_stats};
-	return $self->{transport}->prepare($self, $query, $params);
+	if ($self->{cypher_filter}) {
+		croak "Unimplemented cypher filter '$self->{cypher_filter}'" if $self->{cypher_filter} ne 'params';
+		if (defined $params) {
+			my @params_quoted = map {quotemeta} keys %$params;
+			my $params_re = join '|', @params_quoted, map {"`$_`"} @params_quoted;
+			$query =~ s/\{($params_re)}/\$$1/g;
+		}
+	}
+	
+	my $statement = [$query, $params // {}];
+	return $statement;
 }
 
 
-sub _explicit {
+
+
+package # private
+        Neo4j::Driver::Transaction::Bolt;
+use parent -norequire => 'Neo4j::Driver::Transaction';
+
+use Carp qw(croak);
+use Try::Tiny;
+
+
+sub _begin {
 	my ($self) = @_;
 	
-	$self->{transport}->begin($self);
+	croak 'Nested transactions unsupported in Bolt' if $self->{net}->{active_tx};
+	
+	$self->{net}->{active_tx} = 1;
+	$self->run('BEGIN');
 	return $self;
 }
 
 
-sub _autocommit {
-	my ($self) = @_;
+sub _run_autocommit {
+	my ($self, $query, @parameters) = @_;
 	
-	$self->{transport}->autocommit($self);
-	return $self;
+	croak 'Nested transactions unsupported in Bolt' if $self->{net}->{active_tx};
+	
+	$self->{net}->{active_tx} = 1;  # run() requires an active tx
+	my $results;
+	try {
+		$results = $self->run($query, @parameters);
+	}
+	catch {
+		$self->{net}->{active_tx} = 0;
+		croak $_;
+	};
+	$self->{net}->{active_tx} = 0;
+	
+	return $results unless wantarray;
+	return $results->list if ref $query ne 'ARRAY';
+	return @$results;
 }
 
 
 sub commit {
 	my ($self) = @_;
 	
-	croak 'Transaction already closed' unless $self->is_open;
+	$self->run('COMMIT');
+	$self->{closed} = 1;
+	$self->{net}->{active_tx} = 0;
+}
+
+
+sub rollback {
+	my ($self) = @_;
 	
-	$self->{transport}->commit($self);
-	$self->{open} = 0;
+	$self->run('ROLLBACK');
+	$self->{closed} = 1;
+	$self->{net}->{active_tx} = 0;
+}
+
+
+sub is_open {
+	my ($self) = @_;
+	
+	return 0 if $self->{closed};  # what is closed stays closed
+	return $self->{net}->{active_tx};
+}
+
+
+
+
+package # private
+        Neo4j::Driver::Transaction::HTTP;
+use parent -norequire => 'Neo4j::Driver::Transaction';
+
+use Carp qw(croak);
+
+# use 'rest' in place of broken 'meta', see neo4j #12306
+my $RESULT_DATA_CONTENTS = ['row', 'rest'];
+my $RESULT_DATA_CONTENTS_GRAPH = ['row', 'rest', 'graph'];
+
+
+sub _prepare {
+	my ($self, $query, @parameters) = @_;
+	
+	my $statement = $self->SUPER::_prepare($query, @parameters);
+	my ($cypher, $parameters) = @$statement;
+	
+	my $json = { statement => '' . $cypher };
+	$json->{resultDataContents} = $RESULT_DATA_CONTENTS;
+	$json->{resultDataContents} = $RESULT_DATA_CONTENTS_GRAPH if $self->{return_graph};
+	$json->{includeStats} = \1 if $self->{return_stats};
+	$json->{parameters} = $parameters if %$parameters;
+	
+	return $json;
+}
+
+
+sub _begin {
+	my ($self) = @_;
+	
+	# no-op for HTTP
+	return $self;
+}
+
+
+sub _run_autocommit {
+	my ($self, $query, @parameters) = @_;
+	
+	$self->{transaction_endpoint} = $self->{commit_endpoint};
+	$self->{transaction_endpoint} //= URI->new( $self->{net}->{endpoints}->{new_commit} )->path;
+	
+	return $self->run($query, @parameters);
+}
+
+
+sub commit {
+	my ($self) = @_;
+	
+	$self->_run_autocommit;
 }
 
 
@@ -112,15 +223,17 @@ sub rollback {
 	
 	croak 'Transaction already closed' unless $self->is_open;
 	
-	$self->{transport}->rollback($self);
-	$self->{open} = 0;
+	$self->{net}->_request($self, 'DELETE') if $self->{transaction_endpoint};
+	$self->{closed} = 1;
 }
 
 
 sub is_open {
 	my ($self) = @_;
 	
-	return $self->{open};
+	return 0 if $self->{closed};
+	return 1 if $self->{unused};
+	return $self->{net}->_is_active_tx($self);
 }
 
 
@@ -339,9 +452,9 @@ The ability to disable the statistics may be removed in future.
    ...
  }
 
-The Neo4j HTTP API supports a "graph" results data format. This driver
-exposes this feature to the client and will continue to do so, but
-the interface is not yet finalised.
+The Neo4j HTTP JSON API supports a "graph" results data format.
+This driver exposes this feature to the client and will continue
+to do so, but the interface is not yet finalised.
 
 =head1 SEE ALSO
 

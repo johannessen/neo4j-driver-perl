@@ -20,7 +20,7 @@ my $s = $driver->session;
 
 use Test::More 0.96 tests => 11 + 1;
 use Test::Exception;
-my $transaction = $s->begin_transaction;
+my $transaction = $driver->session->begin_transaction;
 $transaction->{return_stats} = 0;  # optimise sim
 
 

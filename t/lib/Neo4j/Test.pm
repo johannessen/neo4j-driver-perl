@@ -34,6 +34,7 @@ sub driver_maybe {
 	if (! $ENV{TEST_NEO4J_PASSWORD} && ! $bolt) {
 		# without a password, we use the REST simulator instead
 		$driver->{client_factory} = Neo4j::Sim->factory;
+		$driver->config(cypher_filter => 'params');  # sim uses modern param syntax
 		$sim = 1;
 	}
 	
@@ -83,9 +84,8 @@ sub transaction_unconnected {
 	my (undef, $driver) = @_;
 	
 	$driver //= Neo4j::Driver->new;
-	my $transport = Neo4j::Driver::Transport::HTTP->new( $driver );
-	my $session = Neo4j::Driver::Session->new( $transport );
-	my $transaction = Neo4j::Driver::Transaction->new( $session );
+	my $session = Neo4j::Driver::Session::HTTP->new( $driver );
+	my $transaction = Neo4j::Driver::Transaction::HTTP->new( $session );
 	return $transaction;
 }
 

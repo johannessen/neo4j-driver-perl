@@ -16,42 +16,13 @@ use Neo4j::Driver::ResultColumns;
 use Neo4j::Driver::ResultSummary;
 
 
+our $fake_attached = 0;  # 1: simulate an attached stream (only used in testing)
+
+
 sub new {
-	my ($class, $params) = @_;
+	my ($class) = @_;
 	
-	# Holding a reference to the Bolt connection is important, because
-	# Neo4j::Bolt automatically closes the session upon object destruction.
-	# Perl uses reference counting to control its garbage collector, so we
-	# need to hold that reference {cxn} until we detach from the stream,
-	# even though we never use the connection object directly.
-	
-	my $self = {
-		attached => 1,   # unbuffered records may exist on the stream
-		exhausted => 0,  # all records read by the client; fetch() will fail
-		result => $params->{json},
-		buffer => [],
-		columns => undef,
-		summary => undef,
-		deep_bless => $params->{deep_bless},
-		cypher_types => $params->{cypher_types},
-		notifications => $params->{notifications},
-		statement => $params->{statement},
-		cxn => $params->{bolt_connection},  # important to avoid dereferencing the connection
-		stream => $params->{bolt_stream},
-		server_info => $params->{server_info},
-	};
-	
-	# HTTP JSON results can be fully buffered immediately
-	if ($self->{result} && $params->{detach_stream}) {
-		$self->{buffer} = $self->{result}->{data};
-		$self->{columns} = Neo4j::Driver::ResultColumns->new($self->{result});
-		foreach my $record (@{ $self->{buffer} }) {
-			Neo4j::Driver::Record->new($record, $self->{columns}, $self->{deep_bless}, $self->{cypher_types});
-		}
-		$self->{attached} = 0;
-	}
-	
-	return bless $self, $class;
+	return bless { buffer => [] }, $class;
 }
 
 
@@ -100,6 +71,22 @@ sub single {
 }
 
 
+sub _as_fully_buffered {
+	my ($self) = @_;
+	
+	$self->{attached} = $fake_attached;
+	return $self if $fake_attached;  # (only used in testing)
+	
+	# JSON results are completely available immediately and can be fully
+	# buffered right away, avoiding the need to loop through _fetch_next().
+	# (also used in Bolt/Jolt testing, $gather_results 1)
+	$self->{buffer} = $self->{result}->{data};
+	$self->{columns} = Neo4j::Driver::ResultColumns->new($self->{result});
+	$self->_init_record( $_ ) for @{ $self->{buffer} };
+	return $self;
+}
+
+
 sub _fill_buffer {
 	my ($self, $minimum) = @_;
 	
@@ -132,26 +119,11 @@ sub _fill_buffer {
 sub _fetch_next {
 	my ($self) = @_;
 	
-	my $record;
-	if ( $self->{stream} ) {
-		my @row = $self->{stream}->fetch_next;
-		$record = { row => \@row } if @row;
-		
-		unless ($self->{stream}->success) {
-			# success() == -1 is not an error condition; it simply
-			# means that there are no more records on the stream
-			my $stream = $self->{stream};
-			croak sprintf "Bolt error %i: %s", $stream->client_errnum, $stream->client_errmsg unless $stream->server_errcode || $stream->server_errmsg;
-			croak sprintf "%s:\n%s\nBolt error %i: %s", $stream->server_errcode, $stream->server_errmsg, $stream->client_errnum, $stream->client_errmsg;
-		}
-	}
-	else {
-		# simulate a JSON-backed result stream (only used in testing)
-		$self->{json_cursor} //= 0;
-		$record = $self->{result}->{data}->[ $self->{json_cursor}++ ];
-	}
+	# simulate a JSON-backed result stream (only used in testing, $fake_attached 1)
+	$self->{json_cursor} //= 0;
+	my $record = $self->{result}->{data}->[ $self->{json_cursor}++ ];
 	return undef unless $record;  ##no critic (ProhibitExplicitReturnUndef)
-	return Neo4j::Driver::Record->new($record, $self->{columns}, $self->{deep_bless}, $self->{cypher_types});
+ 	return $self->_init_record( $record );
 }
 
 

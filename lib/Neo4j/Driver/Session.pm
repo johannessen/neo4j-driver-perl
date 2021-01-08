@@ -7,37 +7,58 @@ package Neo4j::Driver::Session;
 # ABSTRACT: Context of work for database interactions
 
 
+use Carp qw(croak);
+our @CARP_NOT = qw(Neo4j::Driver);
 use URI 1.25;
 
+use Neo4j::Driver::Net::Bolt;
+use Neo4j::Driver::Net::HTTP;
 use Neo4j::Driver::Transaction;
 
 
 sub new {
-	my ($class, $transport) = @_;
+	my ($class, $driver) = @_;
 	
-	my $session = {
-#		driver => $driver,
-#		uri => $driver->{uri}->clone,
-		transport => $transport,
-	};
+	return Neo4j::Driver::Session::Bolt->new($driver) if $driver->{uri}->scheme eq 'bolt';
+	return Neo4j::Driver::Session::HTTP->new($driver);
+}
+
+
+# Connect and get ServerInfo (via Bolt HELLO or HTTP Discovery API),
+# then determine the default database name for Neo4j >= 4.
+sub _connect {
+	my ($self, $database) = @_;
 	
-	return bless $session, $class;
+	my $neo4j_version = $self->server->version;  # ensure contact with the server has been made
+	return $self if $neo4j_version =~ m{^Neo4j/[123]\.};  # nothing more to do
+	
+	if (! defined $database) {
+		# discover default database on Neo4j >= 4
+		eval {
+			my $sys = $self->{driver}->session(database => 'system');
+			$database = $sys->run('SHOW DEFAULT DATABASE')->single->get('name');
+		};
+		croak $@ . "Session creation failed because the default database"
+		         . " of $neo4j_version at " . $self->server->address
+		         . " could not be determined" unless defined $database;
+	}
+	
+	$self->{net}->_set_database($database);
+	return $self;
 }
 
 
 sub begin_transaction {
 	my ($self) = @_;
 	
-	my $t = Neo4j::Driver::Transaction->new($self);
-	return $t->_explicit;
+	return $self->new_tx->_begin;
 }
 
 
 sub run {
 	my ($self, $query, @parameters) = @_;
 	
-	my $t = Neo4j::Driver::Transaction->new($self);
-	return $t->_autocommit->run($query, @parameters);
+	return $self->new_tx->_run_autocommit($query, @parameters);
 }
 
 
@@ -49,7 +70,51 @@ sub close {
 sub server {
 	my ($self) = @_;
 	
-	return $self->{transport}->{server_info};
+	return $self->{net}->_server;
+}
+
+
+
+
+package # private
+        Neo4j::Driver::Session::Bolt;
+use parent -norequire => 'Neo4j::Driver::Session';
+
+
+sub new {
+	my ($class, $driver) = @_;
+	
+	return bless {
+		driver => $driver,
+		net => Neo4j::Driver::Net::Bolt->new($driver),
+	}, $class;
+}
+
+
+sub new_tx {
+	return Neo4j::Driver::Transaction::Bolt->new(shift);
+}
+
+
+
+
+package # private
+        Neo4j::Driver::Session::HTTP;
+use parent -norequire => 'Neo4j::Driver::Session';
+
+
+sub new {
+	my ($class, $driver) = @_;
+	
+	return bless {
+		driver => $driver,
+		net => Neo4j::Driver::Net::HTTP->new($driver),
+	}, $class;
+}
+
+
+sub new_tx {
+	return Neo4j::Driver::Transaction::HTTP->new(shift);
 }
 
 
@@ -136,11 +201,12 @@ these features.
 The C<run> method tries to Do What You Mean if called in list
 context.
 
-=head2 Concurrent explicit transactions
+=head2 Concurrent transactions
 
  $session = Neo4j::Driver->new('http://...')->basic_auth(...)->session;
  $tx1 = $session->begin_transaction;
  $tx2 = $session->begin_transaction;
+ $tx3 = $session->run(...);
 
 Since HTTP is a stateless protocol, the Neo4j HTTP API effectively
 allows multiple concurrently open transactions without special
@@ -148,17 +214,8 @@ client-side considerations. This driver exposes this feature to the
 client and will continue to do so, but the interface is not yet
 finalised.
 
-The Bolt protocol does not support concurrent explicit transactions.
-
-=head2 Concurrent autocommit transactions
-
- $tx1 = $session->begin_transaction;
- $tx2 = $session->run(...);
-
-Sessions support autocommit transactions while an explicit
-transaction is open. Since it is not clear to me if this is
-intended behaviour when the Bolt protocol is used, this feature
-is listed as experimental.
+The Bolt protocol does not support concurrent transactions within
+the same session.
 
 =head1 SECURITY CONSIDERATIONS
 
