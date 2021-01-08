@@ -22,8 +22,9 @@ my $s = $driver->session;  # only for autocommit transactions
 # https://metacpan.org/pod/Cpanel::JSON::XS#JSON-%3E-PERL
 # https://metacpan.org/pod/Mojo::JSON::MaybeXS#Upgraded-Numbers
 
-use Test::More 0.96 tests => 4 + 5 + 3 + 1;
+use Test::More 0.96 tests => 4 + 5 + 3 + 2;
 use Test::Exception;
+use Test::Warnings;
 use JSON::PP ();
 my $transaction = $driver->session->begin_transaction;
 $transaction->{return_stats} = 0;  # optimise sim

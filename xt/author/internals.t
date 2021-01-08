@@ -21,9 +21,9 @@ my $s = $driver->session;
 # suite, which is by default run on installation on every platform.
 # That's why these internals are in xt/author.
 
-use Test::More 0.96 tests => 6;
+use Test::More 0.96 tests => 6 + 1;
 use Test::Exception;
-use Test::Warnings qw(warnings :no_end_test);
+use Test::Warnings qw(warnings);
 
 
 my ($q, $r);

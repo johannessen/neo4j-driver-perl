@@ -20,9 +20,9 @@ my $s = $driver->session;
 # those features or moved elsewhere once the features are documented
 # and thus officially supported.
 
-use Test::More 0.96 tests => 12;
+use Test::More 0.96 tests => 12 + 1;
 use Test::Exception;
-use Test::Warnings qw(warnings :no_end_test);
+use Test::Warnings qw(warnings);
 
 
 my ($q, $r, @a, $a);

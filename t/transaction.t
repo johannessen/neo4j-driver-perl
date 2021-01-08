@@ -16,8 +16,9 @@ my $s = $driver->session;  # only for autocommit transactions
 
 # These tests are about the REST and transaction implementation.
 
-use Test::More 0.96 tests => 5 + 3;
+use Test::More 0.96 tests => 5 + 4;
 use Test::Exception;
+use Test::Warnings;
 use URI;
 my $undo_id;
 

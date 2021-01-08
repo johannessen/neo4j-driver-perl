@@ -15,8 +15,9 @@ BEGIN {
 
 # The following tests pertain to database sessions.
 
-use Test::More 0.96 tests => 3;
+use Test::More 0.96 tests => 3 + 1;
 use Test::Exception;
+use Test::Warnings;
 
 
 my ($s);
