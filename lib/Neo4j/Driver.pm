@@ -142,6 +142,17 @@ sub close {
 }
 
 
+
+
+package # private
+        URI::bolt;
+
+use parent 'URI::_server';
+
+# The server methods need to be available for bolt: URI instances
+# even when the Neo4j-Bolt distribution is not installed.
+
+ 
 1;
 
 __END__
