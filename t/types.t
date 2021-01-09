@@ -24,7 +24,7 @@ my $s = $driver->session;  # only for autocommit transactions
 
 use Test::More 0.96 tests => 4 + 5 + 3 + 2;
 use Test::Exception;
-use Test::Warnings;
+use Test::Warnings qw(warnings);
 use JSON::PP ();
 my $transaction = $driver->session->begin_transaction;
 $transaction->{return_stats} = 0;  # optimise sim
@@ -64,7 +64,9 @@ subtest 'Property types: spatial type semantics' => sub {
 	$q = <<END;
 RETURN point({ x:3, y:0 })
 END
+	warnings {  # ignore Bolt warnings
 	lives_ok { $r = 0; $r = $s->run($q)->single; } 'get spatial property values';
+	};
 	SKIP: {
 		skip '(read failed)', 1 if ! $r;
 		is ref $r->get(0), 'Neo4j::Driver::Type::Point', 'point blessed';
@@ -83,7 +85,9 @@ subtest 'Property types: temporal type semantics' => sub {
 RETURN
 duration.between(date('1984-10-11'), date('2015-06-24'))
 END
+	warnings {  # ignore Bolt warnings
 	lives_ok { $r = 0; $r = $s->run($q)->single; } 'get temporal property values';
+	};
 	SKIP: {
 		skip '(read failed)', 1 if ! $r;
 		is ref $r->get(0), 'Neo4j::Driver::Type::Temporal', 'temporal blessed';

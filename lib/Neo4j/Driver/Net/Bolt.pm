@@ -56,8 +56,10 @@ sub new {
 		$cxn = $net_module->connect( "$uri", $driver->{http_timeout} );
 	}
 	croak $class->_bolt_error($cxn) unless $cxn->connected;
+	$protocol = "Bolt/" . $cxn->protocol_version if $cxn->can('protocol_version');
 	
 	return bless {
+		net_module => $net_module,
 		connection => $cxn,
 		server_info => Neo4j::Driver::ServerInfo->new({
 			uri => $uri,
@@ -109,9 +111,11 @@ sub _run {
 		parameters => $statement->[1],
 	};
 	
+	my $query_runner = $tx->{bolt_txn} ? $tx->{bolt_txn} : $self->{connection};
+	
 	my ($stream, $result);
 	if ($statement->[0]) {
-		$stream = $self->{connection}->run_query( @$statement );
+		$stream = $query_runner->run_query( @$statement, $self->{database} );
 		
 		if (! $stream) {
 			$tx->{closed} = 1;
@@ -136,8 +140,8 @@ sub _run {
 			# (albeit marked as failed, thus uncommittable). Just
 			# attempting an explicit rollback whenever the Neo4j server
 			# reports any errors should fix that. If there are additional
-			# errors during the rollback, those can be ignored.
-			eval { $tx->rollback };
+			# errors during the rollback, those must be ignored.
+			eval { $tx->{failed} = 1; $tx->rollback; } unless $tx->{failed};
 			$tx->{closed} = 1;
 			$self->{active_tx} = 0;
 			
@@ -154,6 +158,15 @@ sub _run {
 	}
 	
 	return ($result);
+}
+
+
+sub _new_tx {
+	my ($self) = @_;
+	
+	my $transaction = "$self->{net_module}::Txn";
+	return unless $transaction->can('new');
+	return $transaction->new( $self->{connection} );
 }
 
 

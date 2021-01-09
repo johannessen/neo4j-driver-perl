@@ -293,6 +293,16 @@ These are subject to unannounced modification or removal in future
 versions. Expect your code to break if you depend upon these
 features.
 
+=head2 Bolt version 3
+
+There is now experimental support for Bolt protocol versions newer
+S<than 1> using L<Neo4j::Bolt> S<version 0.40> or newer. This allows
+connecting to S<Neo4j 4> using Bolt.
+
+This feature is currently undergoing testing. Until it becomes
+stable, please continue to use HTTP with S<Neo4j 4> in production
+environments.
+
 =head2 Parameter syntax conversion
 
  $driver->config(cypher_filter => 'params');

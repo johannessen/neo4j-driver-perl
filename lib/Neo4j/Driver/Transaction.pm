@@ -110,8 +110,9 @@ sub _begin {
 	
 	croak 'Nested transactions unsupported in Bolt' if $self->{net}->{active_tx};
 	
+	$self->{bolt_txn} = $self->{net}->_new_tx;
 	$self->{net}->{active_tx} = 1;
-	$self->run('BEGIN');
+	$self->run('BEGIN') unless $self->{bolt_txn};
 	return $self;
 }
 
@@ -141,7 +142,14 @@ sub _run_autocommit {
 sub commit {
 	my ($self) = @_;
 	
-	$self->run('COMMIT');
+	croak 'Transaction already closed' unless $self->is_open;
+	
+	if ($self->{bolt_txn}) {
+		$self->{bolt_txn}->commit;
+	}
+	else {
+		$self->run('COMMIT');
+	}
 	$self->{closed} = 1;
 	$self->{net}->{active_tx} = 0;
 }
@@ -150,7 +158,14 @@ sub commit {
 sub rollback {
 	my ($self) = @_;
 	
-	$self->run('ROLLBACK');
+	croak 'Transaction already closed' unless $self->is_open;
+	
+	if ($self->{bolt_txn}) {
+		$self->{bolt_txn}->rollback;
+	}
+	else {
+		$self->run('ROLLBACK');
+	}
 	$self->{closed} = 1;
 	$self->{net}->{active_tx} = 0;
 }
