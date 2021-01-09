@@ -81,6 +81,21 @@ sub uri {
 }
 
 
+# Return the HTTP version (e. g. "HTTP/1.1") from the last response,
+# or just "HTTP" if the version can't be determined.
+# May block until the response headers have been fully received.
+sub protocol {
+	my ($self) = @_;
+	
+	if ( blessed $self->{client}->{_res} && $self->{client}->{_res}->can('protocol') ) {
+		return $self->{client}->{_res}->protocol;
+	}
+	else {
+		return 'HTTP';
+	}
+}
+
+
 # Return a hashref with the following entries, representing
 # headers and status of the last response:
 # - content_type  (eg "application/json")

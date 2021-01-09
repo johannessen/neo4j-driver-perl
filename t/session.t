@@ -24,13 +24,16 @@ my ($s);
 
 
 subtest 'ServerInfo' => sub {
-	plan tests => 4;
+	plan tests => 6;
 	my $server;
 	lives_ok { $server = $driver->session->server } 'get ServerInfo';
 	isa_ok $server, 'Neo4j::Driver::ServerInfo', 'isa ServerInfo';
 	lives_and { my $a = Neo4j::Test->server_address; like($server->address, qr/$a$/) } 'server address';
-	like $server->version, qr(^Neo4j/\d+\.\d+\.\d), 'server version syntax';
-	diag $server->version if $ENV{AUTHOR_TESTING};  # give feedback about which Neo4j version is being tested
+	my $vinfo = "";
+	lives_and { ok $vinfo = $server->version } 'server version';
+	like $vinfo, qr(^Neo4j/\d+\.\d+\.\d), 'server version syntax';
+	lives_ok { $vinfo .= " (" . $server->protocol . ")" } 'server protocol';
+	diag $vinfo if $ENV{AUTHOR_TESTING};  # give feedback about which Neo4j version is being tested
 };
 
 

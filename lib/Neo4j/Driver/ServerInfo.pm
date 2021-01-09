@@ -17,12 +17,14 @@ sub new {
 	return bless [
 		URI->new( $server_info->{uri} )->host_port,
 		$server_info->{version},
+		$server_info->{protocol},
 	], $class;
 }
 
 
 sub address { shift->[0] }
 sub version { shift->[1] }
+sub protocol { shift->[2] }
 
 
 1;
@@ -60,6 +62,24 @@ of an URL authority string (for example: C<localhost:7474>).
 
 Returns the product name and version number. Takes the form of
 a server agent string (for example: C<Neo4j/3.5.17>).
+
+=head1 EXPERIMENTAL FEATURES
+
+L<Neo4j::Driver::ServerInfo> implements the following experimental
+features. These are subject to unannounced modification or removal
+in future versions. Expect your code to break if you depend upon
+these features.
+
+=head2 protocol
+
+ $protocol_string = $session->server->protocol;
+
+Returns the protocol name and version number announced by the server.
+Similar to an agent string, this value is formed by the protocol
+name followed by a slash and the version number, usually two digits
+separated by a dot (for example: C<Bolt/1.0> or C<HTTP/1.1>).
+
+If the protocol version is unknown, just the name is returned.
 
 =head1 SEE ALSO
 

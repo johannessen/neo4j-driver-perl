@@ -64,7 +64,7 @@ sub GET {
 	if ($url ne '/') {
 		return $self->not_implemented('GET', $url);
 	}
-	my $neo4j_version = '"neo4j_version":"0.0.0 (Neo4j::Sim)"';
+	my $neo4j_version = '"neo4j_version":"0.0.0"';
 	my $transaction = '"transaction":"/db/data/transaction"';
 	$self->{json} = "{$neo4j_version,$transaction}";
 	$self->{status} = 200;  # HTTP: OK
@@ -167,6 +167,10 @@ sub message {
 	return "Unauthorized" if $status == 401;
 	return "Not Found" if $status == 404;
 	return "Not Implemented";
+}
+
+sub protocol {
+	return "Neo4j::Sim";
 }
 
 

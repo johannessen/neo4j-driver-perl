@@ -37,10 +37,12 @@ sub new {
 		$uri->userinfo( $driver->{auth}->{principal} . ':' . $driver->{auth}->{credentials} );
 	}
 	
+	my $protocol = "Bolt";
 	my $net_module = $driver->{net_module} // 'Neo4j::Bolt';
 	if ($net_module eq 'Neo4j::Bolt') {
 		croak $@ . "URI scheme 'bolt' requires Neo4j::Bolt"
 			unless eval { require Neo4j::Bolt; 1 };
+		$protocol = "Bolt/1.0" if $Neo4j::Bolt::VERSION le "0.20";
 	}
 	
 	my $cxn;
@@ -60,6 +62,7 @@ sub new {
 		server_info => Neo4j::Driver::ServerInfo->new({
 			uri => $uri,
 			version => $cxn->server_id,
+			protocol => $protocol,
 		}),
 		cypher_types => $driver->{cypher_types},
 		active_tx => 0,
