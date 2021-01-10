@@ -123,7 +123,7 @@ sub _fetch_next {
 	$self->{json_cursor} //= 0;
 	my $record = $self->{result}->{data}->[ $self->{json_cursor}++ ];
 	return undef unless $record;  ##no critic (ProhibitExplicitReturnUndef)
- 	return $self->_init_record( $record );
+	return $self->_init_record( $record );
 }
 
 

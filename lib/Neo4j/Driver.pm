@@ -293,7 +293,7 @@ These are subject to unannounced modification or removal in future
 versions. Expect your code to break if you depend upon these
 features.
 
-=head2 Bolt version 3
+=head2 Bolt version 3 and 4
 
 There is now experimental support for Bolt protocol versions newer
 S<than 1> using L<Neo4j::Bolt> S<version 0.40> or newer. This allows

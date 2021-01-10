@@ -152,9 +152,9 @@ if given (however, URLs without user info should not change the auth data
 stored in the driver). A possible implementation would be to create a new
 L<AuthToken|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/AuthTokens.html>
 module that would offer suitable methods, but this seems like overkill.
-That said, userinfo is actually forbidden now by
+While sending/accepting userinfo to/from others is explicitly forbidden now by
 L<RFC7230:2.7.1|https://tools.ietf.org/html/rfc7230#section-2.7.1>,
-so this should perhaps not be added after all?
+it's still allowed to use it in cases such as ours.
 
 =item * Allow passing config options directly to the constructor, e. g. in
 place of the URL (C<< Neo4j::Driver->new({ url=>"bolt:", timeout=>30 }) >>).
@@ -170,6 +170,11 @@ default URL scheme, just so that C<neo4j://...> URLs will kind of work.
 re-blessing the structural types into custom types from the business logic
 using C<< $cypher_types->{init} >>. (For example, check for Neo4j nodes that
 are labelled C<:Person> and re-bless those as C<Local::Person> or whatever.)
+
+=item * Consider adding a config option like C<tls_options> to be
+used as input to L<IO::Socket::SSL> by the default C<net_module>.
+While this avoids the need to create a new module in simple cases,
+it does introduce a potential security risk.
 
 =back
 
@@ -258,6 +263,15 @@ how many records there will be and calls C<fetch()> exactly that number of
 times. (In theory, such a change might even slightly improve performance
 if the driver uses Perl threads to fill the buffer in the background.)
 
+=item * Consider unrolling C<deep_bless> recursion. Based on initial profiling,
+this may save up to about 5% CPU time (for a specific HTTP test query cached in
+RAM, performance went from about 2700/s to 2850/s when skipping the call to
+C<deep_bless> entirely). However, when accessing the database, the bottleneck
+is typically I/O (querying Neo4j itself instead of the RAM-cached response let
+the performance for the very same query drop down to 650/s when executed over
+HTTP). So this optimisation may not be worth it (OTOH, Bolt performance was
+something like 7000/s, so optimising C<deep_bless> may be more useful there).
+
 =back
 
 =head2 L<Neo4j::Driver::ResultColumns>
@@ -310,15 +324,6 @@ be able to handle them correctly anyway.
 =head2 L<Neo4j::Driver::Net::HTTP>
 
 =over
-
-=item * Consider unrolling C<deep_bless> recursion. Based on initial profiling,
-this may save up to about 5% CPU time (for a specific HTTP test query cached in
-RAM, performance went from about 2700/s to 2850/s when skipping the call to
-C<deep_bless> entirely). However, when accessing the database, the bottleneck
-is typically I/O (querying Neo4j itself instead of the RAM-cached response let
-the performance for the very same query drop down to 650/s when executed over
-HTTP). So this optimisation may not be worth it (OTOH, Bolt performance was
-something like 7000/s, so optimising C<deep_bless> may be more useful there).
 
 =item * If a 201 is received without a C<Location> header, it is currently
 simply ignored by C<_parse_tx_status()>. (The simulator requires this.)

@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 package Neo4j::Driver::StatementResult;
-# ABSTRACT: Deprecated (renamed to Neo4j::Driver::Result)
+# ABSTRACT: DEPRECATED (renamed to Neo4j::Driver::Result)
 
 
 1;

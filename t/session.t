@@ -37,10 +37,8 @@ subtest 'ServerInfo' => sub {
 };
 
 
-subtest 'database selection' => sub {
-	# Neo4j::Driver::Net::Bolt doesn't yet support
-	# version 4.0, so there is no database selection.
-	plan skip_all => "(test requires HTTP)" if $Neo4j::Test::bolt;
+subtest 'database selection (HTTP)' => sub {
+	plan skip_all => "(currently testing Bolt)" if $Neo4j::Test::bolt;
 	plan tests => 9;
 	my ($version, $db);
 	# no database option (or undefined)

@@ -150,8 +150,8 @@ as part of a single atomic operation and can be rolled back if
 necessary.
 
 Only one open transaction per session at a time is supported. To
-work with multiple concurrent transactions (also known as "nested
-transactions"), simply use more than one session.
+work with multiple concurrent transactions, simply use more than
+one session.
 
 =head1 METHODS
 
@@ -214,8 +214,8 @@ client-side considerations. This driver exposes this feature to the
 client and will continue to do so, but the interface is not yet
 finalised.
 
-The Bolt protocol does not support concurrent transactions within
-the same session.
+The Bolt protocol does not support concurrent transactions (also
+known as "nested transactions") within the same session.
 
 =head1 SECURITY CONSIDERATIONS
 
