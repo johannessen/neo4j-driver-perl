@@ -52,7 +52,7 @@ before_install:
 # can determine dependencies automatically, MakeMaker requires
 # an explicit list here.
 install:
-  - cpanm -nq JSON::MaybeXS LWP::UserAgent REST::Client Try::Tiny URI
+  - cpanm -nq JSON::MaybeXS LWP::UserAgent REST::Client Time::Piece Try::Tiny URI
   - cpanm -nq File::Slurp JSON::PP Test::Exception Test::More Test::Warnings
   - OLD_PERL=`perl -e 'print $] < "5.014";'`
   - if test $OLD_PERL ; then touch Makefile.PL ; fi

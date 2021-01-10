@@ -108,6 +108,9 @@ sub responseHeader {
 	if ($header eq 'Content-Type') {
 		return 'application/json';
 	}
+	elsif ($header eq 'Date') {
+		return '';
+	}
 	elsif ($header eq 'Location') {
 		my $loc = '';
 		eval { $loc = decode_json($self->{json})->{commit} // '' };
@@ -137,7 +140,7 @@ sub store {
 	
 	my $hash = request_hash($url, json_coder()->encode($request));
 	$response //= '';
-	$response =~ s/{"expires":"[A-Za-z0-9 :,+-]+"}/{"expires":"Thu, 01 Jan 1970 00:00:00 +0000"}/;
+	$response =~ s/{"expires":"[A-Za-z0-9 :,+-]+"}/{"expires":"Tue, 01 Jan 2999 00:00:00 +0000"}/;
 	File::Slurp::write_file "$path/$hash.txt", "$url\n\n\n$request" if $write_txt;  # useful for debugging
 	File::Slurp::write_file "$path/$hash.json", $response;
 }

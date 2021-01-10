@@ -111,7 +111,7 @@ subtest 'commit/rollback: edge cases' => sub {
 
 
 subtest 'commit/rollback: modify database' => sub {
-	plan tests => 4 + 9;
+	plan tests => 5 + 9;
 	my $entropy = [ 156949788, 54632, 153132456, 424697842 ];  # some constant numbers
 #	$entropy = [ time, $$, srand, int 2**31 * rand ];  # some random numbers (not supported in sim)
 	my $t = $driver->session->begin_transaction;
@@ -121,6 +121,7 @@ subtest 'commit/rollback: modify database' => sub {
 CREATE (n {entropy: {entropy}}) RETURN id(n) AS node_id
 END
 	lives_and { ok $r = $t->run( $q, entropy => $entropy )->single } 'create node';
+	is !! $t->{unused}, !! $Neo4j::Test::bolt, 'http transaction status from active_tx';
 	my $node_id = $r->get('node_id');
 	$q = <<END;
 MATCH (n) WHERE id(n) = {node_id} RETURN n.entropy, 0

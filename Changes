@@ -1,6 +1,10 @@
 Revision history for Neo4j::Driver
 
-0.19  2021-01-09
+0.20  2021-01-10
+
+ - track timeout of HTTP transactions
+
+0.19  2021-01-09  (TRIAL RELEASE)
 
  - add experimental support for newer Bolt protocol versions (for Neo4j 4)
  - add experimental protocol() method to ServerInfo

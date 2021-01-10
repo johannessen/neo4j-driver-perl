@@ -307,12 +307,11 @@ After committing the transaction is closed and can no longer be used.
  $bool = $transaction->is_open;
 
 Report whether this transaction is still open, which means commit
-or rollback did not happen.
+or rollback has not happened and the transaction has not timed out.
 
-On HTTP connections, a transaction can timeout on the server due
-to inactivity. In this case, it may in fact be closed even though
-this method returns a truthy value. The Neo4j server default
-C<dbms.rest.transaction.idle_timeout> is 60 seconds.
+Bolt transactions by default have no timeout, while the default
+C<dbms.rest.transaction.idle_timeout> for HTTP transactions is
+S<60 seconds.>
 
 =head2 rollback
 

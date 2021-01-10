@@ -328,9 +328,6 @@ That should never happen; in fact, it should only ever happen for a PUT
 request, but we don't use those here. So ignoring this is probably the right
 choice. But it may still be useful to revisit this logic later on.
 
-=item * Parse the C<expires> date for transactions, sync client and server
-system dates using the C<Date> header and track transaction expiration.
-
 =back
 
 =head2 Neo4j::Driver::Net::HTTP::*

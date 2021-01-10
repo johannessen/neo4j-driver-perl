@@ -10,6 +10,7 @@ package Neo4j::Driver::Net::HTTP;
 use Carp qw(croak);
 our @CARP_NOT = qw(Neo4j::Driver::Transaction Neo4j::Driver::Transaction::HTTP);
 
+use Time::Piece 1.17 qw();
 use URI 1.31;
 
 use Neo4j::Driver::Net::HTTP::REST;
@@ -23,6 +24,8 @@ my $COMMIT_ENDPOINT = 'commit';
 
 my @RESULT_MODULES = qw( Neo4j::Driver::Result::JSON );
 my $RESULT_FALLBACK = 'Neo4j::Driver::Result::Text';
+
+my $RFC5322_DATE = '%a, %d %b %Y %H:%M:%S %z';  # strftime(3)
 
 
 sub new {
@@ -66,10 +69,15 @@ sub _server {
 	
 	croak "Neo4j server not found (ServerInfo discovery failed)" unless $neo4j_version;
 	
+	my $date = $self->{http_agent}->date_header;
+	$date =~ s/ GMT$/ +0000/;
+	$date = $date ? Time::Piece->strptime($date, $RFC5322_DATE) : Time::Piece->new;
+	
 	$self->{server_info} = Neo4j::Driver::ServerInfo->new({
 		uri => $self->{http_agent}->uri,
 		version => "Neo4j/$neo4j_version",
 		protocol => $self->{http_agent}->protocol,
+		time_diff => Time::Piece->new - $date,
 	});
 	
 	$self->{endpoints} = {
@@ -165,27 +173,38 @@ sub _request {
 sub _parse_tx_status {
 	my ($self, $tx, $header, $info) = @_;
 	
-	$self->{unused} = 0;
+	$tx->{unused} = 0;
 	$tx->{closed} = ! $info->{commit} || ! $info->{transaction};
 	
 	if ( $tx->{closed} ) {
 		my $old_endpoint = $tx->{transaction_endpoint};
 		$old_endpoint =~ s|/$COMMIT_ENDPOINT$||;  # both endpoints may be set to /commit (for autocommit), so we need to remove that here
 		delete $self->{active_tx}->{ $old_endpoint };
+		return;
 	}
-	elsif ($header->{location} && $header->{status} eq '201') {  # Created
+	if ( $header->{location} && $header->{status} eq '201' ) {  # Created
 		my $new_commit = URI->new( $info->{commit} )->path_query;
 		my $new_endpoint = URI->new( $header->{location} )->path_query;
 		$tx->{commit_endpoint} = $new_commit;
 		$tx->{transaction_endpoint} = $new_endpoint;
-		$self->{active_tx}->{ $new_endpoint } = 1;
+	}
+	if ( my $expires = $info->{transaction}->{expires} ) {
+		$expires =~ s/ GMT$/ +0000/;
+		$expires = Time::Piece->strptime($expires, $RFC5322_DATE) + $self->{server_info}->{time_diff};
+		$self->{active_tx}->{ $tx->{transaction_endpoint} } = $expires;
 	}
 }
 
 
-# Query list of active transactions.
+# Query list of active transactions, removing expired ones.
 sub _is_active_tx {
 	my ($self, $tx) = @_;
+	
+	my $now = Time::Piece->new;
+	foreach my $tx_key ( keys %{$self->{active_tx}} ) {
+		my $expires = $self->{active_tx}->{$tx_key};
+		delete $self->{active_tx}->{$tx_key} if $now > $expires;
+	}
 	
 	my $tx_endpoint = $tx->{transaction_endpoint};
 	$tx_endpoint =~ s|/$COMMIT_ENDPOINT$||;  # for tx in the (auto)commit state, both endpoints are set to commit

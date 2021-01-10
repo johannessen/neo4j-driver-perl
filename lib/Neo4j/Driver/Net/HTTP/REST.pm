@@ -96,6 +96,17 @@ sub protocol {
 }
 
 
+# Return the HTTP Date header from the last response.
+# If the server doesn't have a clock, the header will be missing;
+# in this case, the value returned must be either the empty string or
+# (optionally) the current time in non-obsolete RFC5322:3.3 format.
+# May block until the response headers have been fully received.
+sub date_header {
+	my ($self) = @_;
+	return $self->{client}->responseHeader('Date') // '';
+}
+
+
 # Return a hashref with the following entries, representing
 # headers and status of the last response:
 # - content_type  (eg "application/json")
