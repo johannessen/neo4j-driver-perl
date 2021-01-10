@@ -14,17 +14,15 @@ sub new {
 	my ($class, $server_info) = @_;
 	
 	# don't store the full URI here - it may contain auth credentials
-	return bless [
-		URI->new( $server_info->{uri} )->host_port,
-		$server_info->{version},
-		$server_info->{protocol},
-	], $class;
+	$server_info->{uri} = URI->new( $server_info->{uri} )->host_port;
+	
+	return bless $server_info, $class;
 }
 
 
-sub address { shift->[0] }
-sub version { shift->[1] }
-sub protocol { shift->[2] }
+sub address  { shift->{uri} }
+sub version  { shift->{version} }
+sub protocol { shift->{protocol} }
 
 
 1;
