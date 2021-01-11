@@ -7,6 +7,9 @@ package Neo4j::Driver::ResultColumns;
 # ABSTRACT: Structure definition of Cypher result values
 
 
+# This package is not part of the public Neo4j::Driver API.
+
+
 use Carp qw(croak);
 
 
@@ -59,12 +62,3 @@ sub count {
 
 
 1;
-
-__END__
-
-=head1 DESCRIPTION
-
-The L<Neo4j::Driver::ResultColumns> package is not part of the
-public L<Neo4j::Driver> API.
-
-=cut

@@ -69,9 +69,6 @@ context would: It should return the number of items in the list.
 =item * Test roundtrip of special numeric values
 (very large integers, -0.0, ±Inf, ±NaN).
 
-=item * Convert tests in C<xt/compatibility> to use L<Module::Load>, so that
-testing/dev dependencies are fewer.
-
 =item * Improve test coverage:
 
 =over
