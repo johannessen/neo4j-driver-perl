@@ -1,5 +1,9 @@
 Revision history for Neo4j::Driver
 
+0.2001  2021-01-11
+
+ - declare Time::Piece 1.17 dependency (for Perl < 5.14)
+
 0.20  2021-01-10
 
  - track timeout of HTTP transactions
