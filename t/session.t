@@ -24,15 +24,28 @@ my ($s);
 
 
 subtest 'ServerInfo' => sub {
-	plan tests => 6;
-	my $server;
-	lives_ok { $server = $driver->session->server } 'get ServerInfo';
+	plan tests => 7;
+	my ($session, $server);
+	lives_ok { $session = $driver->session(database => 'system') } 'get session';
+	lives_ok { $server = $session->server } 'get ServerInfo';
 	isa_ok $server, 'Neo4j::Driver::ServerInfo', 'isa ServerInfo';
 	lives_and { my $a = Neo4j::Test->server_address; like($server->address, qr/$a$/) } 'server address';
-	my $vinfo = "";
+	my ($vinfo, $protocol, $result) = ("") x 3;
 	lives_and { ok $vinfo = $server->version } 'server version';
 	like $vinfo, qr(^Neo4j/\d+\.\d+\.\d), 'server version syntax';
-	lives_ok { $vinfo .= " (" . $server->protocol . ")" } 'server protocol';
+	lives_ok { $protocol = $server->protocol; } 'server protocol';
+	
+	eval {
+		$session->run('SHOW DEFAULT DATABASE');
+		my $media_type = $session->{net}->{http_agent}->http_header->{content_type};
+		$result = "JSON" if $media_type =~ m/\bjson\b/i;
+		$result = "Jolt" if $media_type =~ m/\bjolt\b/i;
+		$result = "Jolt sparse" if $media_type =~ m/\bjolt\b.+\bstrict=false\b/i;
+		$result = "Jolt strict" if $media_type =~ m/\bjolt\b.+\bstrict=true\b/i;
+	};
+	$vinfo .= " ($protocol $result)" if $protocol && $result;
+	$vinfo .= " ($protocol)" if $protocol && ! $result;
+	$vinfo .= " ($result)" if ! $protocol && $result;
 	diag $vinfo if $ENV{AUTHOR_TESTING};  # give feedback about which Neo4j version is being tested
 };
 

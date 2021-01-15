@@ -14,6 +14,7 @@ use Time::Piece 1.17 qw();
 use URI 1.31;
 
 use Neo4j::Driver::Net::HTTP::REST;
+use Neo4j::Driver::Result::Jolt;
 use Neo4j::Driver::Result::JSON;
 use Neo4j::Driver::Result::Text;
 use Neo4j::Driver::ServerInfo;
@@ -22,7 +23,7 @@ use Neo4j::Driver::ServerInfo;
 my $DISCOVERY_ENDPOINT = '/';
 my $COMMIT_ENDPOINT = 'commit';
 
-my @RESULT_MODULES = qw( Neo4j::Driver::Result::JSON );
+my @RESULT_MODULES = qw( Neo4j::Driver::Result::Jolt Neo4j::Driver::Result::JSON );
 my $RESULT_FALLBACK = 'Neo4j::Driver::Result::Text';
 
 my $RFC5322_DATE = '%a, %d %b %Y %H:%M:%S %z';  # strftime(3)
@@ -37,6 +38,7 @@ sub new {
 		die_on_error => $driver->{die_on_error},
 		cypher_types => $driver->{cypher_types},
 		http_agent => $net_module->new($driver),
+		want_jolt => $driver->{jolt},
 		active_tx => {},
 	}, $class;
 	

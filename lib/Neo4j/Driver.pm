@@ -29,6 +29,7 @@ my %OPTIONS = (
 	ca_file => 'tls_ca',
 	cypher_filter => 'cypher_filter',
 	cypher_types => 'cypher_types',
+	jolt => 'jolt',
 	net_module => 'net_module',
 	timeout => 'http_timeout',
 	tls => 'tls',
@@ -44,6 +45,7 @@ my %DEFAULTS = (
 		temporal => 'Neo4j::Driver::Type::Temporal',
 	},
 	die_on_error => 1,
+	jolt => 0,
 );
 
 
@@ -302,6 +304,23 @@ connecting to S<Neo4j 4> using Bolt.
 This feature is currently undergoing testing. Until it becomes
 stable, please continue to use HTTP with S<Neo4j 4> in production
 environments.
+
+=head2 Jolt
+
+ $d->config(jolt => undef);  # let the server decide
+ $d->config(jolt => 0);      # accept only JSON (the default)
+ $d->config(jolt => 1);      # accept only Jolt
+
+There is experimental support for Neo4j HTTP responses that use the
+L<Jolt|https://neo4j.com/docs/http-api/4.2/actions/result-format/#_jolt>
+format (JSON Bolt). This new response format will soon become this
+driver's default for HTTP connections. For now, you'll have to
+request it explicitly using the C<jolt> config option.
+
+If you use the scalars C<'sparse'> or C<'strict'> instead of just
+C<1>, the driver will request that particular Jolt mode from the
+server. However, there is no advantage to manually selecting one
+of these modes. This feature is for testing purposes only.
 
 =head2 Parameter syntax conversion
 

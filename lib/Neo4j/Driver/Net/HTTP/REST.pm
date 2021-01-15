@@ -10,7 +10,6 @@ package Neo4j::Driver::Net::HTTP::REST;
 use Carp qw(croak);
 our @CARP_NOT = qw(Neo4j::Driver::Net::HTTP);
 use Scalar::Util qw(blessed);
-use Try::Tiny;
 
 use JSON::MaybeXS 1.003003 qw();
 use REST::Client 134;
@@ -135,9 +134,35 @@ sub http_header {
 }
 
 
+# Return the next Jolt event from the response to the last network
+# request. When there are no further Jolt events, this method
+# returns an undefined value. If the response hasn't been fully
+# received at the time this method is called and the internal
+# response buffer does not contain at least one event, this method
+# will block until at least one event is available. The result of
+# calling this method is undefined if the response is not in Jolt
+# format or if fetch_all() has already been called for the same
+# request.
+sub fetch_event {
+	my ($self) = @_;
+	
+	# Note: Parsers that are conformant to RFC 7464 (json-seq) cannot
+	# parse Jolt because Neo4j 4.2 uses LF instead of RS as separator.
+	# We try to support both Neo4j and the spec by removing any RS.
+	if ( ! defined $self->{buffer} ) {
+		my $response = $self->fetch_all;
+		$response =~ tr/\x1e//d;
+		$self->{buffer} = [split m/\n/, $response];
+	}
+	return shift @{$self->{buffer}};
+}
+
+
 # Block until the response to the last network request has been fully
 # received, then return the entire content of the response buffer.
-# This method is idempotent; it does not empty the response buffer.
+# This method is idempotent, but the result of calling this method
+# after fetch_event() has already been called for the same request
+# is undefined.
 sub fetch_all {
 	my ($self) = @_;
 	
