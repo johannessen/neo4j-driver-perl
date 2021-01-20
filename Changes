@@ -1,8 +1,9 @@
 Revision history for Neo4j::Driver
 
-0.2002  2021-01-15
+0.2003  2021-01-20
 
  - add experimental support for HTTP responses in Jolt format
+ - announce future switch from Neo4j::Driver::Type::* to Neo4j::Types::*
  - declare Time::Piece 1.17 dependency (for Perl < 5.14)
 
 0.20  2021-01-10

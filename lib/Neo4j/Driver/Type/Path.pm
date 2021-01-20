@@ -7,6 +7,7 @@ package Neo4j::Driver::Type::Path;
 # ABSTRACT: Directed sequence of relationships between two nodes
 
 
+use parent 'Neo4j::Types::Path';
 use overload '@{}' => \&_array, fallback => 1;
 
 use Carp qw(croak);
@@ -88,39 +89,26 @@ start and the end of the path.
 
 =head1 METHODS
 
-L<Neo4j::Driver::Type::Path> implements the following methods.
+L<Neo4j::Driver::Type::Path> inherits all methods from
+L<Neo4j::Types::Path>.
 
 =head2 elements
 
  @all = $path->elements;
 
-Return the path as a list alternating between nodes
-and relationships in path sequence order.
+See L<Neo4j::Types::Path/"elements">.
 
 =head2 nodes
 
  @nodes = $path->nodes;
 
-Return all L<nodes|Neo4j::Driver::Type::Node> of this path.
-
-The start node of this path is the first node in the array this method
-returns, the end node is the last one.
-
- @nodes = $path->nodes;
- $start_node = $nodes[0];
- $end_node   = $nodes[@nodes - 1];
+See L<Neo4j::Types::Path/"nodes">.
 
 =head2 relationships
 
  @rels = $path->relationships;
 
-Return all L<relationships|Neo4j::Driver::Type::Relationship>
-of this path.
-
-The length of a path is defined as the number of relationships.
-
- @rels = $path->relationships;
- $length = scalar @rels;
+See L<Neo4j::Types::Path/"relationships">.
 
 =head1 EXPERIMENTAL FEATURES
 
@@ -149,6 +137,8 @@ their labels and types. This is due to an issue in the Neo4j server.
 =over
 
 =item * L<Neo4j::Driver>
+
+=item * L<Neo4j::Types::Path>
 
 =item * Equivalent documentation for the official Neo4j drivers:
 L<Path (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/types/Path.html>
