@@ -7,6 +7,7 @@ package Neo4j::Driver::Type::Relationship;
 # ABSTRACT: Describes a relationship from a Neo4j graph
 
 
+use parent 'Neo4j::Types::Relationship';
 use overload '%{}' => \&_hash, fallback => 1;
 
 
@@ -110,53 +111,45 @@ IDs.
 
 =head1 METHODS
 
-L<Neo4j::Driver::Type::Relationship> implements the following methods.
+L<Neo4j::Driver::Type::Relationship> inherits all methods from
+L<Neo4j::Types::Relationship>.
 
 =head2 get
 
  $value = $relationship->get('property_key');
 
-Retrieve the value of this relationship's property with the given key.
-If no such key exists, return C<undef>.
+See L<Neo4j::Types::Relationship/"get">.
 
 =head2 id
 
  $id = $relationship->id;
 
-Return a unique ID for this relationship.
-
-In the Neo4j Driver API, entity IDs are only guaranteed to remain
-stable for the duration of the current session. Although in practice
-server versions at least up to and including Neo4j 3.5 may appear
-to use persistent IDs, your code should not depend upon that.
-
-A relationship with the ID C<0> may exist.
-Nodes and relationships do not share the same ID space.
+See L<Neo4j::Types::Relationship/"id">.
 
 =head2 properties
 
  $hashref = $relationship->properties;
  $value = $hashref->{property_key};
 
-Return all properties of this relationship as a hash reference.
+See L<Neo4j::Types::Relationship/"properties">.
 
 =head2 start_id
 
  $id = $relationship->start_id;
 
-Return the ID of the node where this relationship starts.
+See L<Neo4j::Types::Relationship/"start_id">.
 
 =head2 end_id
 
  $id = $relationship->end_id;
 
-Return the ID of the node where this relationship ends.
+See L<Neo4j::Types::Relationship/"end_id">.
 
 =head2 type
 
  $type = $relationship->type;
 
-Return the type of this relationship.
+See L<Neo4j::Types::Relationship/"type">.
 
 =head1 EXPERIMENTAL FEATURES
 
@@ -195,6 +188,8 @@ is returned instead.
 =over
 
 =item * L<Neo4j::Driver>
+
+=item * L<Neo4j::Types::Relationship>
 
 =item * Equivalent documentation for the official Neo4j drivers:
 L<Relationship (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/types/Relationship.html>,

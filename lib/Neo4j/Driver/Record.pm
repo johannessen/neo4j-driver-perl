@@ -151,9 +151,9 @@ types as shown in the following table.
  Boolean         JSON::PP::true or JSON::PP::false
  null            undef
  
- Node            Neo4j::Driver::Type::Node
- Relationship    Neo4j::Driver::Type::Relationship
- Path            Neo4j::Driver::Type::Path
+ Node            Neo4j::Types::Node
+ Relationship    Neo4j::Types::Relationship
+ Path            Neo4j::Types::Path
  
  List            array reference
  Map             hash reference
@@ -161,14 +161,24 @@ types as shown in the following table.
 Boolean values are returned as JSON types; use C<!!> to force-convert
 to a plain Perl boolean value if necessary.
 
-Note that early versions of this class returned nodes, relationships
-and paths as hashrefs or arrayrefs rather than blessed objects. This
-was a bug. The underlying data structure of nodes and relationships
-is an implementation detail that should not be relied upon. If you
-try to treat L<Neo4j::Driver::Type::Node>,
-L<Neo4j::Driver::Type::Relationship> or L<Neo4j::Driver::Type::Path>
-objects as hashrefs or arrayrefs, your code will eventually fail
-with a future version of this driver.
+Neo4j types are currently implemented by the following packages:
+
+=over
+
+=item * L<Neo4j::Types::Node> is implemented by
+L<Neo4j::Driver::Type::Node>.
+
+=item * L<Neo4j::Types::Relationship> is implemented by
+L<Neo4j::Driver::Type::Relationship>.
+
+=item * L<Neo4j::Types::Path> is implemented by
+L<Neo4j::Driver::Type::Path>.
+
+=back
+
+In a future version of this driver, values retrieved over a Bolt
+connection will be implemented by other packages, but they will
+continue to inherit from L<Neo4j::Types> and have that interface.
 
 =head2 data
 
