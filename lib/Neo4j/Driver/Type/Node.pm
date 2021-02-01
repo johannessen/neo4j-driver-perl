@@ -24,6 +24,7 @@ sub labels {
 	my ($self) = @_;
 	
 	croak 'labels() in scalar context not supported' unless wantarray;
+	return unless defined $$self->{_meta}->{labels};
 	return @{ $$self->{_meta}->{labels} };
 }
 
