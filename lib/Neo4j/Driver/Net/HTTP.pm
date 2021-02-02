@@ -117,7 +117,8 @@ sub _accept_for {
 	my ($self, $method) = @_;
 	
 	# GET requests may fail if Neo4j sees clients that support Jolt, see neo4j #12644
-	my @accept = map { $_->_accept_header( $self->{want_jolt}, $method ) } @RESULT_MODULES;
+	my @modules = ( $self->{http_agent}->result_handlers, @RESULT_MODULES );
+	my @accept = map { $_->_accept_header( $self->{want_jolt}, $method ) } @modules;
 	return $self->{accept_for}->{$method} = join ', ', @accept;
 }
 
@@ -127,7 +128,8 @@ sub _accept_for {
 sub _result_module_for {
 	my ($self, $content_type) = @_;
 	
-	foreach my $module (@RESULT_MODULES) {
+	my @modules = ( $self->{http_agent}->result_handlers, @RESULT_MODULES );
+	foreach my $module (@modules) {
 		if ($module->_acceptable($content_type)) {
 			return $self->{result_module_for}->{$content_type} = $module;
 		}

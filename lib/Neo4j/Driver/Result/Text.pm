@@ -23,7 +23,8 @@ sub new {
 	my @errors = ();
 	
 	if (! $header->{success}) {
-		push @errors, "HTTP error: $header->{status} $header->{reason} on $params->{http_method} to $params->{http_path}";
+		my $reason_phrase = $params->{http_agent}->http_reason;
+		push @errors, "HTTP error: $header->{status} $reason_phrase on $params->{http_method} to $params->{http_path}";
 	}
 	
 	my $content_type = $header->{content_type};

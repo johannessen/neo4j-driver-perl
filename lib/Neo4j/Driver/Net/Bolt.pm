@@ -26,6 +26,8 @@ my %BOLT_ERROR = (
 	-22 => "Statement evaluation failed",
 );
 
+my $RESULT_MODULE = 'Neo4j::Driver::Result::Bolt';
+
 
 sub new {
 	my ($class, $driver) = @_;
@@ -61,6 +63,7 @@ sub new {
 	return bless {
 		net_module => $net_module,
 		connection => $cxn,
+		result_module => $net_module->can('result_handlers') ? ($net_module->result_handlers)[0] : $RESULT_MODULE,
 		server_info => Neo4j::Driver::ServerInfo->new({
 			uri => $uri,
 			version => $cxn->server_id,
@@ -148,7 +151,7 @@ sub _run {
 			croak sprintf "%s:\n%s\n%s", $stream->server_errcode, $stream->server_errmsg, $self->_bolt_error( $stream );
 		}
 		
-		$result = Neo4j::Driver::Result::Bolt->new({
+		$result = $self->{result_module}->new({
 			bolt_stream => $stream,
 			bolt_connection => $self->{connection},
 			statement => $statement_json,

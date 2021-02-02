@@ -62,6 +62,14 @@ sub new {
 }
 
 
+# Return a list of result handler modules to be used to parse
+# Neo4j statement results delivered through this module.
+# The module names returned will be used in preference to the
+# result handlers built into the driver.
+sub result_handlers {
+}
+
+
 # Return a JSON:XS-compatible coder object (for result parsers).
 # The coder object must offer the methods encode() and decode().
 # For boolean handling, encode() must accept the values \1 and \0
@@ -106,13 +114,23 @@ sub date_header {
 }
 
 
+# Return the HTTP reason phrase (eg "Not Found").
+# If unavailable, the empty string is returned instead.
+# May block until the response headers have been fully received.
+sub http_reason {
+	my ($self) = @_;
+	my $client = $self->{client};
+	return '' unless blessed $client->{_res} && $client->{_res}->can('message');
+	return $client->{_res}->message;
+}
+
+
 # Return a hashref with the following entries, representing
 # headers and status of the last response:
 # - content_type  (eg "application/json")
 # - location      (URI reference)
 # - status        (eg "404")
 # - success       (truthy for 2xx status)
-# - reason        (eg "Not Found")
 # All of these must exist and be defined scalars.
 # Unavailable values must use the empty string.
 # Blocks until the response headers have been fully received.
@@ -124,12 +142,6 @@ sub http_header {
 	$headers->{location} = $client->responseHeader('Location') // '';
 	$headers->{status} = $client->responseCode() // '';
 	$headers->{success} = $headers->{status} =~ m/^2[0-9][0-9]$/;
-	if ( blessed $client->{_res} && $client->{_res}->can('message') ) {
-		$headers->{reason} = $client->{_res}->message;
-	}
-	else {
-		$headers->{reason} = '';
-	}
 	return $headers;
 }
 

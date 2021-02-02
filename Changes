@@ -1,6 +1,6 @@
 Revision history for Neo4j::Driver
 
-0.2004  2021-02-01
+0.2005  2021-02-02
 
  - add experimental support for HTTP responses in Jolt format
  - announce future switch from Neo4j::Driver::Type::* to Neo4j::Types::*

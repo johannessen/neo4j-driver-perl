@@ -78,7 +78,8 @@ sub _parse_json {
 	
 	my @errors = ();
 	if (! $params->{http_header}->{success}) {
-		push @errors, "HTTP error: $params->{http_header}->{status} $params->{http_header}->{reason} on $params->{http_method} to $params->{http_path}";
+		my $reason_phrase = $params->{http_agent}->http_reason;
+		push @errors, "HTTP error: $params->{http_header}->{status} $reason_phrase on $params->{http_method} to $params->{http_path}";
 	}
 	
 	my $json;
