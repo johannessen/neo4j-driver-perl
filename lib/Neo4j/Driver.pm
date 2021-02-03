@@ -322,6 +322,29 @@ C<1>, the driver will request that particular Jolt mode from the
 server. However, there is no advantage to manually selecting one
 of these modes. This feature is for testing purposes only.
 
+=head2 Custom networking modules
+
+ use Local::MyNetworkAgent;
+ $driver->config(net_module => 'Local::MyNetworkAgent');
+
+The module to be used for network communication may be specified
+using the C<net_module> config option. The specified module must
+implement the API described in L<Neo4j::Driver::Net/"EXTENSIONS">.
+Your code must C<use> or C<require> the module it specifies here.
+
+By default, the driver will try to auto-detect a suitable module.
+This will currently always result in the driver's built-in modules
+being used. Alternatively, you may specify the empty string to ask
+for the built-in modules explicitly, which will disable
+auto-detection.
+
+ $driver->config(net_module => undef);  # auto-detect (the default)
+ $driver->config(net_module => '');     # use the built-in modules
+
+This config option is experimental because the API for custom
+networking modules is still evolving. See L<Neo4j::Driver::Net>
+for details.
+
 =head2 Parameter syntax conversion
 
  $driver->config(cypher_filter => 'params');
@@ -370,6 +393,10 @@ underscores (C<__>). All other hash keys are reserved for use by
 Neo4j::Driver. Reading or modifying their values is unsupported
 and discouraged because it makes your code prone to fail when any
 internals change in the implementation of Neo4j::Driver.
+
+The C<cypher_types> config option will soon be deprecated and
+eventually be removed. The C<net_module> option offers the same
+functionality and more (albeit somewhat less conveniently).
 
 =head1 CONFIGURATION OPTIONS
 

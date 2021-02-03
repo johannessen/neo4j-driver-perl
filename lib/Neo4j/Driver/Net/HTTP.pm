@@ -32,7 +32,7 @@ my $RFC5322_DATE = '%a, %d %b %Y %H:%M:%S %z';  # strftime(3)
 sub new {
 	my ($class, $driver) = @_;
 	
-	my $net_module = $driver->{net_module} // 'Neo4j::Driver::Net::HTTP::REST';
+	my $net_module = $driver->{net_module} || 'Neo4j::Driver::Net::HTTP::REST';
 	
 	my $self = bless {
 		die_on_error => $driver->{die_on_error},

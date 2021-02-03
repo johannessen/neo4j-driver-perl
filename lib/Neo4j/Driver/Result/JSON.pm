@@ -258,4 +258,14 @@ __END__
 The L<Neo4j::Driver::Result::JSON> package is not part of the
 public L<Neo4j::Driver> API.
 
+=head1 SEE ALSO
+
+=over
+
+=item * L<Neo4j::Driver::Net>
+
+=item * L<Neo4j::Driver::Result>
+
+=back
+
 =cut
