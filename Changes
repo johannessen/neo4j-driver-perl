@@ -1,6 +1,6 @@
 Revision history for Neo4j::Driver
 
-0.2005  2021-02-02
+0.2006  2021-02-04
 
  - add experimental support for HTTP responses in Jolt format
  - add experimental option for custom networking modules

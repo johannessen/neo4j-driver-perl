@@ -13,7 +13,7 @@ our @CARP_NOT = qw(Neo4j::Driver::Transaction Neo4j::Driver::Transaction::HTTP);
 use Time::Piece 1.17 qw();
 use URI 1.31;
 
-use Neo4j::Driver::Net::HTTP::REST;
+use Neo4j::Driver::Net::HTTP::LWP;
 use Neo4j::Driver::Result::Jolt;
 use Neo4j::Driver::Result::JSON;
 use Neo4j::Driver::Result::Text;
@@ -32,7 +32,7 @@ my $RFC5322_DATE = '%a, %d %b %Y %H:%M:%S %z';  # strftime(3)
 sub new {
 	my ($class, $driver) = @_;
 	
-	my $net_module = $driver->{net_module} || 'Neo4j::Driver::Net::HTTP::REST';
+	my $net_module = $driver->{net_module} || 'Neo4j::Driver::Net::HTTP::LWP';
 	
 	my $self = bless {
 		die_on_error => $driver->{die_on_error},

@@ -332,18 +332,6 @@ choice. But it may still be useful to revisit this logic later on.
 
 =back
 
-=head2 Neo4j::Driver::Net::HTTP::*
-
-=over
-
-=item * Profile whether C<X-Stream> has any performance impact. Remove if
-in doubt, as we don't implement streaming (and have no plans to in the
-future, considering that Bolt should be used when speed is important).
-
-=item * Remove the L<REST::Client> dependency and use <LWP::UserAgent> directly.
-
-=back
-
 =head2 Neo4j::Driver::Type::*
 
 =over

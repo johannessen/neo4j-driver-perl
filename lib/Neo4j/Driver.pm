@@ -191,12 +191,40 @@ existing L<REST::Neo4p> module does. Nor does it offer any L<DBI>
 integration. However, it avoids the legacy C<cypher> endpoint,
 assuring compatibility with Neo4j versions 2.3, 3.x and 4.x.
 
-The HTTP and Bolt protocols are supported for connecting to Neo4j.
-Bolt requires installing the XS module L<Neo4j::Bolt>. Using Bolt
-is much faster than HTTP, but at time of this writing the
-L<libneo4j-client|https://neo4j-client.net/#libneo4j-client> backend
-library that L<Neo4j::Bolt> uses to connect to the database server
-only supports Neo4j version 3.x.
+Two different network protocols exist for connecting to Neo4j.
+By default, Neo4j servers support both, but this can be changed
+in F<neo4j.conf> for each server; see
+L<"Configure connectors" in the Neo4j Operations Manual|https://neo4j.com/docs/operations-manual/current/configuration/connectors/>.
+
+=over
+
+=item Bolt
+
+Bolt is a Neo4j proprietary, binary protocol, available with
+S<Neo4j 3.0> and newer. Bolt communication may be encrypted or
+unencrypted. Because Bolt is faster than HTTP, it is generally
+the recommended protocol. However, support for it may be
+lagging after major updates to Neo4j.
+
+This driver supports Bolt, but doesn't bundle the necessary XS
+packages. You will need to install L<Neo4j::Bolt> separately
+to enable Bolt.
+
+=item HTTP / HTTPS
+
+Support for HTTP is built into this driver, so it is always
+available. HTTP is still fast enough for many use cases and
+works even in a "Pure Perl" environment. It may also be
+quicker than Bolt to add support for future changes in Neo4j.
+
+The driver also supports encrypted communication using HTTPS,
+but doesn't bundle the necessary packages. You will need to
+install L<LWP::Protocol::https> separately to enable HTTPS.
+
+=back
+
+The protocol is automatically chosen based on the URI scheme.
+See L</"new"> for details.
 
 B<As of version 0.13, the interface of this software may be
 considered stable.>
@@ -257,7 +285,8 @@ including server URIs, credentials and other configuration.
 
 The URI passed to this method determines the type of driver created. 
 The C<http>, C<https>, and C<bolt> URI schemes are supported.
-Use of C<bolt> URIs requires L<Neo4j::Bolt> to be installed.
+Use of C<bolt> URIs requires L<Neo4j::Bolt> to be installed; use
+of C<https> URIs requires L<LWP::Protocol::https> to be installed.
 
 If a part of the URI or even the entire URI is missing, suitable
 default values will be substituted. In particular, the host name

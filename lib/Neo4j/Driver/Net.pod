@@ -236,12 +236,14 @@ See L</"Custom result handlers"> below.
 L<Neo4j::Driver> includes a single HTTP networking module that will
 be used if the C<net_module> config option is set to C<""> or
 C<undef> (the default). If another module name is given as
-C<net_module>, that module will be used instead of the included module.
+C<net_module>, that module will be used instead of the included
+module. Make sure you always C<use> a custom networking module.
+If you extend the included module through inheritance, you also
+must C<use parent>.
 
-The included module will change in future. As of S<version 0.21>,
-the default module uses L<LWP> through L<REST::Client>, but the
-L<REST::Client> dependency is going to be dropped. L<LWP> might
-also be swapped for another module eventually.
+The included module may change in future. As of S<version 0.21>,
+the default module uses L<LWP> directly. Earlier versions used
+L<REST::Client>.
 
 It is possible to set a factory object as C<net_module> instead of
 providing a module name. The factory object must have a C<new()>

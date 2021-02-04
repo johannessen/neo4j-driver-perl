@@ -4,6 +4,7 @@ use warnings;
 
 use URI;
 use Neo4j::Driver;
+use Neo4j::Driver::Net::HTTP::REST;
 use Neo4j::Sim;
 
 
@@ -33,6 +34,7 @@ sub driver_maybe {
 	$bolt = $driver->{uri} && $driver->{uri}->scheme eq 'bolt';
 	if (! $ENV{TEST_NEO4J_PASSWORD} && ! $bolt) {
 		# without a password, we use the REST simulator instead
+		$driver->config(net_module => 'Neo4j::Driver::Net::HTTP::REST');
 		$driver->{client_factory} = Neo4j::Sim->factory;
 		$driver->config(cypher_filter => 'params');  # sim uses modern param syntax
 		$sim = 1;
