@@ -129,8 +129,10 @@ subtest 'response error' => sub {
 	lives_and { is $m->http_reason(), '' } 'reason no default';
 	lives_and { is $m->protocol(), 'HTTP' } 'protocol no version';
 	$m->{response} = HTTP::Response->new;
-	lives_and { is $m->http_header->{status}, '' } 'status empty';
-	lives_and { ok ! $m->http_header->{success} } 'no success empty';
+	SKIP: { skip "(HTTP::Status too old)", 2 if $HTTP::Headers::VERSION lt '6.12';
+		lives_and { is $m->http_header->{status}, '' } 'status empty';
+		lives_and { ok ! $m->http_header->{success} } 'no success empty';
+	}
 	lives_and { is $m->http_reason(), '' } 'reason empty';
 };
 
