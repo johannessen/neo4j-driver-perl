@@ -106,6 +106,7 @@ subtest 'error handling' => sub {
 		Neo4j::Test->driver_no_connect->session->run('');
 	} qr/\bConnection refused\b|\bCan't connect\b|\bUnknown host\b/i, 'no connection';
 	return if $Neo4j::Test::bolt;  # next test segfaults with Neo4j::Bolt 0.40 / Neo4j::Client 0.44
+	return unless $Neo4j::Test::sim || $ENV{TEST_NEO4J_PASSWORD};  # next test requires a real or simulated server with auth enabled
 	throws_ok {
 		Neo4j::Test->driver_no_auth->session->run('');
 	} qr/\bUnauthorized\b|\bpassword is invalid\b/, 'Unauthorized';

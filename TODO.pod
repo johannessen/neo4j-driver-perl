@@ -96,9 +96,6 @@ methods might be a quick way to bring up the B<pod> coverage stats a bit.
 =item * Neo4j::Test should auto-detect the Neo4j server version and
 set the C<cypher_filter> config option accordingly.
 
-=item * Neo4j::Sim should implement the driver HTTP net module API instead
-of the L<REST::Client> API, so that we can eventually replace REST::Client.
-
 =item * Write new unit tests for all modules.
 
 =item * Optimise the simulator for C<$hash = 0>.
