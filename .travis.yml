@@ -1,4 +1,5 @@
 language: perl
+os: linux
 
 # Differences must be expected between major Neo4j versions.
 # Additionally, at least one old Perl version should be tested.
@@ -52,7 +53,7 @@ before_install:
 # can determine dependencies automatically, MakeMaker requires
 # an explicit list here.
 install:
-  - cpanm -nq JSON::MaybeXS LWP::UserAgent Neo4j::Types REST::Client Time::Piece Try::Tiny URI
+  - cpanm -nq JSON::MaybeXS LWP::UserAgent Neo4j::Types Time::Piece Try::Tiny URI
   - cpanm -nq File::Slurp JSON::PP Mock::Quick Test::Exception Test::More Test::Warnings
   - OLD_PERL=`perl -e 'print $] < "5.014";'`
   - if test $OLD_PERL ; then touch Makefile.PL ; fi

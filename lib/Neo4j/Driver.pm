@@ -192,7 +192,7 @@ integration. However, it avoids the legacy C<cypher> endpoint,
 assuring compatibility with Neo4j versions 2.3, 3.x and 4.x.
 
 Two different network protocols exist for connecting to Neo4j.
-By default, Neo4j servers support both, but this can be changed
+By default, Neo4j servers offer both, but this can be changed
 in F<neo4j.conf> for each server; see
 L<"Configure connectors" in the Neo4j Operations Manual|https://neo4j.com/docs/operations-manual/current/configuration/connectors/>.
 

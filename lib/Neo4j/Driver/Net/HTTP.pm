@@ -10,7 +10,7 @@ package Neo4j::Driver::Net::HTTP;
 use Carp qw(croak);
 our @CARP_NOT = qw(Neo4j::Driver::Transaction Neo4j::Driver::Transaction::HTTP);
 
-use Time::Piece 1.17 qw();
+use Time::Piece 1.20 qw();
 use URI 1.31;
 
 use Neo4j::Driver::Net::HTTP::LWP;
@@ -30,6 +30,7 @@ my $RFC5322_DATE = '%a, %d %b %Y %H:%M:%S %z';  # strftime(3)
 
 
 sub new {
+	# uncoverable pod
 	my ($class, $driver) = @_;
 	
 	my $net_module = $driver->{net_module} || 'Neo4j::Driver::Net::HTTP::LWP';

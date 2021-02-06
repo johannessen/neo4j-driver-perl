@@ -8,6 +8,7 @@ package Neo4j::Driver::Net::HTTP::LWP;
 
 
 use Carp qw(croak);
+our @CARP_NOT = qw(Neo4j::Driver::Net::HTTP);
 
 use JSON::MaybeXS 1.003003 qw();
 use LWP::UserAgent 6.04 qw();

@@ -352,10 +352,11 @@ May block until the response headers have been fully received.
 
  sub json_coder () { $json_coder }
 
-Return a L<JSON:XS>-compatible coder object (for result parsers).
-It must expect UTF-8 and must offer a method C<decode()> that
-should produce C<$JSON::PP::true> and C<$JSON::PP::false> for
-booleans.
+Return a L<JSON::XS>-compatible coder object (for result parsers).
+It must offer a method C<decode()> that can handle the return
+values of C<fetch_event()> and C<fetch_all()> (which may be
+expected to be a byte sequence that is valid UTF-8) and should
+produce C<$JSON::PP::true> and C<$JSON::PP::false> for booleans.
 
 The default module included with the driver returns an instance
 of L<JSON::MaybeXS>.

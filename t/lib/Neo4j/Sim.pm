@@ -181,7 +181,7 @@ sub request {
 
 __END__
 
-This module implements enough parts of the REST::Client interface that it can
+This module implements enough parts of the net_module interface that it can
 be used to simulate an active transactional HTTP connection to a Neo4j server.
 To do so, it replays canned copies of earlier real responses from a live Neo4j
 server that have been stored in a repository.

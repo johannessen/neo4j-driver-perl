@@ -104,20 +104,9 @@ could filter out.
 The internals test "transaction: REST 404 error handling" should run a distinct
 statement.
 
-=item * Try to change "no connection" tests such that no C<NXDOMAIN> responses
-are required by (ab)using a particular port number on localhost; the port could
-be checked beforehand and the test skipped if it happens to be open for some
-reason. Alternatively, the tests in question could be changed to a simulated
-connection failure.
-
 =item * Verify that L<Neo4j::Driver::Type::Node/"get"> and
 L<Neo4j::Driver::Type::Relationship/"get"> really do return undef
 (as documented), even when called in list context.
-
-=item * Add test for byte arrays (C<RETURN apoc.text.bytes("DATA") AS x>).
-
-=item * Check that nodes without labels and nodes without properties are
-handled correctly in all aspects (there I<might> be issues with perlbolt).
 
 =item * Check that after a server error, the next statement will succeed
 (there I<might> be issues with perlbolt; see
@@ -164,11 +153,6 @@ default URL scheme, just so that C<neo4j://...> URLs will kind of work.
 re-blessing the structural types into custom types from the business logic
 using C<< $cypher_types->{init} >>. (For example, check for Neo4j nodes that
 are labelled C<:Person> and re-bless those as C<Local::Person> or whatever.)
-
-=item * Consider adding a config option like C<tls_options> to be
-used as input to L<IO::Socket::SSL> by the default C<net_module>.
-While this avoids the need to create a new module in simple cases,
-it does introduce a potential security risk.
 
 =back
 

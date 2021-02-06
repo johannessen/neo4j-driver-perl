@@ -178,7 +178,7 @@ returned by this method.
 The value of properties named C<_meta>, C<_relationship>, C<_start>,
 C<_end>, or C<_type> may not be returned correctly.
 
-When using HTTP, the C<type> of relationships that are returned as
+When using HTTP JSON, the C<type> of relationships that are returned as
 part of a L<Neo4j::Driver::Type::Path> is unavailable, because that
 information is not currently reported by the Neo4j server. C<undef>
 is returned instead.

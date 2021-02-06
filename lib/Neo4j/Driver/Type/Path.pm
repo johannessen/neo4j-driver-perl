@@ -128,7 +128,7 @@ C<die> if called in scalar context.
 
 =head1 BUGS
 
-When paths are returned via HTTP, the objects accessible via
+When paths are returned via HTTP JSON, the objects accessible via
 C<elements()>, C<nodes()>, and C<relationships()> lack meta data for
 their labels and types. This is due to an issue in the Neo4j server.
 

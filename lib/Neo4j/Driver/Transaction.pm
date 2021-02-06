@@ -388,6 +388,12 @@ converted to strings before they are sent to the Neo4j server.
 This driver always reports all errors using C<die()>. Error messages
 received from the Neo4j server are passed on as-is.
 
+Statement errors occur when the statement is executed on the server.
+This may not necessarily have happened by the time C<run()> returns.
+If you use C<try> to handle errors, make sure you use the
+L<Result|Neo4j::Driver::Result> within the C<try> block, for example
+by calling one of the methods C<fetch()>, C<list()> or C<summary()>.
+
 Transactions are rolled back and closed automatically if the Neo4j
 server encounters an error when running a query. However, if an
 I<internal> error occurs in the driver or in one of its supporting

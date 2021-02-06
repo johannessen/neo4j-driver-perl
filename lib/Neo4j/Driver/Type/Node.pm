@@ -161,7 +161,7 @@ returned by this method.
 The value of properties named C<_meta>, C<_node>, or C<_labels> may
 not be returned correctly.
 
-When using HTTP, the C<labels> of nodes that are returned as
+When using HTTP JSON, the C<labels> of nodes that are returned as
 part of a L<Neo4j::Driver::Type::Path> are unavailable, because that
 information is not currently reported by the Neo4j server. C<undef>
 is returned instead.

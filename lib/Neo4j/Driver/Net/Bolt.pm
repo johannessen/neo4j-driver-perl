@@ -30,6 +30,7 @@ my $RESULT_MODULE = 'Neo4j::Driver::Result::Bolt';
 
 
 sub new {
+	# uncoverable pod
 	my ($class, $driver) = @_;
 	
 	my $uri = $driver->{uri};
