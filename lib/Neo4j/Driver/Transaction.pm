@@ -65,10 +65,10 @@ sub run {
 sub _prepare {
 	my ($self, $query, @parameters) = @_;
 	
-	croak 'Query cannot be unblessed reference' if ref $query && ! blessed $query;
-	if ($query->isa('REST::Neo4p::Query')) {
+	if (ref $query) {
+		croak 'Query cannot be unblessed reference' unless blessed $query;
 		# REST::Neo4p::Query->query is not part of the documented API
-		$query = '' . $query->query;
+		$query = '' . $query->query if $query->isa('REST::Neo4p::Query');
 	}
 	
 	my $params;
