@@ -166,7 +166,6 @@ subtest 'uris with path/query' => sub {
 
 
 subtest 'tls' => sub {
-	plan skip_all => "(LWP::Protocol::https unavailable)" unless eval 'require LWP::Protocol::https; 1';
 	plan tests => 7;
 	my $ca_file = '8aA6EPsGYE7sbB7bLWiu.';  # doesn't exist
 	lives_ok { $d = Neo4j::Driver->new('https://test/')->config(tls_ca => $ca_file); } 'create https with CA file';
