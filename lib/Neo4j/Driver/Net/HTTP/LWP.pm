@@ -45,7 +45,10 @@ sub new {
 	if ($uri->scheme eq 'https') {
 		croak "HTTPS does not support unencrypted communication; use HTTP" if defined $driver->{tls} && ! $driver->{tls};
 		$agent->ssl_opts( verify_hostname => 1 );
-		$agent->ssl_opts( SSL_ca_file => $driver->{tls_ca} ) if defined $driver->{tls_ca};
+		if (defined( my $tls_ca = $driver->{tls_ca} )) {
+			croak "tls_ca file '$driver->{tls_ca}' can't be used: $!" if ! open(my $fh, '<', $tls_ca);
+			$agent->ssl_opts( SSL_ca_file => $tls_ca );
+		}
 	}
 	else {
 		croak "HTTP does not support encrypted communication; use HTTPS" if $driver->{tls};
