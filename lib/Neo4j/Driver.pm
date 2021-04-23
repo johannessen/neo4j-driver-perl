@@ -4,7 +4,7 @@ use warnings;
 use utf8;
 
 package Neo4j::Driver;
-# ABSTRACT: Perl Neo4j driver for Bolt and HTTP
+# ABSTRACT: Neo4j community graph database driver for Bolt and HTTP
 
 
 use Carp qw(croak);

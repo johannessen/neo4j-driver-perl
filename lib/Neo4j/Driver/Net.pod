@@ -202,10 +202,6 @@ doesn't match the implementation
 (L<#12660|https://github.com/neo4j/neo4j/issues/12660>). Future
 Neo4j versions might fix the implementation to match the docs.
 
-Future versions of Neo4j are likely to use a different media
-type for Jolt responses
-(L<#12663|https://github.com/neo4j/neo4j/issues/12663>).
-
 Neo4j spatial and temporal types are not currently implemented
 in all response format parsers.
 

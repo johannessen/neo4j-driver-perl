@@ -86,7 +86,7 @@ sub http_header {
 
 sub fetch_event {
 	my ($self) = @_;
-	$self->{buffer} = [split m/\n/, $self->fetch_all] unless defined $self->{buffer};
+	$self->{buffer} = [grep { length } split m/\n|\x{1e}/, $self->fetch_all] unless defined $self->{buffer};
 	return shift @{$self->{buffer}};
 }
 
