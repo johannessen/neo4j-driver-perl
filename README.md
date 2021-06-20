@@ -39,7 +39,7 @@ To install a development version from this repository, run the following steps:
  1. `dzil build` (requires [Dist::Zilla][])
  1. `cpanm <archive>.tar.gz`
 
-[![Build Status](https://travis-ci.org/johannessen/neo4j-driver-perl.svg?branch=master)](https://travis-ci.org/johannessen/neo4j-driver-perl)
+[![Build and Test Status](https://github.com/johannessen/neo4j-driver-perl/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/johannessen/neo4j-driver-perl/actions/workflows/build-and-test.yml)
 
 [Neo4j::Driver]: https://metacpan.org/release/Neo4j-Driver
 [Dist::Zilla]: https://metacpan.org/release/Dist-Zilla

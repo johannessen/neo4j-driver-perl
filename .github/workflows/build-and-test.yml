@@ -1,0 +1,99 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
+  schedule:
+    - cron: "41 0 8,23 * *"  # twice a month
+
+jobs:
+  test-job:
+    runs-on: ubuntu-latest
+    name: "Perl ${{ matrix.perl }} / Neo4j ${{ matrix.neo4j }}"
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - neo4j: "4.3.0"
+            perl: "5.32"
+          #- neo4j: "4.2.8"
+          #  perl: "5.32"
+          - neo4j: "4.2.4"   # Neo4j 4, old-style Jolt
+            perl: "5.32"
+          - neo4j: "4.0.11"  # Neo4j 4, without Jolt
+            perl: "5.30"
+          - neo4j: "3.5.28"  # Neo4j 3
+            perl: "5.28"
+          - neo4j: "2.3.12"  # Neo4j 2
+            perl: "5.26"
+    env:
+      TEST_NEO4J_PASSWORD: xkcd_792
+      NEO4J_DISTS: "https://dist.neo4j.org"
+      NEO4J: ${{ matrix.neo4j }}
+    container:
+      image: perldocker/perl-tester:${{ matrix.perl }}
+    steps:
+
+      - name: Install Neo4j 4
+        if: ${{ startsWith( matrix.neo4j , '4.') }}
+        run: |
+          curl -sLO https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.11%2B9/OpenJDK11U-jre_x64_linux_hotspot_11.0.11_9.tar.gz
+          tar -xzf OpenJDK11U-jre_x64_linux_hotspot_11.0.11_9.tar.gz
+          export JAVA_HOME=jdk-11.0.11+9-jre
+          eval "${JAVA_HOME:-/usr}/bin/java -version"
+          curl -sLO $NEO4J_DISTS/neo4j-community-$NEO4J-unix.tar.gz
+          tar -xzf neo4j-community-$NEO4J-unix.tar.gz
+          neo4j-community-$NEO4J/bin/neo4j-admin set-initial-password "$TEST_NEO4J_PASSWORD" || echo "Password change using neo4j-admin failed."
+          neo4j-community-$NEO4J/bin/neo4j start
+          perl -E "print'Waiting for server to be ready ...';for(0..60){last if 0+\`grep Started neo4j-community-$NEO4J/logs/neo4j.log > /dev/null 2>&1 && echo 1 || echo 0\`;print'.';sleep 1}say' OK.'"
+          cat neo4j-community-$NEO4J/logs/neo4j.log
+          neo4j-community-$NEO4J/bin/neo4j status
+
+      - name: Install Neo4j 2/3
+        if: ${{ startsWith( matrix.neo4j , '3.') || startsWith( matrix.neo4j , '2.') }}
+        run: |
+          curl -sLO https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u292-b10/OpenJDK8U-jre_x64_linux_hotspot_8u292b10.tar.gz
+          tar -xzf OpenJDK8U-jre_x64_linux_hotspot_8u292b10.tar.gz
+          export JAVA_HOME="`pwd`/jdk8u292-b10-jre"
+          eval "${JAVA_HOME:-/usr}/bin/java -version"
+          curl -sLO $NEO4J_DISTS/neo4j-community-$NEO4J-unix.tar.gz
+          tar -xzf neo4j-community-$NEO4J-unix.tar.gz
+          neo4j-community-$NEO4J/bin/neo4j-admin set-initial-password "$TEST_NEO4J_PASSWORD" || echo "Password change using neo4j-admin failed."
+          NEO4J_LOG=logs/neo4j.log
+          if [ "$NEO4J" = "2.3.12" ] ; then neo4j-community-$NEO4J/bin/neo4j start-no-wait ; NEO4J_LOG=data/log/console.log ; else neo4j-community-$NEO4J/bin/neo4j start ; fi
+          perl -E "print'Waiting for server to be ready ...';for(0..60){last if 0+\`grep 'Started\\\|interface ready' neo4j-community-$NEO4J/$NEO4J_LOG > /dev/null 2>&1 && echo 1 || echo 0\`;print'.';sleep 1}say' OK.'"
+          sleep 1
+          curl -u neo4j:neo4j -fid "{\"password\":\"$TEST_NEO4J_PASSWORD\"}" -H "Content-Type:application/json" -s http://localhost:7474/user/neo4j/password || echo "Password change using cURL failed."
+          cat neo4j-community-$NEO4J/$NEO4J_LOG
+          neo4j-community-$NEO4J/bin/neo4j status
+
+      - name: git checkout
+        uses: actions/checkout@v2
+      - name: Install Perl dependencies
+        run: |
+          dzil authordeps --missing | cpanm -nq
+          dzil listdeps --missing --author | cpanm -nq
+      - name: Version info
+        run: |
+          curl -s http://localhost:7474/ -u "neo4j:$TEST_NEO4J_PASSWORD" | grep neo4j_version || true
+          curl -s http://localhost:7474/db/data/ -u "neo4j:$TEST_NEO4J_PASSWORD" | grep neo4j_version || true
+          ls | grep --max-count=1 neo4j-community || true
+          which perl
+          perl -V
+
+      - name: Build
+        run: dzil build --no-tgz
+      - name: Test
+        run: |
+          perl -Ilib -MNeo4j::Driver -e "print Neo4j::Driver->new->basic_auth(neo4j=>'$TEST_NEO4J_PASSWORD')->session->run(\"RETURN 'Connected to Neo4j\\n'\")->single->get;" || echo "Error testing Neo4j connection"
+          dzil test
+        env:
+          AUTOMATED_TESTING: 1
+          NONINTERACTIVE_TESTING: 1
+          EXTENDED_TESTING: 1
+          RELEASE_TESTING: 1
+          AUTHOR_TESTING: 1
