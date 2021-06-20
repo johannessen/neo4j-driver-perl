@@ -11,7 +11,37 @@ on:
     - cron: "41 0 8,23 * *"  # twice a month
 
 jobs:
+  build-job:
+    name: Build distribution
+    runs-on: ubuntu-latest
+    container:
+      image: perldocker/perl-tester:5.32
+    steps:
+      - name: git checkout
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          dzil authordeps --missing | cpanm -nq
+          dzil listdeps --missing --author | cpanm -nq
+      - name: Run unit tests
+        run: dzil test
+        env:
+          AUTOMATED_TESTING: 1
+          NONINTERACTIVE_TESTING: 1
+          EXTENDED_TESTING: 1
+          RELEASE_TESTING: 1
+          AUTHOR_TESTING: 1
+          NO_NETWORK_TESTING: 1
+      - name: Build
+        run: dzil build --no-tgz --in build_dir
+      - uses: actions/upload-artifact@v2
+        with:
+          name: build_dir
+          path: build_dir
+          retention-days: 1
+
   test-job:
+    needs: build-job
     runs-on: ubuntu-latest
     name: "Perl ${{ matrix.perl }} / Neo4j ${{ matrix.neo4j }}"
     strategy:
@@ -19,23 +49,21 @@ jobs:
       matrix:
         include:
           - neo4j: "4.3.0"
-            perl: "5.32"
+            perl: "5.34"
           #- neo4j: "4.2.8"
           #  perl: "5.32"
           - neo4j: "4.2.4"   # Neo4j 4, old-style Jolt
             perl: "5.32"
           - neo4j: "4.0.11"  # Neo4j 4, without Jolt
-            perl: "5.30"
+            perl: "5.24"
           - neo4j: "3.5.28"  # Neo4j 3
-            perl: "5.28"
+            perl: "5.14"
           - neo4j: "2.3.12"  # Neo4j 2
-            perl: "5.26"
+            perl: "5.10"
     env:
       TEST_NEO4J_PASSWORD: xkcd_792
       NEO4J_DISTS: "https://dist.neo4j.org"
       NEO4J: ${{ matrix.neo4j }}
-    container:
-      image: perldocker/perl-tester:${{ matrix.perl }}
     steps:
 
       - name: Install Neo4j 4
@@ -71,12 +99,17 @@ jobs:
           cat neo4j-community-$NEO4J/$NEO4J_LOG
           neo4j-community-$NEO4J/bin/neo4j status
 
-      - name: git checkout
-        uses: actions/checkout@v2
-      - name: Install Perl dependencies
-        run: |
-          dzil authordeps --missing | cpanm -nq
-          dzil listdeps --missing --author | cpanm -nq
+      - name: Install Perl
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: ${{ matrix.perl }}
+      - name: Get distribution
+        uses: actions/download-artifact@v2
+        with:
+          name: build_dir
+          path: .
+      - name: Install distribution dependencies
+        run: cpanm -nq --installdeps --with-develop .
       - name: Version info
         run: |
           curl -s http://localhost:7474/ -u "neo4j:$TEST_NEO4J_PASSWORD" | grep neo4j_version || true
@@ -85,12 +118,10 @@ jobs:
           which perl
           perl -V
 
-      - name: Build
-        run: dzil build --no-tgz
       - name: Test
         run: |
           perl -Ilib -MNeo4j::Driver -e "print Neo4j::Driver->new->basic_auth(neo4j=>'$TEST_NEO4J_PASSWORD')->session->run(\"RETURN 'Connected to Neo4j\\n'\")->single->get;" || echo "Error testing Neo4j connection"
-          dzil test
+          prove -lr t xt
         env:
           AUTOMATED_TESTING: 1
           NONINTERACTIVE_TESTING: 1
