@@ -45,7 +45,6 @@ my %DEFAULTS = (
 		temporal => 'Neo4j::Driver::Type::Temporal',
 	},
 	die_on_error => 1,
-	jolt => 0,
 );
 
 
@@ -336,19 +335,20 @@ environments.
 
 =head2 Jolt
 
- $d->config(jolt => undef);  # let the server decide
- $d->config(jolt => 0);      # accept only JSON (the default)
+ $d->config(jolt => undef);  # prefer Jolt (the default)
+ $d->config(jolt => 0);      # accept only JSON
  $d->config(jolt => 1);      # accept only Jolt
 
-There is experimental support for Neo4j HTTP responses that use the
-L<Jolt|https://neo4j.com/docs/http-api/4.2/actions/result-format/#_jolt>
-format (JSON Bolt). This new response format will soon become this
-driver's default for HTTP connections. For now, you'll have to
-request it explicitly using the C<jolt> config option.
+The L<Jolt|https://neo4j.com/docs/http-api/4.3/actions/result-format/#_jolt>
+response format (JSON Bolt) is preferred for HTTP connections
+because the older JSON response format has several known issues
+and is much slower than Jolt.
 
-If you use the scalars C<'sparse'> or C<'strict'> instead of just
-C<1>, the driver will request that particular Jolt mode from the
-server. However, there is no advantage to manually selecting one
+The Jolt format can be enforced or disabled as shown above.
+If you use the scalars C<'sparse'>, C<'strict'> or C<'ndjson'>
+instead of just C<1>, the driver will request that particular
+Jolt mode from the server. However, there is generally no
+advantage to enforcing Jolt or to manually selecting one
 of these modes. This feature is for testing purposes only.
 
 =head2 Custom networking modules

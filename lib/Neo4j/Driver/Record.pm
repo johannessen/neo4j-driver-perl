@@ -202,6 +202,7 @@ these features.
 Allows accessing the graph response the Neo4j server can deliver via
 HTTP. Requires the C<return_graph> field to be set on the
 L<Transaction|Neo4j::Driver::Transaction>
+and Jolt to be disabled (which is not recommended)
 before the statement is executed.
 
 =head1 SEE ALSO

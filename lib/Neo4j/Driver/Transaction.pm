@@ -464,6 +464,7 @@ The ability to disable the statistics may be removed in future.
 
 =head2 Return results in graph format
 
+ $session = $driver->config( jolt => 0 )->session;
  $transaction = $session->begin_transaction;
  $transaction->{return_graph} = 1;
  $records = $transaction->run('...')->list;
@@ -473,8 +474,11 @@ The ability to disable the statistics may be removed in future.
  }
 
 The Neo4j HTTP JSON API supports a "graph" results data format.
-This driver exposes this feature to the client and will continue
-to do so, but the interface is not yet finalised.
+This feature is only available when Jolt is disabled, which is
+not recommended. The C<return_graph> option will most likely be
+removed entirely in future versions, as requesting the "graph"
+result is also possible by using a custom networking module;
+see L<Neo4j::Driver::Net>.
 
 =head1 SEE ALSO
 

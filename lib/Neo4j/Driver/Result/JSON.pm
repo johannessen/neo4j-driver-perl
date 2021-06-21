@@ -17,8 +17,9 @@ use JSON::MaybeXS 1.003003 ();
 use URI 1.31;
 
 
-our $MEDIA_TYPE = "application/json";
-our $ACCEPT_HEADER = "$MEDIA_TYPE";
+my $MEDIA_TYPE = "application/json";
+my $ACCEPT_HEADER = "$MEDIA_TYPE";
+my $ACCEPT_HEADER_POST = "$MEDIA_TYPE;q=0.5";
 
 
 sub new {
@@ -234,9 +235,12 @@ sub _deep_bless {
 # Return a list of the media types this module can handle, fit for
 # use in an HTTP Accept header field.
 sub _accept_header {
-	my (undef, $want_jolt, $http_method) = @_;
+	my (undef, $want_jolt, $method) = @_;
 	
+	# Note: Neo4j < 4.2 doesn't fail gracefully if Jolt is the only acceptable response type.
 	return if $want_jolt;
+	
+	return ($ACCEPT_HEADER_POST) if $method eq 'POST';
 	return ($ACCEPT_HEADER);
 }
 
