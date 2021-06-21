@@ -179,7 +179,7 @@ subtest 'bolt live' => sub {
 	plan tests => 1;
 	throws_ok {
 		Neo4j::Driver->new('bolt://localhost:14')->session();
-	} qr/^Bolt error |\brequires Neo4j::Bolt\b/i, 'bolt connect';
+	} qr/^Bolt error |\bNeo4j::Bolt not installed\b/i, 'bolt connect';
 };
 
 
