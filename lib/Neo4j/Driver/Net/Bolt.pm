@@ -43,7 +43,8 @@ sub new {
 	my $protocol = "Bolt";
 	my $net_module = $driver->{net_module} || 'Neo4j::Bolt';
 	if ($net_module eq 'Neo4j::Bolt') {
-		croak $@ . "URI scheme 'bolt' requires Neo4j::Bolt"
+		croak "Protocol scheme 'bolt' is not supported (Neo4j::Bolt not installed)\n"
+			. "Neo4j::Driver will support 'bolt' URLs if the Neo4j::Bolt module is installed.\n"
 			unless eval { require Neo4j::Bolt; 1 };
 		$protocol = "Bolt/1.0" if $Neo4j::Bolt::VERSION le "0.20";
 	}
