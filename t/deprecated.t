@@ -4,9 +4,9 @@ use warnings;
 use lib qw(./lib t/lib);
 
 my $driver;
-use Neo4j::Test;
+use Neo4j_Test;
 BEGIN {
-	unless ($driver = Neo4j::Test->driver) {
+	unless ( $driver = Neo4j_Test->driver() ) {
 		print qq{1..0 # SKIP no connection to Neo4j server\n};
 		exit;
 	}
@@ -87,7 +87,7 @@ subtest 'die_on_error = 0' => sub {
 	# never any errors issued via Bolt/Jolt or by this driver itself.
 	plan tests => 7;
 	# init
-	my $d = Neo4j::Test->driver;
+	my $d = Neo4j_Test->driver();
 	$d->{die_on_error} = 0;
 	my $t;
 	@w = ();
@@ -106,9 +106,9 @@ subtest 'die_on_error = 0' => sub {
 
 
 subtest 'driver mutability (config/auth)' => sub {
-	plan skip_all => "(test requires HTTP)" if $Neo4j::Test::bolt;
+	plan skip_all => "(test requires HTTP)" if $Neo4j_Test::bolt;
 	plan tests => 5;
-	lives_ok { $d = 0; $d = Neo4j::Test->driver_maybe; } 'get driver';
+	lives_ok { $d = 0; $d = Neo4j_Test->driver_maybe(); } 'get driver';
 	lives_ok { $r = 0; $r = $d->session; } 'get auth session';  # basic_auth used by driver_maybe
 	my @credentials = ('unlikely user/password combo', '');
 	lives_ok { $w = warning { $d->basic_auth(@credentials) }; } 'auth mutable lives';
@@ -118,7 +118,7 @@ subtest 'driver mutability (config/auth)' => sub {
 
 
 subtest 'stats' => sub {
-	plan skip_all => "(test requires HTTP)" if $Neo4j::Test::bolt;
+	plan skip_all => "(test requires HTTP)" if $Neo4j_Test::bolt;
 	plan tests => 9;
 	my $t = $driver->session->begin_transaction;
 	$t->{return_stats} = 0;

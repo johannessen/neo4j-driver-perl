@@ -1,4 +1,4 @@
-package Neo4j::Sim;
+package Neo4j_Test::Sim;
 use strict;
 use warnings;
 
@@ -8,7 +8,7 @@ use Digest::MD5;
 use File::Basename qw(dirname);
 use File::Slurp;
 use URI;
-use Neo4j::Test;
+use Neo4j_Test;
 
 my $path = (dirname dirname dirname __FILE__) . "/simulator";
 my $hash_url = 0;  # not 100% sure if 0 produces correct results, but it might increase maintainability ... and it _looks_ okay!
@@ -17,7 +17,7 @@ my $hash_url = 0;  # not 100% sure if 0 produces correct results, but it might i
 sub new {
 	my ($class, $options) = @_;
 	$options->{cypher_filter} = 'params';  # sim uses modern param syntax
-	return $class if ref $class;  # if the net_module is an object, it'll a pre-configured Neo4j::Sim
+	return $class if ref $class;  # if the net_module is an object, it'll a pre-configured Neo4j_Test::Sim
 	my $self = bless {
 		auth => $options->{auth} // 1,
 	}, $class;
@@ -114,13 +114,13 @@ sub date_header {
 
 
 sub uri {
-	return "http://" . Neo4j::Test->server_address;
+	return "http://" . Neo4j_Test->server_address;
 }
 
 
 sub store {
 	my (undef, $url, $request, $response, $write_txt) = @_;
-	return if $Neo4j::Test::sim;  # don't overwrite the files while we're reading from them
+	return if $Neo4j_Test::sim;  # don't overwrite the files while we're reading from them
 	
 	$request = json_coder()->encode($request);
 	my $hash = request_hash("$url", $request);
@@ -158,11 +158,11 @@ sub http_reason {
 
 
 sub protocol {
-	return "Neo4j::Sim";
+	return "Neo4j_Test::Sim";
 }
 
 
-package Neo4j::Sim::Store;
+package Neo4j_Test::Sim::Store;
 use parent 'Neo4j::Driver::Net::HTTP::LWP';
 sub new {
 	my ($class, $driver) = @_;
@@ -173,7 +173,7 @@ sub new {
 sub request {
 	my ($self, $method, $url, $json, $accept) = @_;
 	$self->SUPER::request($method, $url, $json, $accept);
-	Neo4j::Sim->store($url, $json, $self->fetch_all, 0) if $method eq 'POST';
+	Neo4j_Test::Sim->store($url, $json, $self->fetch_all, 0) if $method eq 'POST';
 }
 
 
@@ -189,7 +189,7 @@ server that have been stored in a repository.
 To populate the repository of canned responses used by the simulator,
 run the following command once against a live Neo4j 4 server:
 
-TEST_NEO4J_NETMODULE=Neo4j::Sim::Store prove
+TEST_NEO4J_NETMODULE=Neo4j_Test::Sim::Store prove
 
 
 The simulator operates most efficiently when repeated identical queries are

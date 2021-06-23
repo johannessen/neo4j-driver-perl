@@ -4,10 +4,10 @@ use warnings;
 use lib qw(./lib t/lib);
 
 my $driver;
-use Neo4j::Test;
+use Neo4j_Test;
 BEGIN {
-	unless ($driver = Neo4j::Test->driver) {
-		my $error = $Neo4j::Test::error;
+	unless ( $driver = Neo4j_Test->driver() ) {
+		my $error = $Neo4j_Test::error;
 		$error =~ s/\n/\\n/g;
 		print qq{1..0 # SKIP $error\n};
 		exit;
@@ -176,7 +176,7 @@ subtest 'tls' => sub {
 	} qr/\bHTTPS does not support unencrypted communication\b/i, 'no unencrypted https';
 	lives_ok {
 		$d = Neo4j::Driver->new('https://test/')->config(tls => 1);
-		Neo4j::Test->transaction_unconnected($d);
+		Neo4j_Test->transaction_unconnected($d);
 	} 'encrypted https';
 	ok $d->{tls}, 'tls';
 	throws_ok {
@@ -197,7 +197,7 @@ subtest 'cypher filter' => sub {
 	my ($t, @q);
 	lives_ok { $d = 0; $d = Neo4j::Driver->new(); } 'new driver 1';
 	lives_ok { $d->config(cypher_filter => 'params'); } 'set filter';
-	lives_ok { $t = Neo4j::Test->transaction_unconnected($d); } 'new tx 1';
+	lives_ok { $t = Neo4j_Test->transaction_unconnected($d); } 'new tx 1';
 	@q = ('RETURN {`ab.`}, {c}, {cd}', 'ab.' => 17, c => 19, cd => 23);
 	lives_ok { $r = 0; $r = $t->_prepare(@q); } 'prepare simple';
 	is $r->{statement}, 'RETURN $`ab.`, $c, $cd', 'filtered simple';
@@ -208,13 +208,13 @@ subtest 'cypher filter' => sub {
 	is $r->{statement}, 'RETURN 42', 'filtered no params';
 	lives_ok { $d = 0; $d = Neo4j::Driver->new(); } 'new driver 2';
 	lives_ok { $d->config(cypher_filter => 'coffee'); } 'set filter unkown name';
-	lives_ok { $t = Neo4j::Test->transaction_unconnected($d); } 'new tx 2';
+	lives_ok { $t = Neo4j_Test->transaction_unconnected($d); } 'new tx 2';
 	throws_ok {
 		$r = 0; $r = $t->_prepare('RETURN 42');
 	} qr/\bUnimplemented cypher filter\b/i, 'unprepared filter unkown name';
 	# no filter (for completeness)
 	lives_ok { $d = 0; $d = Neo4j::Driver->new(); } 'new driver 3';
-	lives_ok { $t = Neo4j::Test->transaction_unconnected($d); } 'new tx 3';
+	lives_ok { $t = Neo4j_Test->transaction_unconnected($d); } 'new tx 3';
 	@q = ('RETURN {a}', a => 17);
 	lives_ok { $r = 0; $r = $t->_prepare(@q); } 'prepare unfiltered';
 	is $r->{statement}, 'RETURN {a}', 'unfiltered';

@@ -4,9 +4,9 @@ use warnings;
 use lib qw(./lib t/lib);
 
 my $driver;
-use Neo4j::Test;
+use Neo4j_Test;
 BEGIN {
-	unless ($driver = Neo4j::Test->driver) {
+	unless ( $driver = Neo4j_Test->driver() ) {
 		print qq{1..0 # SKIP no connection to Neo4j server\n};
 		exit;
 	}
@@ -74,7 +74,7 @@ END
 	} qr/\bscalar context\b.*\bnot supported\b/i, 'get node labels as scalar';
 	
 	# multiple statements; see below
-	SKIP: { skip '(test requires HTTP)', 2 if $Neo4j::Test::bolt;
+	SKIP: { skip '(test requires HTTP)', 2 if $Neo4j_Test::bolt;
 	$q = [
 		['RETURN 7'],
 		['RETURN 11'],
@@ -87,7 +87,7 @@ END
 
 subtest 'multiple statements as array' => sub {
 	# the official drivers don't offer this capability to clients
-	plan skip_all => "(test requires HTTP)" if $Neo4j::Test::bolt;
+	plan skip_all => "(test requires HTTP)" if $Neo4j_Test::bolt;
 	plan tests => 7;
 	$q = [
 		['RETURN 17'],
@@ -165,8 +165,8 @@ subtest 'result stream interface: look ahead' => sub {
 
 
 subtest 'nested transactions: explicit (REST)' => sub {
-	plan skip_all => '(currently testing Bolt)' if $Neo4j::Test::bolt;
-	plan tests => 4 if ! $Neo4j::Test::bolt;
+	plan skip_all => '(currently testing Bolt)' if $Neo4j_Test::bolt;
+	plan tests => 4 if ! $Neo4j_Test::bolt;
 	my $session = $driver->session;
 	my ($t1, $t2);
 	lives_ok {
@@ -183,8 +183,8 @@ subtest 'nested transactions: explicit (REST)' => sub {
 
 
 subtest 'nested transactions: explicit (Bolt)' => sub {
-	plan skip_all => '(currently testing HTTP)' if ! $Neo4j::Test::bolt;
-	plan tests => 4 if $Neo4j::Test::bolt;
+	plan skip_all => '(currently testing HTTP)' if ! $Neo4j_Test::bolt;
+	plan tests => 4 if $Neo4j_Test::bolt;
 	my $session = $driver->session;
 	my ($t1, $t2);
 	lives_ok {
@@ -210,20 +210,20 @@ subtest 'nested transactions: autocommit' => sub {
 		$value = $session->run("RETURN 42")->single->get(0);
 		$t->run("CREATE (explicit2:Test)");
 		$t->rollback;
-	} 'nested autocommit transactions: success' if ! $Neo4j::Test::bolt;
+	} 'nested autocommit transactions: success' if ! $Neo4j_Test::bolt;
 	throws_ok {
 		$value = $session->run("RETURN 42")->single->get(0);
 		$t->run("CREATE (explicit2:Test)");
 		$t->rollback;
-	} qr/support.*Bolt/i, 'nested autocommit transactions: no success' if $Neo4j::Test::bolt;
-	my $expected = $Neo4j::Test::bolt ? 0 : 42;
+	} qr/support.*Bolt/i, 'nested autocommit transactions: no success' if $Neo4j_Test::bolt;
+	my $expected = $Neo4j_Test::bolt ? 0 : 42;
 	is $value, $expected, 'nested autocommit transactions: result';
 };
 
 
 subtest 'disable HTTP summary counters' => sub {
-	plan skip_all => '(Bolt always provides stats)' if $Neo4j::Test::bolt;
-	plan tests => 4 unless $Neo4j::Test::bolt;
+	plan skip_all => '(Bolt always provides stats)' if $Neo4j_Test::bolt;
+	plan tests => 4 unless $Neo4j_Test::bolt;
 	throws_ok { $s->run()->summary; } qr/missing stats/i, 'missing statement - summary';
 	my $tx = $driver->session->begin_transaction;
 	$tx->{return_stats} = 0;
@@ -254,7 +254,7 @@ END
 
 subtest 'graph queries' => sub {
 	plan tests => 8;
-	TODO: { local $TODO = 'graph response not yet implemented for Bolt' if $Neo4j::Test::bolt;
+	TODO: { local $TODO = 'graph response not yet implemented for Bolt' if $Neo4j_Test::bolt;
 	my $t = $driver->session->begin_transaction;
 	$t->{return_graph} = 1;
 	$q = <<END;
@@ -287,7 +287,7 @@ subtest 'custom cypher types' => sub {
 	plan tests => 5 + 5;
 	# fully test nodes
 	my $e_exact = exp(1);
-	my $d = Neo4j::Test->driver_maybe;
+	my $d = Neo4j_Test->driver_maybe();
 	lives_ok {
 		$d->config(cypher_types => {
 			node => 'Local::Node',
