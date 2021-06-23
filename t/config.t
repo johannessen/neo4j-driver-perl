@@ -3,27 +3,25 @@ use strict;
 use warnings;
 use lib qw(./lib t/lib);
 
-my $driver;
-use Neo4j_Test;
-BEGIN {
-	unless ( $driver = Neo4j_Test->driver() ) {
-		my $error = $Neo4j_Test::error;
-		$error =~ s/\n/\\n/g;
-		print qq{1..0 # SKIP $error\n};
-		exit;
-	}
-}
+use Test::More 0.88;
+use Test::Exception;
+use Test::Warnings;
 
 
 # The Neo4j::Driver package itself mostly deals with configuration
 # in the form of the server URL, auth credentials and other options.
 
-use Test::More 0.96 tests => 10 + 1;
-use Test::Exception;
-use Test::Warnings;
+use Neo4j_Test;
 
+# Report the Network error if there is one (to aid debugging),
+# but don't skip any of the tests below.
+unless ( $ENV{NO_NETWORK_TESTING} or Neo4j_Test->driver() ) {
+	diag $Neo4j_Test::error;
+}
 
 my ($d, $r);
+
+plan tests => 10 + 1;
 
 
 subtest 'config read/write' => sub {
