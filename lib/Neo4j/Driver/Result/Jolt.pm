@@ -12,9 +12,8 @@ use parent 'Neo4j::Driver::Result';
 use Carp qw(carp croak);
 our @CARP_NOT = qw(Neo4j::Driver::Net::HTTP Neo4j::Driver::Result);
 
-use JSON::MaybeXS 1.003003 ();
-use JSON::PP ();
 
+my ($TRUE, $FALSE);
 
 my $MEDIA_TYPE = "application/vnd.neo4j.jolt";
 my $ACCEPT_HEADER = "$MEDIA_TYPE+json-seq";
@@ -39,6 +38,8 @@ sub new {
 		cypher_types => $params->{cypher_types},
 	};
 	bless $self, $class;
+	
+	($TRUE, $FALSE) = @{ $self->{json_coder}->decode('[true,false]') } unless $TRUE;
 	
 	return $self->_gather_results($params) if $gather_results;
 	
@@ -199,7 +200,7 @@ sub _deep_bless {
 	if (ref $data eq '') {  # Null or Integer (sparse) or String (sparse)
 		return $data;
 	}
-	if (JSON::MaybeXS::is_bool $data) {  # Boolean (sparse)
+	if ($data == $TRUE || $data == $FALSE) {  # Boolean (sparse)
 		return $data;
 	}
 	
@@ -209,8 +210,8 @@ sub _deep_bless {
 	my $value = $data->{$sigil};
 	
 	if ($sigil eq '?') {  # Boolean (strict)
-		return JSON::PP::true  if $value eq 'true';
-		return JSON::PP::false if $value eq 'false';
+		return $TRUE  if $value eq 'true';
+		return $FALSE if $value eq 'false';
 		die "Assertion failed: unexpected bool value: " . $value;
 	}
 	if ($sigil eq 'Z') {  # Integer (strict)

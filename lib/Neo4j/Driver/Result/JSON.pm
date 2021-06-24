@@ -13,9 +13,10 @@ use Carp qw(carp croak);
 our @CARP_NOT = qw(Neo4j::Driver::Net::HTTP);
 use Try::Tiny;
 
-use JSON::MaybeXS 1.003003 ();
 use URI 1.31;
 
+
+my ($TRUE, $FALSE);
 
 my $MEDIA_TYPE = "application/json";
 my $ACCEPT_HEADER = "$MEDIA_TYPE";
@@ -24,6 +25,8 @@ my $ACCEPT_HEADER_POST = "$MEDIA_TYPE;q=0.5";
 
 sub new {
 	my ($class, $params) = @_;
+	
+	($TRUE, $FALSE) = @{ $params->{http_agent}->json_coder->decode('[true,false]') } unless $TRUE;
 	
 	my $json = $class->_parse_json($params);
 	
@@ -224,7 +227,7 @@ sub _deep_bless {
 	if (ref $data eq '' && ref $rest eq '') {  # scalar
 		return $data;
 	}
-	if ( JSON::MaybeXS::is_bool($data) && JSON::MaybeXS::is_bool($rest) ) {  # boolean
+	if ( $data == $TRUE && $rest == $TRUE || $data == $FALSE && $rest == $FALSE ) {  # boolean
 		return $data;
 	}
 	

@@ -99,10 +99,10 @@ subtest 'property types' => sub {
 	lives_and { is $r->fetch->get(), undef } 'null';
 	lives_ok { $v = undef; $v = $r->fetch->get() } 'Boolean true';
 	ok !! $v, 'Boolean truthy';
-	is ref($v), 'JSON::PP::Boolean', 'JSON::PP::Boolean true';
+	isnt ref($v), '', 'ref true';
 	lives_ok { $v = undef; $v = $r->fetch->get() } 'Boolean false';
 	ok ! $v, 'Boolean falsy';
-	is ref($v), 'JSON::PP::Boolean', 'JSON::PP::Boolean false';
+	isnt ref($v), '', 'ref false';
 	lives_and { is $r->fetch->get(), 13 } 'Integer';
 	lives_and { is $r->fetch->get(), 0.5 } 'Float';
 	lives_and { is $r->fetch->get(), 'hello' } 'String';
@@ -118,10 +118,10 @@ subtest 'property types sparse' => sub {
 	lives_and { ok $r = $s->run('property sparse') } 'run';
 	lives_ok { $v = undef; $v = $r->fetch->get() } 'Boolean true';
 	ok !! $v, 'Boolean truthy';
-	is ref($v), 'JSON::PP::Boolean', 'JSON::PP::Boolean true';
+	isnt ref($v), '', 'ref true';
 	lives_ok { $v = undef; $v = $r->fetch->get() } 'Boolean false';
 	ok ! $v, 'Boolean falsy';
-	is ref($v), 'JSON::PP::Boolean', 'JSON::PP::Boolean false';
+	isnt ref($v), '', 'ref false';
 	lives_and { is $r->fetch->get(), 17 } 'Integer';
 	lives_and { is $r->fetch->get(), 'world' } 'String';
 	lives_and { ok ! $r->has_next } 'no has_next';
