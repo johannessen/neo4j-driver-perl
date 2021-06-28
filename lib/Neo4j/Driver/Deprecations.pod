@@ -83,6 +83,60 @@ L<< C<try>/C<catch> blocks|perlsyn/"Try Catch Exception Handling" >>:
  }
  catch ($e) { warn "Got a Neo4j error: $e" }
 
+=head2 Type system customisation
+
+I<Deprecated in version 0.25 and to be removed in 1.00.
+Originally added in 0.14 as an experimental feature.>
+
+ $driver->config(cypher_types => {
+   node => 'Local::Node',
+   relationship => 'Local::Relationship',
+   path => 'Local::Path',
+   point => 'Local::Point',
+   temporal => 'Local::Temporal',
+   init => sub { my $object = shift; ... },
+ });
+
+The package names used for C<bless>ing objects in query results
+can be modified. This allows clients to add their own methods to
+such objects.
+
+Clients must make sure their custom type packages are subtypes
+of the base type packages that this module provides (S<e. g.>
+with L<parent>):
+
+=over
+
+=item * L<Neo4j::Driver::Type::Node>
+
+=item * L<Neo4j::Driver::Type::Relationship>
+
+=item * L<Neo4j::Driver::Type::Path>
+
+=item * L<Neo4j::Driver::Type::Point>
+
+=item * L<Neo4j::Driver::Type::Temporal>
+
+=back
+
+Clients may only use the documented API to access the data in the
+base type. As an exception, clients may store private data by calling
+the C<_private()> method, which returns a hashref. Within that
+hashref, clients may make free use of any hash keys that begin with
+two underscores (C<__>). All other hash keys are reserved for use
+by Neo4j::Driver.
+
+The implementation of the custom type packages continues to be
+defined by the driver. In particular, it is the driver's choice
+what I<kind> of reference to bless E<ndash> hash, array, or scalar.
+This severely limits the freedom of the custom type packages.
+
+Instead of the C<cypher_types> option, users should consider a
+custom networking module that provides a custom result handler.
+This approach offers even more flexibility (albeit at the cost
+of some degree of convenience).
+See L<Neo4j::Driver::Net/"Custom result handlers"> for details.
+
 =head1 Neo4j::Driver::Record
 
 =head2 Cypher type system

@@ -18,7 +18,7 @@ my $s = $driver->session;
 # functionality. If the behaviour of such functionality changes, we
 # want it to be a conscious decision, hence we test for it.
 
-use Test::More 0.96 tests => 7 + 3;
+use Test::More 0.96 tests => 8 + 3;
 use Test::Exception;
 use Test::Warnings qw(warning warnings);
 my $transaction = $driver->session->begin_transaction;
@@ -150,9 +150,55 @@ subtest 'support for get_person in LOMS plugin' => sub {
 };
 
 
+subtest 'custom cypher types' => sub {
+	plan tests => 5 + 5;
+	# fully test nodes
+	my $e_exact = exp(1);
+	my $d = Neo4j_Test->driver_maybe();
+	lives_ok {
+		no warnings 'deprecated';
+		$d->config(cypher_types => {
+			node => 'Local::Node',
+			init => sub {
+				my $self = shift;
+				$self->{e_approx} = $e_exact;
+			},
+		});
+	} 'cypher types config';
+	$r = 0;
+	lives_ok {
+		my $t = $d->session->begin_transaction;
+		$r = $t->run('CREATE (a {e_approx:3}) RETURN a')->single->get('a');
+	} 'cypher types query';
+	is ref($r), 'Local::Node', 'cypher type ref';
+	is $r->get('e_approx'), $e_exact, 'cypher type init';
+	lives_and { is ref($r->_private->{_meta}), 'HASH' } 'node _private access';
+	# test _private access for other types
+	lives_ok {
+		my $tx = $driver->session->begin_transaction;
+		$tx->{return_stats} = 0;  # optimise sim
+		$q = <<END;
+CREATE p=(a:Test:Want:Array)-[:TEST]->(c)
+RETURN p, a
+END
+		$r = $tx->run($q)->single;
+		$tx->rollback;
+	} 'more types query';
+	ok my $e = ($r->get('p')->relationships)[0], 'get rel';
+	lives_and { is ref($e->_private->{_meta}), 'HASH' } 'rel _private access';
+	lives_ok { $r->get('p')->_private->{__foo} = 42; } 'path _private set';
+	lives_and { is $r->get('p')->_private->{__foo}, 42 } 'path _private get';
+};
+
+
 CLEANUP: {
 	lives_ok { $transaction->rollback } 'rollback';
 }
 
 
 done_testing;
+
+
+# for 'custom cypher types' test
+package Local::Node;
+BEGIN { our @ISA = qw(Neo4j::Driver::Type::Node) };

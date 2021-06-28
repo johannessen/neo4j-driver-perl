@@ -128,6 +128,8 @@ sub _parse_options {
 	croak "Odd number of elements in $context options hash" if @options & 1;
 	my %options = @options;
 	
+	warnings::warnif deprecated => "Config option cypher_types is deprecated" if $options{cypher_types};
+	
 	my @unsupported = ();
 	foreach my $key (keys %options) {
 		push @unsupported, $key unless grep m/^$key$/, @$supported;
@@ -372,50 +374,6 @@ When this option is set, the driver automatically uses a regular
 expression to convert the old Cypher parameter syntax C<{param}>
 supported by Neo4j S<versions 2 and 3> to the new syntax C<$param>
 supported by Neo4j S<versions 3 and 4>.
-
-=head2 Type system customisation
-
- $driver->config(cypher_types => {
-   node => 'Local::Node',
-   relationship => 'Local::Relationship',
-   path => 'Local::Path',
-   point => 'Local::Point',
-   temporal => 'Local::Temporal',
-   init => sub { my $object = shift; ... },
- });
-
-The package names used for C<bless>ing objects in query results can be
-modified. This allows clients to add their own methods to such objects.
-
-Clients must make sure their custom type packages are subtypes of the
-base type packages that this module provides (S<e. g.> using C<@ISA>):
-
-=over
-
-=item * L<Neo4j::Driver::Type::Node>
-
-=item * L<Neo4j::Driver::Type::Relationship>
-
-=item * L<Neo4j::Driver::Type::Path>
-
-=item * L<Neo4j::Driver::Type::Point>
-
-=item * L<Neo4j::Driver::Type::Temporal>
-
-=back
-
-Clients may only use the documented API to access the data in the base
-type. As an exception, clients may store private data by calling the
-C<_private()> method, which returns a hashref. Within that hashref,
-clients may make free use of any hash keys that begin with two
-underscores (C<__>). All other hash keys are reserved for use by
-Neo4j::Driver. Reading or modifying their values is unsupported
-and discouraged because it makes your code prone to fail when any
-internals change in the implementation of Neo4j::Driver.
-
-The C<cypher_types> config option will soon be deprecated and
-eventually be removed. The C<net_module> option offers the same
-functionality and more (albeit somewhat less conveniently).
 
 =head1 CONFIGURATION OPTIONS
 

@@ -31,10 +31,6 @@ See also L<#7|https://github.com/johannessen/neo4j-driver-perl/issues/7>.
 =item * L<Neo4j::Driver/"Parameter syntax conversion">: make stable and move
 filter implementation to C<Transaction> in preparation of Bolt v3 support
 
-=item * L<Neo4j::Driver/"Type system customisation">: make illegal, but
-create a new config option that continues to provide C<init> functionality
-(same flexibility, simpler API)
-
 =item * L<Neo4j::Driver::Session/"Calling in list context">: make illegal
 
 =item * L<Neo4j::Driver::Session/"Concurrent transactions">: make illegal
