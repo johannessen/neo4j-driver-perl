@@ -18,7 +18,7 @@ my $s = $driver->session;
 # functionality. If the behaviour of such functionality changes, we
 # want it to be a conscious decision, hence we test for it.
 
-use Test::More 0.96 tests => 8 + 3;
+use Test::More 0.96 tests => 9 + 3;
 use Test::Exception;
 use Test::Warnings qw(warning warnings);
 my $transaction = $driver->session->begin_transaction;
@@ -147,6 +147,34 @@ subtest 'support for get_person in LOMS plugin' => sub {
 	throws_ok {
 		$s->run('')->_column_keys;
 	} qr/missing columns/i, 'result missing columns';
+};
+
+
+subtest 'multiple statements via run([])' => sub {
+	plan skip_all => "(test requires HTTP)" if $Neo4j_Test::bolt;
+	plan tests => 5 + 3;
+	my (@q, @a);
+	@q = (
+		['RETURN 17'],
+		['RETURN {n}', n => 19],
+		['RETURN {n}', {n => 53}],
+	);
+	lives_ok { $w = ''; $w = warning { $r = $s->run([@q]) }; } 'run three statements at once';
+	like $w, qr/\bmultiple statements\b.*\bdeprecated\b/i, 'multiple statements deprecated'
+		or diag 'got warning(s): ', explain $w;
+	lives_and { is $r->[0]->single->get, 17 } 'retrieve 1st value';
+	lives_and { is $r->[1]->single->get, 19 } 'retrieve 2nd value';
+	lives_and { is $r->[2]->single->get, 53 } 'retrieve 3rd value';
+	
+	# wantarray
+	@q = (
+		['RETURN 7'],
+		['RETURN 11'],
+	);
+	lives_ok { $w = ''; $w = warning { @a = $s->run([@q]) }; } 'wantarray two statements at once';
+	like $w, qr/\bmultiple statements\b.*\bdeprecated\b/i, 'wantarray multiple statements deprecated'
+		or diag 'got warning(s): ', explain $w;
+	lives_and { is $a[0]->single->get * $a[1]->single->get, 7 * 11 } 'wantarray values';
 };
 
 

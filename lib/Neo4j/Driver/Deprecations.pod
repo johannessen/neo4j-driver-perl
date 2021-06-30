@@ -305,6 +305,32 @@ This driver deprecated any use of the
 L<Neo4j::Driver::StatementResult> module name in version 0.19.
 Use L<Neo4j::Driver::Result> instead.
 
+=head1 Neo4j::Driver::Transaction
+
+=head2 Call run() with an array of multiple statements
+
+I<Deprecated in version 0.25 and to be removed in 1.00.
+Originally added in 0.01 as an experimental feature.>
+
+ $statements = [
+   [ 'RETURN 42' ],
+   [ 'RETURN {value}', value => 'forty-two' ],
+ ];
+ $results = $transaction->run($statements);
+ foreach $result ( @$results ) {
+   say $result->single->get;
+ }
+
+The Neo4j HTTP API supports executing multiple statements within a
+single HTTP request. This driver exposes this feature to the client
+by allowing a multi-dimensional array to be passed to C<run()>.
+Unfortunately, the resulting API is confusing to use and implement
+and is therefore bug-prone.
+
+If you need this feature, you should consider using the
+private C<_run_multiple()> method instead; see
+L<Neo4j::Driver::Transaction/"Execute multiple statements at once">.
+
 =head1 Neo4j::Driver::Type::Path
 
 =head2 path()

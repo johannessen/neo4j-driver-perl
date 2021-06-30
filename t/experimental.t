@@ -29,7 +29,7 @@ my ($q, $r, @a, $a);
 
 
 subtest 'wantarray' => sub {
-	plan tests => 5 + 6 + 5 + 2;
+	plan tests => 5 + 6 + 5;
 	$q = <<END;
 RETURN 7 AS n UNION RETURN 11 AS n
 END
@@ -72,52 +72,30 @@ END
 	throws_ok {
 		 $a = $r->get('a')->labels;
 	} qr/\bscalar context\b.*\bnot supported\b/i, 'get node labels as scalar';
-	
-	# multiple statements; see below
-	SKIP: { skip '(test requires HTTP)', 2 if $Neo4j_Test::bolt;
-	$q = [
-		['RETURN 7'],
-		['RETURN 11'],
-	];
-	lives_ok { @a = $s->run($q) } 'run two statements at once';
-	lives_and { is $a[0]->single->get * $a[1]->single->get, 7 * 11 } 'retrieve values';
-	}
 };
 
 
-subtest 'multiple statements as array' => sub {
+subtest 'multiple statements' => sub {
 	# the official drivers don't offer this capability to clients
-	plan skip_all => "(test requires HTTP)" if $Neo4j_Test::bolt;
-	plan tests => 7;
-	$q = [
+	plan skip_all => "(test wants live HTTP)" if $Neo4j_Test::bolt or $Neo4j_Test::sim;
+	plan tests => 6;
+	my @q = (
 		['RETURN 17'],
 		['RETURN {n}', n => 19],
 		['RETURN {n}', {n => 53}],
-	];
-	lives_ok { $r = $s->run($q) } 'run three statements at once';
-	lives_and { is $r->[0]->single->get, 17 } 'retrieve 1st value';
-	lives_and { is $r->[1]->single->get, 19 } 'retrieve 2nd value';
-	lives_and { is $r->[2]->single->get, 53 } 'retrieve 3rd value';
-#	diag explain $r;
-	TODO: {
-		local $TODO = 'non-multidimensional arrays should fail with own error message';
-		$q = [
-			'RETURN 42',
-		];
-		throws_ok {
-			 $r = $s->run($q);
-		} qr/multiple statements must each be ARRAY refs/i, 'non-arrayref individual statement';
-	};
-	TODO: {
-		local $TODO = 'arrays that include empty statements should fail with own error message';
-		$q = [
-			[''],
-			['RETURN 23'],
-		];
-		lives_ok { $r = $s->run($q) } 'include empty statement';
-		lives_and { is $r->[1]->single->get, 23 } 'retrieve value';
-		# TODO: also check statement order in summary
-	};
+	);
+	lives_ok { @a = $s->begin_transaction->_run_multiple(@q) } 'run three statements at once';
+	lives_and { is $a[0]->single->get, 17 } 'retrieve 1st value';
+	lives_and { is $a[1]->single->get, 19 } 'retrieve 2nd value';
+	lives_and { is $a[2]->single->get, 53 } 'retrieve 3rd value';
+	throws_ok {
+		 $r = $s->begin_transaction->_run_multiple('RETURN 42');
+	} qr/\blist of array references\b/i, 'non-arrayref individual statement';
+	@q = ( [''], ['RETURN 23'] );
+	throws_ok {
+		@a = $s->begin_transaction->_run_multiple([''], ['RETURN 23']);
+	} qr/\bempty statements not allowed\b/i, 'include empty statement';
+	# TODO: also check statement order in summary
 };
 
 

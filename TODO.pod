@@ -200,15 +200,6 @@ feature that is almost never used. Since the server is often run on localhost
 anyway where latency is very close to zero, this item should not have high
 priority.
 
-=item * The current API to
-L<Neo4j::Driver::Transaction/"Execute multiple statements at once">
-seems a bit too complicated, especially for something that is probably
-hardly ever actually used in practice. It might make sense to provide a
-dedicated method (e. g. C<_run_multiple()>) for just that purpose. This
-would eventually free up the C<run()> implementation from unneeded baggage.
-The dedicated method may be private as long as the plan still is to provide
-this functionality by running statements lazily.
-
 =back
 
 =head2 L<Neo4j::Driver::Record>

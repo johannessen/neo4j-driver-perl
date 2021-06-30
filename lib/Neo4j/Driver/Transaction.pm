@@ -12,6 +12,7 @@ our @CARP_NOT = qw(
 	Neo4j::Driver::Session
 	Neo4j::Driver::Session::Bolt
 	Neo4j::Driver::Session::HTTP
+	Try::Tiny
 );
 use Scalar::Util qw(blessed);
 
@@ -41,6 +42,7 @@ sub run {
 	
 	my @statements;
 	if (ref $query eq 'ARRAY') {
+		warnings::warnif deprecated => "run() with multiple statements is deprecated";
 		foreach my $args (@$query) {
 			push @statements, $self->_prepare(@$args);
 		}
@@ -59,6 +61,19 @@ sub run {
 		return wantarray ? $result->list : $result;
 	}
 	return wantarray ? @results : \@results;
+}
+
+
+sub _run_multiple {
+	my ($self, @statements) = @_;
+	
+	croak 'Transaction already closed' unless $self->is_open;
+	
+	return $self->{net}->_run( $self, map {
+		croak '_run_multiple() expects a list of array references' unless ref eq 'ARRAY';
+		croak '_run_multiple() with empty statements not allowed' unless $_->[0];
+		$self->_prepare(@$_);
+	} @statements );
 }
 
 
@@ -435,20 +450,23 @@ context.
 
 =head2 Execute multiple statements at once
 
- $statements = [
+ @statements = (
    [ 'RETURN 42' ],
    [ 'RETURN {value}', value => 'forty-two' ],
- ];
- $results = $transaction->run($statements);
- foreach $result ( @$results ) {
+ );
+ @results = $transaction->_run_multiple(@statements);
+ foreach $result ( @results ) {
    say $result->single->get;
  }
 
 The Neo4j HTTP API supports executing multiple statements within a
 single HTTP request. This driver exposes this feature to the client.
 
-This feature is likely to be removed from this driver in favour of
-lazy execution, similar to the official Neo4j drivers.
+This feature might eventually be used to implement lazy statement
+execution for this driver. The private C<_run_multiple()> method
+which makes using this feature explicit is expected to remain
+available at least until that time. See also
+L<Neo4j::Driver::Net/"USE OF INTERNAL APIS">.
 
 =head2 Disable obtaining query statistics
 
