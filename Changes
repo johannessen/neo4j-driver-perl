@@ -1,5 +1,10 @@
 Revision history for Neo4j::Driver
 
+0.25  2021-06-30
+
+ - deprecate experimental Cypher type system customisation
+ - deprecate experimental run() with array of multiple statements
+
 0.24  2021-06-21  (TRIAL RELEASE)
 
  - Jolt is enabled by default and no longer experimental

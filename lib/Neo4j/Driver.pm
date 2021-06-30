@@ -325,7 +325,7 @@ These are subject to unannounced modification or removal in future
 versions. Expect your code to break if you depend upon these
 features.
 
-=head2 Jolt
+=head2 Disable or enforce Jolt
 
  $d->config(jolt => undef);  # prefer Jolt (the default)
  $d->config(jolt => 0);      # accept only JSON

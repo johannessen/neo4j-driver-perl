@@ -7,6 +7,9 @@ package Neo4j::Driver::Net::Bolt;
 # ABSTRACT: Networking delegate for Neo4j Bolt
 
 
+# This package is not part of the public Neo4j::Driver API.
+
+
 use Carp qw(croak);
 our @CARP_NOT = qw(Neo4j::Driver::Transaction Neo4j::Driver::Transaction::Bolt);
 
@@ -176,12 +179,3 @@ sub _new_tx {
 
 
 1;
-
-__END__
-
-=head1 DESCRIPTION
-
-The L<Neo4j::Driver::Net::Bolt> package is not part of the
-public L<Neo4j::Driver> API.
-
-=cut

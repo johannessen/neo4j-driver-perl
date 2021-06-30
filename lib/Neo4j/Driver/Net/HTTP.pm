@@ -7,6 +7,9 @@ package Neo4j::Driver::Net::HTTP;
 # ABSTRACT: Networking delegate for Neo4j HTTP
 
 
+# This package is not part of the public Neo4j::Driver API.
+
+
 use Carp qw(croak);
 our @CARP_NOT = qw(Neo4j::Driver::Transaction Neo4j::Driver::Transaction::HTTP);
 
@@ -217,14 +220,4 @@ sub _is_active_tx {
 }
 
 
-
 1;
-
-__END__
-
-=head1 DESCRIPTION
-
-The L<Neo4j::Driver::Net::HTTP> package is not part of the
-public L<Neo4j::Driver> API.
-
-=cut
