@@ -1,5 +1,9 @@
 Revision history for Neo4j::Driver
 
+0.2501  2021-07-17
+
+ - deprecate experimental list context syntax for run()
+
 0.25  2021-06-30
 
  - deprecate experimental Cypher type system customisation

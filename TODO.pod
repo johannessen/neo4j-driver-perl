@@ -31,14 +31,10 @@ See also L<#7|https://github.com/johannessen/neo4j-driver-perl/issues/7>.
 =item * L<Neo4j::Driver/"Parameter syntax conversion">: make stable and move
 filter implementation to C<Transaction> in preparation of Bolt v3 support
 
-=item * L<Neo4j::Driver::Session/"Calling in list context">: make illegal
-
 =item * L<Neo4j::Driver::Session/"Concurrent transactions">: make illegal
 for both nested explicit and nested autocommit transactions (for
 consistency with Bolt), but provide a driver config option (e. g.
 C<< nested_transactions => 1 >>) that lifts this restriction for HTTP
-
-=item * L<Neo4j::Driver::Transaction/"Calling in list context">: make illegal
 
 =item * L<Neo4j::Driver::Transaction/"Execute multiple statements at once">:
 This feature should no longer be exposed to the client. It complicates the API

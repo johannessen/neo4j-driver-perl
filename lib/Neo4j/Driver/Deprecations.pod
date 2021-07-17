@@ -278,6 +278,16 @@ L<C<summary()>|Neo4j::Driver::Result/"summary">.
 
 =head1 Neo4j::Driver::Session
 
+=head2 Call run() in list context
+
+I<Deprecated in version 0.26 and to be removed in 1.00.
+Originally added in 0.01 as an experimental feature.>
+
+ @records = $session->run('...');
+
+See L<Neo4j::Driver::Transaction|/"Call-run()-in-list-context1">
+below for details.
+
 =head2 close()
 
 I<Deprecated in version 0.14 and to be removed in 1.00.
@@ -307,6 +317,39 @@ Use L<Neo4j::Driver::Result> instead.
 
 =head1 Neo4j::Driver::Transaction
 
+=head2 Call run() in list context
+
+I<Deprecated in version 0.26 and to be removed in 1.00.
+Originally added in 0.01 as an experimental feature.>
+
+ @records = $transaction->run('...');
+
+The C<run> method tries to Do What You Mean if called in list
+context. However, this may result in unexpected behaviour.
+For example, consider this code:
+
+ $people = {
+   jane => $tx->run('MATCH (n) WHERE n.name = "Jane" RETURN n'),
+   john => $tx->run('MATCH (n) WHERE n.name = "John" RETURN n'),
+ };
+
+You might expect the result to be a hash with two Neo4j nodes as
+entry values. However, if no nodes match these queries, the list
+context will make C<run()> return empty lists and you might end up
+with the hash C<< {jane => 'john'} >> instead. If one node matches
+and the other doesn't, the code may die.
+
+To avoid this issue, you can wrap every call to C<run()> in
+C<scalar()>. This will always get you a L<Neo4j::Driver::Result>.
+In the next major version of the driver, wrapping the call
+in C<scalar()> will no longer be necessary, because a
+L<Neo4j::Driver::Result> will be returned in every context.
+
+To obtain a list of L<Neo4j::Driver::Record> instances, simply
+use C<list()> in list context:
+
+ @records = $tx->run('...')->list;
+
 =head2 Call run() with an array of multiple statements
 
 I<Deprecated in version 0.25 and to be removed in 1.00.
@@ -320,6 +363,9 @@ Originally added in 0.01 as an experimental feature.>
  foreach $result ( @$results ) {
    say $result->single->get;
  }
+ 
+ # Call in list context (also deprecated):
+ @results = $transaction->run($statements);
 
 The Neo4j HTTP API supports executing multiple statements within a
 single HTTP request. This driver exposes this feature to the client

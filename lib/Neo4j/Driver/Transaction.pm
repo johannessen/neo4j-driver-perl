@@ -58,6 +58,7 @@ sub run {
 	
 	if (scalar @statements <= 1) {
 		my $result = $results[0] // Neo4j::Driver::Result->new;
+		warnings::warnif deprecated => "run() in list context is deprecated" if wantarray;
 		return wantarray ? $result->list : $result;
 	}
 	return wantarray ? @results : \@results;
@@ -149,6 +150,7 @@ sub _run_autocommit {
 	$self->{net}->{active_tx} = 0;
 	
 	return $results unless wantarray;
+	warnings::warnif deprecated => "run() in list context is deprecated";
 	return $results->list if ref $query ne 'ARRAY';
 	return @$results;
 }
@@ -439,14 +441,6 @@ L<Neo4j::Driver::Transaction> implements the following experimental
 features. These are subject to unannounced modification or removal
 in future versions. Expect your code to break if you depend upon
 these features.
-
-=head2 Calling in list context
-
- @records = $transaction->run('...');
- @results = $transaction->run([...]);
-
-The C<run> method tries to Do What You Mean if called in list
-context.
 
 =head2 Execute multiple statements at once
 

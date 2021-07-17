@@ -193,14 +193,6 @@ features. These are subject to unannounced modification or removal
 in future versions. Expect your code to break if you depend upon
 these features.
 
-=head2 Calling in list context
-
- @records = $session->run('...');
- @results = $session->run([...]);
-
-The C<run> method tries to Do What You Mean if called in list
-context.
-
 =head2 Concurrent transactions
 
  $session = Neo4j::Driver->new('http://...')->basic_auth(...)->session;

@@ -18,7 +18,7 @@ my $s = $driver->session;
 # functionality. If the behaviour of such functionality changes, we
 # want it to be a conscious decision, hence we test for it.
 
-use Test::More 0.96 tests => 9 + 3;
+use Test::More 0.96 tests => 10 + 3;
 use Test::Exception;
 use Test::Warnings qw(warning warnings);
 my $transaction = $driver->session->begin_transaction;
@@ -175,6 +175,30 @@ subtest 'multiple statements via run([])' => sub {
 	like $w, qr/\bmultiple statements\b.*\bdeprecated\b/i, 'wantarray multiple statements deprecated'
 		or diag 'got warning(s): ', explain $w;
 	lives_and { is $a[0]->single->get * $a[1]->single->get, 7 * 11 } 'wantarray values';
+};
+
+
+subtest 'run in list context' => sub {
+	plan tests => 8;
+	$q = <<END;
+RETURN 7 AS n UNION RETURN 11 AS n
+END
+	my @a;
+	lives_ok { $w = ''; $w = warning { @a = $s->run($q) }; } 'get result as list';
+	like $w, qr/\brun\b.* in list context\b.* deprecated\b/i, 'result as list deprecated'
+		or diag 'got warning(s): ', explain $w;
+	lives_and { is $a[0]->get('n'), 7; } 'get record 0 in result list';
+	lives_and { is $a[1]->get('n'), 11; } 'get record 1 in result list';
+	
+	SKIP: { skip 'explicit transactions unoptimised', 4 if $Neo4j_Test::sim;
+		my $t = $driver->session->begin_transaction;
+		lives_ok { $w = ''; $w = warning { @a = $t->run($q) }; } 'get result as list (explicit tx)';
+		like $w, qr/\brun\b.* in list context\b.* deprecated\b/i, 'result as list deprecated (explicit tx)'
+			or diag 'got warning(s): ', explain $w;
+		lives_and { is $a[0]->get('n'), 7; } 'get record 0 in result list (explicit tx)';
+		lives_and { is $a[1]->get('n'), 11; } 'get record 1 in result list (explicit tx)';
+		eval { $t->rollback }; 1;
+	}
 };
 
 
