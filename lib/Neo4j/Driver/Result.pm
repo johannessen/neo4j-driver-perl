@@ -37,11 +37,7 @@ sub _column_keys {
 sub keys {
 	my ($self) = @_;
 	
-	# Don't break encapsulation by just returning the original reference
-	# because ResultColumns depends on the {columns} field being intact.
-	my @keys = ();
-	@keys = @{ $self->{result}->{columns} } if $self->{result}->{columns};
-	return wantarray ? @keys : [@keys];
+	return @{ $self->{result}->{columns} };
 }
 
 
@@ -340,10 +336,12 @@ depend upon these features.
 
 =head2 Calling in scalar context
 
- $keys = $result->keys;  # arrayref
+ $count = $result->keys;
 
-The C<keys()> method returns an array reference if called in scalar
+The C<keys()> method returns the number of columns if called in scalar
 context.
+
+Until version 0.25, it returned an array reference instead.
 
 =head2 Control result stream attachment
 

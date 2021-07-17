@@ -23,8 +23,7 @@ sub get {
 sub labels {
 	my ($self) = @_;
 	
-	croak 'labels() in scalar context not supported' unless wantarray;
-	return unless defined $$self->{_meta}->{labels};
+	$$self->{_meta}->{labels} //= [];
 	return @{ $$self->{_meta}->{labels} };
 }
 
@@ -137,9 +136,12 @@ these features.
 
 =head2 Calling in scalar context
 
- $labels = $node->labels;  # fails
+ $count = $node->labels;
 
-The C<labels()> method C<die>s if called in scalar context.
+The C<labels()> method returns the number of labels if called
+in scalar context.
+
+Until version 0.25, it C<die>d instead.
 
 =head2 Deletion indicator
 

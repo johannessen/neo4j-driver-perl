@@ -44,14 +44,6 @@ are typically fetched I<before> the next statement is run.
 =item * L<Neo4j::Driver::Transaction/"Return results in graph format">,
 L<Neo4j::Driver::Record/"graph">: make driver config option
 
-=item * Calling list methods in scalar context
-(L<in Node|Neo4j::Driver::Type::Node/"Calling in scalar context">,
-L<in Path|Neo4j::Driver::Type::Path/"Calling in scalar context">,
-L<in Result|Neo4j::Driver::Result/"Calling in scalar context">, and
-L<in ResultSummary|Neo4j::Driver::ResultSummary/"Calling in scalar context">)
-should probably generally behave the same way using a list in scalar
-context would: It should return the number of items in the list.
-
 =item * Jolt: The C<jolt> config option will be deprecated once
 Jolt implementation is fully complete. Those who use a modern Neo4j
 version and still want to get plain old JSON responses can easily

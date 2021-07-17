@@ -16,7 +16,6 @@ use Carp qw(croak);
 sub nodes {
 	my ($self) = @_;
 	
-	croak 'nodes() in scalar context not supported' unless wantarray;
 	my $i = 0;
 	return grep { ++$i & 1 } @{$self->{path}};
 }
@@ -25,7 +24,6 @@ sub nodes {
 sub relationships {
 	my ($self) = @_;
 	
-	croak 'relationships() in scalar context not supported' unless wantarray;
 	my $i = 0;
 	return grep { $i++ & 1 } @{$self->{path}};
 }
@@ -34,7 +32,6 @@ sub relationships {
 sub elements {
 	my ($self) = @_;
 	
-	croak 'elements() in scalar context not supported' unless wantarray;
 	return @{$self->{path}};
 }
 
@@ -119,12 +116,14 @@ these features.
 
 =head2 Calling in scalar context
 
- $all   = $path->elements;  # fails
- $nodes = $path->nodes;  # fails
- $rels  = $path->relationships;  # fails
+ $count = $path->elements;
+ $count = $path->nodes;
+ $count = $path->relationships;
 
 The C<elements()>, C<nodes()>, and C<relationships()> methods
-C<die> if called in scalar context.
+return the number of items if called in scalar context.
+
+Until version 0.25, they C<die>d instead.
 
 =head1 BUGS
 

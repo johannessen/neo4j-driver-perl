@@ -46,8 +46,8 @@ sub counters {
 sub notifications {
 	my ($self) = @_;
 	
-	return $self->{notifications} ? @{$self->{notifications}} : () if wantarray;
-	return $self->{notifications};
+	$self->{notifications} //= [];
+	return @{ $self->{notifications} };
 }
 
 
@@ -167,10 +167,13 @@ these features.
 
 =head2 Calling in scalar context
 
- $notifications = $summary->notifications;  # arrayref
+ $count = $summary->notifications;
 
-The C<notifications()> method returns an array reference if called in
-scalar context, or C<undef> if there are no notifications.
+The C<notifications()> method returns the number of notifications
+if called in scalar context.
+
+Until version 0.25, it returned an array reference instead,
+or C<undef> if there were no notifications.
 
 =head1 SEE ALSO
 
