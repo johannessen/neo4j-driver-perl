@@ -28,6 +28,7 @@ my %NEO4J_DEFAULT_PORT = (
 my %OPTIONS = (
 	ca_file => 'tls_ca',
 	cypher_filter => 'cypher_filter',
+	cypher_params => 'cypher_params_v2',
 	cypher_types => 'cypher_types',
 	jolt => 'jolt',
 	net_module => 'net_module',
@@ -129,6 +130,14 @@ sub _parse_options {
 	my %options = @options;
 	
 	warnings::warnif deprecated => "Config option cypher_types is deprecated" if $options{cypher_types};
+	if ($options{cypher_params}) {
+		croak "Unimplemented cypher params filter '$options{cypher_params}'" if $options{cypher_params} ne v2;
+	}
+	elsif ($options{cypher_filter}) {
+		warnings::warnif deprecated => "Config option cypher_filter is deprecated; use cypher_params";
+		croak "Unimplemented cypher filter '$options{cypher_filter}'" if $options{cypher_filter} ne 'params';
+		$options{cypher_params} = v2;
+	}
 	
 	my @unsupported = ();
 	foreach my $key (keys %options) {
@@ -368,12 +377,23 @@ for details.
 
 =head2 Parameter syntax conversion
 
- $driver->config(cypher_filter => 'params');
+ $driver->config( cypher_params => v2 );
+ $bar = $driver->session->run('RETURN {foo}', foo => 'bar');
 
 When this option is set, the driver automatically uses a regular
 expression to convert the old Cypher parameter syntax C<{param}>
-supported by Neo4j S<versions 2 and 3> to the new syntax C<$param>
-supported by Neo4j S<versions 3 and 4>.
+supported by Neo4j S<version 2> to the modern syntax C<$param>
+supported by Neo4j S<version 3> and newer.
+
+The only allowed value for this config option is the unquoted
+literal L<v-string|perldata/"Version Strings"> C<v2>.
+
+Cypher's modern C<$> parameter syntax unfortunately may cause string
+interpolations in Perl, which decreases database performance because
+Neo4j can re-use query plans less often. It is also a potential
+security risk (Cypher injection attacks). Using this config option
+enables your code to use the C<{}> parameter syntax instead. This
+option is currently experimental because the API is still evolving.
 
 =head1 CONFIGURATION OPTIONS
 

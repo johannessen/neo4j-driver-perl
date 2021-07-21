@@ -23,7 +23,7 @@ sub new {
 	my ($class, $session) = @_;
 	
 	my $transaction = {
-		cypher_filter => $session->{driver}->{cypher_filter},
+		cypher_params_v2 => $session->{driver}->{cypher_params_v2},
 		net => $session->{net},
 		unused => 1,  # for HTTP only
 		closed => 0,
@@ -97,13 +97,11 @@ sub _prepare {
 		$params = {@parameters};
 	}
 	
-	if ($self->{cypher_filter}) {
-		croak "Unimplemented cypher filter '$self->{cypher_filter}'" if $self->{cypher_filter} ne 'params';
-		if (defined $params) {
-			my @params_quoted = map {quotemeta} keys %$params;
-			my $params_re = join '|', @params_quoted, map {"`$_`"} @params_quoted;
-			$query =~ s/\{($params_re)}/\$$1/g;
-		}
+	
+	if ($self->{cypher_params_v2} && defined $params) {
+		my @params_quoted = map {quotemeta} keys %$params;
+		my $params_re = join '|', @params_quoted, map {"`$_`"} @params_quoted;
+		$query =~ s/\{($params_re)}/\$$1/g;
 	}
 	
 	my $statement = [$query, $params // {}];

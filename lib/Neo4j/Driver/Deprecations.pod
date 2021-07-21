@@ -42,6 +42,31 @@ Early versions allowed modifying the driver object after session
 creation. This is not very useful in practice. The official Neo4j
 drivers are explicitly designed to be immutable.
 
+=head2 Parameter syntax conversion
+
+I<< Config option C<cypher_filter> deprecated in version 0.26
+and to be removed in 1.00.
+Originally added in 0.14 as an experimental feature. >>
+
+ $driver->config( cypher_filter => 'params' );
+
+When this option is set, the driver automatically uses a regular
+expression to convert the old Cypher parameter syntax C<{param}>
+supported by Neo4j S<versions 2 and 3> to the new syntax C<$param>
+supported by Neo4j S<versions 3 and 4>.
+
+This option was meant to support more general filtering of Cypher
+statements at some point in the future. But custom net modules
+already make that very easy. Therefore the C<cypher_filter>
+option won't be extended any further. However, the existing
+parameter syntax conversion is probably useful enough to stand
+on its own feet if given a more appropriate name.
+
+Instead of this option, C<cypher_params> should be used;
+see L<Neo4j::Driver/"Parameter syntax conversion">.
+
+ $driver->config( cypher_params => v2 );
+
 =head2 Suppress exceptions
 
 I<Deprecated in version 0.14 and to be removed in 1.00.

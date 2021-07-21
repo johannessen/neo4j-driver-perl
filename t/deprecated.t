@@ -18,7 +18,7 @@ my $s = $driver->session;
 # functionality. If the behaviour of such functionality changes, we
 # want it to be a conscious decision, hence we test for it.
 
-use Test::More 0.96 tests => 10 + 3;
+use Test::More 0.96 tests => 11 + 3;
 use Test::Exception;
 use Test::Warnings qw(warning warnings);
 my $transaction = $driver->session->begin_transaction;
@@ -114,6 +114,33 @@ subtest 'driver mutability (config/auth)' => sub {
 	lives_ok { $w = warning { $d->basic_auth(@credentials) }; } 'auth mutable lives';
 	(like $w, qr/\bDeprecate.*\bbasic_auth\b.*\bsession\b/i, 'auth mutable deprecated') or diag 'got warning(s): ', explain($w);
 	is $d->{auth}->{principal}, $credentials[0], 'auth mutable';
+};
+
+
+subtest 'cypher_filter' => sub {
+	plan tests => 13;
+	my ($t, @q);
+	lives_ok { $d = 0; $d = Neo4j::Driver->new(); } 'new driver 1';
+	lives_ok { $w = ''; $w = warning { $d->config(cypher_filter => 'params') }; } 'set filter';
+	like $w, qr/\bcypher_filter\b.* deprecated\b/i, 'cypher_filter deprecated'
+		or diag 'got warning(s): ', explain $w;
+	lives_ok { $t = Neo4j_Test->transaction_unconnected($d); } 'new tx 1';
+	@q = ('RETURN {`ab.`}, {c}, {cd}', 'ab.' => 17, c => 19, cd => 23);
+	lives_ok { $r = 0; $r = $t->_prepare(@q); } 'prepare simple';
+	is $r->{statement}, 'RETURN $`ab.`, $c, $cd', 'filtered simple';
+	@q = ('CREATE (a) RETURN {}, {a:a}, {a}, [a]', a => 17);
+	lives_ok { $r = 0; $r = $t->_prepare(@q); } 'prepare composite';
+	is $r->{statement}, 'CREATE (a) RETURN {}, {a:a}, $a, [a]', 'filtered composite';
+	lives_ok { $r = 0; $r = $t->_prepare('RETURN 42'); } 'prepare no params';
+	is $r->{statement}, 'RETURN 42', 'filtered no params';
+	lives_ok { $d = 0; $d = Neo4j::Driver->new(); } 'new driver 2';
+	throws_ok {
+		warning { $d->config(cypher_filter => 'coffee') };
+	} qr/\bUnimplemented cypher filter\b/i, 'unprepared filter unkown name';
+	lives_and {
+		$d = Neo4j::Driver->new()->config( cypher_filter => 'water', cypher_params => v2 );
+		is $d->{cypher_params_v2}, v2;
+	} 'set both params ignores old syntax';
 };
 
 
