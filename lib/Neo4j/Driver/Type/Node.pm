@@ -45,8 +45,10 @@ sub id {
 
 
 sub deleted {
+	# uncoverable pod
 	my ($self) = @_;
 	
+	warnings::warnif deprecated => __PACKAGE__ . "->deleted() is deprecated";
 	return $$self->{_meta}->{deleted};
 }
 
@@ -142,21 +144,6 @@ The C<labels()> method returns the number of labels if called
 in scalar context.
 
 Until version 0.25, it C<die>d instead.
-
-=head2 Deletion indicator
-
- $node_exists = ! $node->deleted;
-
-In some circumstances, Cypher statements using C<DELETE> may still
-C<RETURN> nodes that were deleted. To help avoid confusion in
-such cases, the server sometimes reports whether or not a node
-was deleted.
-
-This method is experimental because that information is not reliably
-available. In particular, there is a known issue with the Neo4j server
-(L<#12306|https://github.com/neo4j/neo4j/issues/12306>), and old Neo4j
-versions may not report it at all. If unavailable, C<undef> will be
-returned by this method.
 
 =head1 BUGS
 

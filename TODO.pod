@@ -71,12 +71,6 @@ C<$a> in expressions like C<< $a->{b} >>; see L<perlref/"Using References">).
 that are not normally necessary. Since this logic seems to work fine, it should
 be simplified. (This may also make it easier to unroll the recursion later.)
 
-=item * The current policy of not documenting deprecated methods is informed by
-the principle to "design interfaces that are: consistent; easy to use correctly;
-hard to use incorrectly". Perhaps simply listing the deprecated method names
-with short note like "deprecated in 0.13" would be an acceptable addition that
-also fulfils the B<pod> coverage requirements.
-
 =item * Documenting each attribute in L<Neo4j::Driver::SummaryCounters> as individual
 methods might be a quick way to bring up the B<pod> coverage stats a bit.
 

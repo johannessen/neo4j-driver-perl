@@ -18,7 +18,7 @@ my $s = $driver->session;
 # functionality. If the behaviour of such functionality changes, we
 # want it to be a conscious decision, hence we test for it.
 
-use Test::More 0.96 tests => 11 + 3;
+use Test::More 0.96 tests => 12 + 3;
 use Test::Exception;
 use Test::Warnings qw(warning warnings);
 my $transaction = $driver->session->begin_transaction;
@@ -67,6 +67,36 @@ subtest 'path()' => sub {
 	lives_ok { $w = ''; $w = warning { $path = $p->path; }; } 'path method';
 	(like $w, qr/\bdeprecate/, 'path method deprecated') or diag 'got warning(s): ', explain($w);
 	is_deeply $path, \@all, 'path method matches elements';
+};
+
+
+{
+package Neo4j_Test::Deprecated::DeletionIndicator;
+use parent 'Neo4j_Test::MockHTTP';
+sub response_for { &Neo4j_Test::MockHTTP::response_for }
+response_for 'deleted' => { json => <<END };
+{"errors":[],"results":[{"columns":["n"],"data":[
+{"meta":[{"deleted":true,"id":1,"type":"node"}],"rest":[{"metadata":{"id":1,"labels":["Test"]},"self":"/db/data/node/1"}],"row":[{}]},
+{"meta":[{"deleted":false,"id":6,"type":"relationship"}],"rest":[{"end":"/db/data/node/5","metadata":{"id":6,"type":"TEST"},"self":"/db/data/relationship/6","start":"/db/data/node/7"}],"row":[{}]},
+{"rest":[{"metadata":{"id":3,"labels":["Test"]},"self":"/db/data/node/3"}],"row":[{}]}
+]}]}
+END
+}
+subtest 'deleted()' => sub {
+	plan tests => 8;
+	my $d = Neo4j::Driver->new('http:');
+	$d->config(net_module => 'Neo4j_Test::Deprecated::DeletionIndicator');
+	lives_and { $r = 0; ok $r = $d->session(database => 'dummy')->run('deleted') } 'run';
+	lives_and { $w = warning { ok $r->fetch->get->deleted }; } 'deleted true';
+	like $w, qr/\bdeleted\b.* deprecated\b/i, 'deleted true deprecated'
+		or diag 'got warning(s): ', explain $w;
+	lives_and { $w = warning { ok ! $r->fetch->get->deleted }; } 'deleted false';
+	like $w, qr/\bdeleted\b.* deprecated\b/i, 'deleted false deprecated'
+		or diag 'got warning(s): ', explain $w;
+	lives_and { $w = warning { ok ! defined $r->fetch->get->deleted }; } 'deleted unknown';
+	like $w, qr/\bdeleted\b.* deprecated\b/i, 'deleted unknown deprecated'
+		or diag 'got warning(s): ', explain $w;
+	lives_and { ok ! $r->has_next } 'no has_next';
 };
 
 

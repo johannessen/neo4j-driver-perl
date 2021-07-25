@@ -402,6 +402,41 @@ If you need this feature, you should consider using the
 private C<_run_multiple()> method instead; see
 L<Neo4j::Driver::Transaction/"Execute multiple statements at once">.
 
+=head1 Neo4j::Driver::Type::Node, Neo4j::Driver::Type::Relationship
+
+=head2 Deletion indicator
+
+I<Deprecated in version 0.26 and to be removed in 1.00.
+Originally added in 0.13 as an experimental feature.>
+
+ $node_definitely_deleted = $node->deleted;
+ $node_definitely_exists  = ! $node->deleted && defined $node->deleted;
+ $node_status_unknown     = ! defined $node->deleted;
+ 
+ $reln_definitely_deleted = $relationship->deleted;
+ ...
+
+In some circumstances, Cypher statements using C<DELETE> may still
+C<RETURN> nodes or relationships that were deleted. To help avoid
+confusion in such cases, the server sometimes reports whether
+or not a node was deleted. If the deletion status of a node or
+relationship is unknown, C<undef> will be returned by this method.
+
+However, that information is not reliably available. In particular,
+it is only reported for HTTP connections using JSON responses
+(not for Bolt or Jolt). Additionally, some Neo4j server versions
+may not report it at all, and I<if> reported, it may be affected
+by a known bug in the Neo4j server
+(L<#12306|https://github.com/neo4j/neo4j/issues/12306>).
+Finally, the deletion indicator doesn't reflect whether or
+not a transaction was successful or rolled back.
+
+Given the low availability and reliability of this indicator,
+consistency suggests to remove the C<deleted()> method entirely.
+To obtain this indicator in the future, use a custom net module
+to disable Jolt, then try to access the result's raw meta data.
+For caveats, see L<Neo4j::Driver::Net/"USE OF INTERNAL APIS">.
+
 =head1 Neo4j::Driver::Type::Path
 
 =head2 path()
