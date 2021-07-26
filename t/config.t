@@ -12,6 +12,7 @@ use Test::Warnings;
 # in the form of the server URL, auth credentials and other options.
 
 use Neo4j_Test;
+use Neo4j_Test::MockHTTP;
 
 # Report the Network error if there is one (to aid debugging),
 # but don't skip any of the tests below.
@@ -190,8 +191,8 @@ subtest 'auth' => sub {
 };
 
 
-subtest 'cypher filter' => sub {
-	plan tests => 15;
+subtest 'cypher params' => sub {
+	plan tests => 19;
 	my ($t, @q);
 	lives_ok { $d = 0; $d = Neo4j::Driver->new(); } 'new driver 1';
 	lives_ok { $d->config(cypher_params => v2); } 'set filter';
@@ -214,6 +215,18 @@ subtest 'cypher filter' => sub {
 	@q = ('RETURN {a}', a => 17);
 	lives_ok { $r = 0; $r = $t->_prepare(@q); } 'prepare unfiltered';
 	is $r->{statement}, 'RETURN {a}', 'unfiltered';
+	# verify that filter flag is automatically cleared for Neo4j 2
+	my $d = Neo4j::Driver->new('http:');
+	lives_ok { $d->config(cypher_params => v2, net_module => 'Neo4j_Test::MockHTTP') } 'set filter mock';
+	lives_and { ok !! $d->session(database => 'dummy')->{cypher_params_v2} } 'Neo4j 4: filter';
+	$Neo4j_Test::MockHTTP::res[0]->{json}{neo4j_version} = '2.3.12';
+	$Neo4j_Test::MockHTTP::res[0]->{content} = undef;
+	lives_and { ok !  $d->session(database => 'dummy')->{cypher_params_v2} } 'Neo4j 2: no filter';
+	$Neo4j_Test::MockHTTP::res[0]->{json}{neo4j_version} = '0.0.0';
+	$Neo4j_Test::MockHTTP::res[0]->{content} = undef;
+	lives_and { ok !! $d->session(database => 'dummy')->{cypher_params_v2} } 'Sim (0.0.0): filter';
+	$Neo4j_Test::MockHTTP::res[0]->{json}{neo4j_version} = '4.2.5';
+	$Neo4j_Test::MockHTTP::res[0]->{content} = undef;
 };
 
 

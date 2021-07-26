@@ -30,6 +30,7 @@ sub _connect {
 	my ($self, $database) = @_;
 	
 	my $neo4j_version = $self->server->version;  # ensure contact with the server has been made
+	$self->{cypher_params_v2} = 0 if $neo4j_version =~ m{^Neo4j/2\.};  # no conversion required
 	return $self if $neo4j_version =~ m{^Neo4j/[123]\.};  # nothing more to do
 	
 	if (! defined $database) {
@@ -85,6 +86,7 @@ sub new {
 	my ($class, $driver) = @_;
 	
 	return bless {
+		cypher_params_v2 => $driver->{cypher_params_v2},
 		driver => $driver,
 		net => Neo4j::Driver::Net::Bolt->new($driver),
 	}, $class;
@@ -107,6 +109,7 @@ sub new {
 	my ($class, $driver) = @_;
 	
 	return bless {
+		cypher_params_v2 => $driver->{cypher_params_v2},
 		driver => $driver,
 		net => Neo4j::Driver::Net::HTTP->new($driver),
 	}, $class;

@@ -1,6 +1,6 @@
 Revision history for Neo4j::Driver
 
-0.2505  2021-07-26
+0.2506  2021-07-26
 
  - Change in experimental feature behaviour: Most methods that return lists
    now yield item count when called in scalar context

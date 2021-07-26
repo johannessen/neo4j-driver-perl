@@ -23,7 +23,7 @@ sub new {
 	my ($class, $session) = @_;
 	
 	my $transaction = {
-		cypher_params_v2 => $session->{driver}->{cypher_params_v2},
+		cypher_params_v2 => $session->{cypher_params_v2},
 		net => $session->{net},
 		unused => 1,  # for HTTP only
 		closed => 0,
@@ -83,7 +83,6 @@ sub _prepare {
 		croak 'Odd number of elements in query parameter hash' if scalar @parameters % 2 != 0;
 		$params = {@parameters};
 	}
-	
 	
 	if ($self->{cypher_params_v2} && defined $params) {
 		my @params_quoted = map {quotemeta} keys %$params;
