@@ -65,19 +65,6 @@ sub run {
 }
 
 
-sub _run_multiple {
-	my ($self, @statements) = @_;
-	
-	croak 'Transaction already closed' unless $self->is_open;
-	
-	return $self->{net}->_run( $self, map {
-		croak '_run_multiple() expects a list of array references' unless ref eq 'ARRAY';
-		croak '_run_multiple() with empty statements not allowed' unless $_->[0];
-		$self->_prepare(@$_);
-	} @statements );
-}
-
-
 sub _prepare {
 	my ($self, $query, @parameters) = @_;
 	
@@ -205,6 +192,19 @@ use Carp qw(croak);
 # use 'rest' in place of broken 'meta', see neo4j #12306
 my $RESULT_DATA_CONTENTS = ['row', 'rest'];
 my $RESULT_DATA_CONTENTS_GRAPH = ['row', 'rest', 'graph'];
+
+
+sub _run_multiple {
+	my ($self, @statements) = @_;
+	
+	croak 'Transaction already closed' unless $self->is_open;
+	
+	return $self->{net}->_run( $self, map {
+		croak '_run_multiple() expects a list of array references' unless ref eq 'ARRAY';
+		croak '_run_multiple() with empty statements not allowed' unless $_->[0];
+		$self->_prepare(@$_);
+	} @statements );
+}
 
 
 sub _prepare {
@@ -453,6 +453,7 @@ these features.
 
 The Neo4j HTTP API supports executing multiple statements within a
 single HTTP request. This driver exposes this feature to the client.
+It is only available on HTTP connections.
 
 This feature might eventually be used to implement lazy statement
 execution for this driver. The private C<_run_multiple()> method
