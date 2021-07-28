@@ -14,12 +14,6 @@ use Test::Warnings;
 use Neo4j_Test;
 use Neo4j_Test::MockHTTP;
 
-# Report the Network error if there is one (to aid debugging),
-# but don't skip any of the tests below.
-unless ( $ENV{NO_NETWORK_TESTING} or Neo4j_Test->driver() ) {
-	diag $Neo4j_Test::error;
-}
-
 my ($d, $r);
 
 plan tests => 10 + 1;
