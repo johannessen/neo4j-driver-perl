@@ -21,6 +21,7 @@ sub new {
 
 
 sub address  { shift->{uri} }
+sub agent    { shift->{version} }
 sub version  { shift->{version} }
 
 
@@ -69,6 +70,13 @@ L<Neo4j::Driver::ServerInfo> implements the following methods.
 Returns the host name and port number of the server. Takes the form
 of an URL authority string (for example: C<localhost:7474>).
 
+=head2 agent
+
+ $agent_string = $session->server->agent;
+
+Returns the product name and version number. Takes the form of
+a server agent string (for example: C<Neo4j/3.5.17>).
+
 =head2 protocol_version
 
  $bolt_version = $session->server->protocol_version;
@@ -86,10 +94,12 @@ you use L<Neo4j::Bolt> S<version 0.20> or older.
 
 =head2 version
 
- $version_string = $session->server->version;
+ $agent_string = $session->server->version;
 
-Returns the product name and version number. Takes the form of
-a server agent string (for example: C<Neo4j/3.5.17>).
+Alias for L<C<agent()>|/"agent">.
+
+Use of C<version()> is discouraged since version 0.26.
+This method may be deprecated and removed in future.
 
 =head1 EXPERIMENTAL FEATURES
 
