@@ -11,6 +11,7 @@ use URI 1.25;
 
 
 sub new {
+	# uncoverable pod (private method)
 	my ($class, $server_info) = @_;
 	
 	# don't store the full URI here - it may contain auth credentials
@@ -31,8 +32,9 @@ sub protocol_version {
 
 
 sub protocol {
+	# uncoverable pod (see Deprecations.pod)
 	my ($self) = @_;
-	
+	warnings::warnif deprecated => __PACKAGE__ . "->protocol() is deprecated; use protocol_version() instead";
 	my $protocol = $self->{protocol_string};
 	return $protocol if defined $protocol;
 	my $bolt_version = $self->{protocol};
@@ -100,24 +102,6 @@ Alias for L<C<agent()>|/"agent">.
 
 Use of C<version()> is discouraged since version 0.26.
 This method may be deprecated and removed in future.
-
-=head1 EXPERIMENTAL FEATURES
-
-L<Neo4j::Driver::ServerInfo> implements the following experimental
-features. These are subject to unannounced modification or removal
-in future versions. Expect your code to break if you depend upon
-these features.
-
-=head2 protocol
-
- $protocol_string = $session->server->protocol;
-
-Returns the protocol name and version number announced by the server.
-Similar to an agent string, this value is formed by the protocol
-name followed by a slash and the version number, usually two digits
-separated by a dot (for example: C<Bolt/1.0> or C<HTTP/1.1>).
-
-If the protocol version is unknown, just the name is returned.
 
 =head1 SEE ALSO
 

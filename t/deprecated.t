@@ -18,7 +18,7 @@ my $s = $driver->session;
 # functionality. If the behaviour of such functionality changes, we
 # want it to be a conscious decision, hence we test for it.
 
-use Test::More 0.96 tests => 12 + 3;
+use Test::More 0.96 tests => 13 + 3;
 use Test::Exception;
 use Test::Warnings qw(warning warnings);
 my $transaction = $driver->session->begin_transaction;
@@ -171,6 +171,27 @@ subtest 'cypher_filter' => sub {
 		$d = Neo4j::Driver->new()->config( cypher_filter => 'water', cypher_params => v2 );
 		is $d->{cypher_params_v2}, v2;
 	} 'set both params ignores old syntax';
+};
+
+
+subtest 'ServerInfo protocol()' => sub {
+	plan tests => 12;
+	my ($si, $w);
+	my %uri = (uri => URI->new('http:'));
+	lives_and { ok $si = Neo4j::Driver::ServerInfo->new({%uri}) } 'new undef';
+	lives_ok { $w = ''; $w = warning { my $p = $si->protocol() }; } 'protocol lives';
+	like $w, qr/\bprotocol\b.*\bdeprecated\b/i, 'protocol deprecated'
+		or diag 'got warning(s): ', explain $w;
+	no warnings 'deprecated';
+	lives_and { is $si->protocol(), 'HTTP' } 'protocol undef';
+	lives_and { ok $si = Neo4j::Driver::ServerInfo->new({%uri, protocol => ''}) } 'new empty';
+	lives_and { is $si->protocol(), 'Bolt' } 'protocol empty';
+	lives_and { ok $si = Neo4j::Driver::ServerInfo->new({%uri, protocol => '2.2'}) } 'new version';
+	lives_and { is $si->protocol(), 'Bolt/2.2' } 'protocol version';
+	lives_and { ok $si = Neo4j::Driver::ServerInfo->new({%uri, protocol_string => 'HTTP/0.9'}) } 'new string';
+	lives_and { is $si->protocol(), 'HTTP/0.9' } 'protocol string';
+	lives_and { ok $si = Neo4j::Driver::ServerInfo->new({%uri, protocol => '0.1', protocol_string => 'HTTP/1.0'}) } 'new both';
+	lives_and { is $si->protocol(), 'HTTP/1.0' } 'protocol string precedence';
 };
 
 

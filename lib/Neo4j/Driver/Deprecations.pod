@@ -301,6 +301,30 @@ L<C<summary()>|Neo4j::Driver::Result/"summary">.
 
  $stats = $session->run('...')->summary->counters;
 
+=head1 Neo4j::Driver::ServerInfo
+
+=head2 Protocol string
+
+I<Deprecated in version 0.26 and to be removed in 1.00.
+Originally added in 0.19 as an experimental feature.>
+
+ $protocol_string = $session->server->protocol;
+
+Returns the protocol name and version number announced by the server.
+Similar to an agent string, this value is formed by the protocol
+name followed by a slash and the version number, usually two digits
+separated by a dot (for example: C<Bolt/1.0> or C<HTTP/1.1>).
+If the protocol version is unknown, just the name is returned.
+
+Since Neo4j 4.3, the driver API has an official method for this
+purpose, L<Neo4j::Driver::ServerInfo/"protocol_version">.
+Therefore the experimental C<protocol()> method is expendable.
+In the future, the behaviour of the deprecated C<protocol()>
+method can be approximated as follows:
+
+ $protocol_string = $_ ? "Bolt/$_" : defined ? "Bolt" : "HTTP/1.1"
+   for $session->server->protocol_version;
+
 =head1 Neo4j::Driver::Session
 
 =head2 Call run() in list context
