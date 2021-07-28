@@ -1,11 +1,12 @@
 Revision history for Neo4j::Driver
 
-0.2506  2021-07-26
+0.2507  2021-07-28
 
  - Change in experimental feature behaviour: Most methods that return lists
    now yield item count when called in scalar context
  - deprecate experimental list context syntax for run()
  - deprecate experimental methods Node->deleted() and Relationship->deleted()
+ - add method ServerInfo->protocol_version()
  - change syntax for experimental Cypher parameter conversion config option
 
 0.25  2021-06-30

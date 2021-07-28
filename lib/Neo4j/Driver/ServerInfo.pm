@@ -22,7 +22,22 @@ sub new {
 
 sub address  { shift->{uri} }
 sub version  { shift->{version} }
-sub protocol { shift->{protocol} }
+
+
+sub protocol_version {
+	shift->{protocol}
+}
+
+
+sub protocol {
+	my ($self) = @_;
+	
+	my $protocol = $self->{protocol_string};
+	return $protocol if defined $protocol;
+	my $bolt_version = $self->{protocol};
+	return "Bolt/$bolt_version" if $bolt_version;
+	return defined $bolt_version ? "Bolt" : "HTTP";
+}
 
 
 1;
@@ -53,6 +68,21 @@ L<Neo4j::Driver::ServerInfo> implements the following methods.
 
 Returns the host name and port number of the server. Takes the form
 of an URL authority string (for example: C<localhost:7474>).
+
+=head2 protocol_version
+
+ $bolt_version = $session->server->protocol_version;
+
+Returns the Bolt protocol version with which the remote server
+communicates. Takes the form of a string C<"$major.$minor">
+where the major and minor version numbers both are integers.
+
+When the HTTP protocol is used instead of Bolt, this method
+returns an undefined value.
+
+If the Bolt protocol is used, but the version number is unknown,
+an empty string is returned. This situation shouldn't occur unless
+you use L<Neo4j::Bolt> S<version 0.20> or older.
 
 =head2 version
 
