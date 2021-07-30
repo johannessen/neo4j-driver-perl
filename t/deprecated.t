@@ -174,8 +174,13 @@ subtest 'cypher_filter' => sub {
 };
 
 
+{
+package Neo4j_Test::MockHTTP::NoProtocol;
+use parent 'Neo4j_Test::MockHTTP';
+sub can { return if $_[1] eq 'protocol'; return shift->SUPER::can(@_); }
+}
 subtest 'ServerInfo protocol()' => sub {
-	plan tests => 12;
+	plan tests => 14;
 	my ($si, $w);
 	my %uri = (uri => URI->new('http:'));
 	lives_and { ok $si = Neo4j::Driver::ServerInfo->new({%uri}) } 'new undef';
@@ -192,6 +197,10 @@ subtest 'ServerInfo protocol()' => sub {
 	lives_and { is $si->protocol(), 'HTTP/0.9' } 'protocol string';
 	lives_and { ok $si = Neo4j::Driver::ServerInfo->new({%uri, protocol => '0.1', protocol_string => 'HTTP/1.0'}) } 'new both';
 	lives_and { is $si->protocol(), 'HTTP/1.0' } 'protocol string precedence';
+	my $d = Neo4j::Driver->new('http:');
+	$d->config(net_module => 'Neo4j_Test::MockHTTP::NoProtocol');
+	lives_and { $si = 0; ok $si = $d->session(database => 'dummy')->server } 'no protocol()';
+	lives_and { is $si->protocol(), 'HTTP' } 'no protocol() string';
 };
 
 

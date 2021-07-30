@@ -172,8 +172,6 @@ see L<Neo4j::Driver::Net/"API of an HTTP networking module">.
 
 =item * C<new>
 
-=item * C<protocol>
-
 =item * C<request>
 
 =item * C<result_handlers>
@@ -187,7 +185,7 @@ has been fully received. Therefore none of the other methods will
 ever block.
 
 In addition to the methods listed above,
-L<Neo4j::Driver::Net::HTTP::LWP> implements the following method.
+L<Neo4j::Driver::Net::HTTP::LWP> implements the following methods.
 
 =head2 agent
 
@@ -200,6 +198,12 @@ L<Neo4j::Driver::Net::HTTP::LWP> implements the following method.
 
 Returns the L<LWP::UserAgent> instance in use.
 Meant to facilitate subclassing.
+
+=head2 protocol
+
+Returns the HTTP version of the last response (typically
+C<"HTTP/1.1">). Since version 0.26, this method is no longer
+required for a net module and using it is now discouraged.
 
 =head1 BUGS
 

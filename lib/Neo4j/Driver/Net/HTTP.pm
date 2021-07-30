@@ -82,7 +82,7 @@ sub _server {
 	$self->{server_info} = Neo4j::Driver::ServerInfo->new({
 		uri => $self->{http_agent}->uri,
 		version => "Neo4j/$neo4j_version",
-		protocol_string => $self->{http_agent}->protocol,
+		protocol_string => $self->{http_agent}->can('protocol') ? $self->{http_agent}->protocol : undef,
 		time_diff => Time::Piece->new - $date,
 	});
 	
