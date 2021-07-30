@@ -26,7 +26,7 @@ Originally added in 0.02 as an experimental feature.>
 
  $driver->close;  # no-op
 
-All resources opened by this driver are closed automatically once
+All resources opened by the Perl driver are closed automatically once
 they are no longer required. Explicit calls to C<close()> are neither
 required nor useful.
 
@@ -42,7 +42,7 @@ Early versions allowed modifying the driver object after session
 creation. This is not very useful in practice. The official Neo4j
 drivers are explicitly designed to be immutable.
 
-=head2 Parameter syntax conversion
+=head2 Parameter syntax conversion using C<cypher_filter>
 
 I<< Config option C<cypher_filter> deprecated in version 0.26
 and to be removed in 1.00.
@@ -344,7 +344,7 @@ Originally added in 0.02 as an experimental feature.>
 
  $session->close;  # no-op
 
-All resources opened by this driver are closed automatically once
+All resources opened by the Perl driver are closed automatically once
 they are no longer required. Explicit calls to C<close()> are neither
 required nor useful.
 

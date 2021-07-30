@@ -398,7 +398,7 @@ L<Neo4j::Driver::B<ResultSummary>>
 =item * Equivalent documentation for the official Neo4j drivers:
 L<Result (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/Result.html>,
 L<Result (Python)|https://neo4j.com/docs/api/python-driver/current/api.html#result>,
-L<Result (JavaScript)|https://neo4j.com/docs/api/javascript-driver/current/class/src/result.js~Result.html>,
+L<Result (JavaScript)|https://neo4j.com/docs/api/javascript-driver/4.3/class/lib6/result.js~Result.html>,
 L<IResult (.NET)|https://neo4j.com/docs/api/dotnet-driver/4.0/html/f1ac31ec-c6dd-798b-b5d6-3ca0794d7502.htm>
 
 =back

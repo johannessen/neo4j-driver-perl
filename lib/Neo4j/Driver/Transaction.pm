@@ -500,7 +500,7 @@ see L<Neo4j::Driver::Net>.
 
 =item * Equivalent documentation for the official Neo4j drivers:
 L<Transaction (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/Transaction.html>,
-L<Transaction (JavaScript)|https://neo4j.com/docs/api/javascript-driver/current/class/src/transaction.js~Transaction.html>,
+L<Transaction (JavaScript)|https://neo4j.com/docs/api/javascript-driver/4.3/class/lib6/transaction.js~Transaction.html>,
 L<ITransaction (.NET)|https://neo4j.com/docs/api/dotnet-driver/4.0/html/b64c7dfe-87e9-8b85-5a02-8ff03800b67b.htm>,
 L<Sessions & Transactions (Python)|https://neo4j.com/docs/api/python-driver/current/api.html#transaction>
 

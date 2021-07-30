@@ -491,8 +491,9 @@ driver at present.
 =item * L<Neo4j::Driver::B<Session>>
 
 =item * Official API documentation:
-L<Neo4j Drivers Manual|https://neo4j.com/docs/driver-manual/current/>,
-L<Neo4j HTTP API Docs|https://neo4j.com/docs/http-api/current/>
+L<Neo4j Driver API Specification|https://7687.org/driver_api/driver-api-specification.html>,
+L<Neo4j Drivers Manual|https://neo4j.com/docs/driver-manual/4.1/>,
+L<Neo4j HTTP API Docs|https://neo4j.com/docs/http-api/4.3/>
 
 =item * Other modules for working with Neo4j:
 L<DBD::Neo4p>,

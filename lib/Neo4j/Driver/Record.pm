@@ -217,7 +217,7 @@ L<Neo4j::Driver::Type::B<Path>>
 
 =item * Equivalent documentation for the official Neo4j drivers:
 L<Record (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/Record.html>,
-L<Record (JavaScript)|https://neo4j.com/docs/api/javascript-driver/current/class/src/record.js~Record.html>,
+L<Record (JavaScript)|https://neo4j.com/docs/api/javascript-driver/4.3/class/lib6/record.js~Record.html>,
 L<IRecord (.NET)|https://neo4j.com/docs/api/dotnet-driver/4.0/html/ca4ccbd1-2925-945d-fd4c-a5635f3e4b23.htm>
 
 =back
