@@ -27,8 +27,8 @@ my $qcontrol = qtakeover( 'LWP::UserAgent',
 my ($m, $ua, $rq);
 
 my $base = URI->new('http://net.test/');
-my $auth = { scheme => 'basic', principal => 'user%name', credentials => 'pass:@/word' };
-my $userinfo = 'user%25name:pass%3A%40%2Fword';
+my $auth = { scheme => 'basic', principal => 'user%name', credentials => "pass:\@/word\x{100}" };
+my $userinfo = 'user%25name:pass%3A%40%2Fword%C4%80';
 my $uri = 'http://'.$userinfo.'@net.test/';
 my $driver;
 
@@ -148,12 +148,20 @@ subtest 'response jolt' => sub {
 
 
 subtest 'auth variations' => sub {
-	plan tests => 5;
+	plan tests => 9;
 	my $clone = $base->clone;
 	$clone->userinfo($userinfo);
 	$driver = { uri => $clone };
 	lives_ok { $m = Neo4j::Driver::Net::HTTP::LWP->new($driver) } 'new with userinfo';
 	lives_and { like $m->uri(), qr/\Q$uri\E/i } 'uri with userinfo';
+	# ^ Since 0.2602, the "uri with userinfo" case can no longer occur
+	#   because such URIs are tidied in Neo4j::Driver::_check_uri().
+	$driver = { uri => $base, auth => { scheme => 'basic', principal => "\xc4\x80" } };
+	lives_ok { $m = Neo4j::Driver::Net::HTTP::LWP->new($driver) } 'new with latin1 userid';
+	lives_and { like $m->uri(), qr|//%C4%80:@|i } 'uri with latin1 userid';
+	$driver = { uri => $base, auth => { scheme => 'basic', credentials => "\x{100}" } };
+	lives_ok { $m = Neo4j::Driver::Net::HTTP::LWP->new($driver) } 'new with utf8 passwd';
+	lives_and { like $m->uri(), qr|//:%C4%80@|i } 'uri with utf8 passwd';
 	$driver = { uri => $base };
 	lives_ok { $m = Neo4j::Driver::Net::HTTP::LWP->new($driver) } 'new no auth';
 	lives_and { is $m->uri(), 'http://net.test/' } 'uri no auth';

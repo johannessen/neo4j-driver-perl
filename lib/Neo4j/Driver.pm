@@ -26,6 +26,7 @@ my %NEO4J_DEFAULT_PORT = (
 );
 
 my %OPTIONS = (
+	auth => 'auth',
 	ca_file => 'tls_ca',
 	cypher_filter => 'cypher_filter',
 	cypher_params => 'cypher_params_v2',
@@ -73,6 +74,12 @@ sub _check_uri {
 			croak sprintf "URI scheme '%s' unsupported; use 'http' or 'bolt'", $uri->scheme // "";
 		}
 		
+		if (my $userinfo = $uri->userinfo(undef)) {
+			my @userinfo = $userinfo =~ m/^([^:]*):?(.*)/;
+			@userinfo = map { URI::Escape::uri_unescape $_ } @userinfo;
+			utf8::decode $_ for @userinfo;
+			$self->basic_auth(@userinfo);
+		}
 		$uri->host('localhost') unless $uri->host;
 		$uri->path('') if $uri->path_query eq '/';
 		$uri->fragment(undef);
@@ -115,7 +122,8 @@ sub config {
 	my %options = $self->_parse_options('config', [keys %OPTIONS], @options);
 	
 	# set config option
-	foreach my $key (keys %options) {
+	my @keys = reverse sort keys %options;  # auth should take precedence over uri
+	foreach my $key (@keys) {
 		$self->{$OPTIONS{$key}} = $options{$key};
 		$self->_check_uri if $OPTIONS{$key} eq 'uri';
 	}
@@ -411,6 +419,30 @@ option is currently experimental because the API is still evolving.
 =head1 CONFIGURATION OPTIONS
 
 L<Neo4j::Driver> implements the following configuration options.
+
+=head2 auth
+
+ $driver->config(auth => {
+   scheme      => 'basic',
+   principal   => 'neo4j',   # user id
+   credentials => $password,
+ });
+
+Specifies the authentication details for the Neo4j server.
+The authentication details are provided as a Perl reference
+that is made available to the networking module. Typically,
+this is an unblessed hash reference with the authentication
+scheme declared in the hash entry C<scheme>.
+
+The Neo4j server uses the auth scheme C<'basic'> by default,
+which must be configured with a user id in the hash entry
+C<principal> and a password in the entry C<credentials>,
+as shown above. Alternatively, the method L</"basic_auth">
+can be used as a shortcut, or the basic auth details can be
+specified as userinfo in the URI.
+
+The C<auth> config option defaults to the value C<undef>,
+which disables authentication.
 
 =head2 timeout
 

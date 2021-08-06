@@ -16,7 +16,7 @@ use Neo4j_Test::MockHTTP;
 
 my ($d, $r);
 
-plan tests => 11 + 1;
+plan tests => 13 + 1;
 
 
 subtest 'config read/write' => sub {
@@ -192,9 +192,58 @@ subtest 'tls' => sub {
 
 
 subtest 'auth' => sub {
-	plan tests => 2;
+	plan tests => 13;
+	my $a = { scheme => 'basic', principal => 'user', credentials => 'pass' };
+	lives_ok { $d = 0; $d = Neo4j::Driver->new->basic_auth(user => 'pass') } 'basic auth lives';
+	lives_and { is_deeply $d->config('auth'), $a } 'basic auth';
+	lives_ok { $d = 0; $d = Neo4j::Driver->new; $d->config(auth => \$a) } 'ref auth lives';
+	lives_and { is_deeply ${$d->config('auth')}, $a } 'ref auth';
+	lives_ok { $d = 0; $d = Neo4j::Driver->new->config(uri => 'http://foo:bar@test', auth => $a) } 'ambiguous auth lives';
+	lives_and { is_deeply $d->{auth}, $a } 'ambiguous auth prefers auth over uri';
+	# parsing from uri
 	lives_ok { $d = 0; $d = Neo4j::Driver->new('http://user:pass@test:9999'); } 'auth in full uri lives';
-	lives_and { is $d->{uri}, 'http://user:pass@test:9999'; } 'auth in full uri';
+	lives_and { is $d->{uri}, 'http://test:9999'; } 'auth in full uri';
+	lives_and { is_deeply $d->{auth}, $a } 'auth from full uri';
+	$a = { scheme => 'basic', principal => 'foo', credentials => '' };
+	lives_ok { $d = 0; $d = Neo4j::Driver->new->config(uri => 'http://foo:@test') } 'uri no passwd auth lives';
+	lives_and { is_deeply $d->{auth}, $a } 'uri no passwd auth';
+	$a = { scheme => 'basic', principal => '', credentials => 'bar' };
+	lives_ok { $d = 0; $d = Neo4j::Driver->new->config(uri => 'http://:bar@test') } 'uri no userid auth lives';
+	lives_and { is_deeply $d->{auth}, $a } 'uri no userid auth';
+};
+
+
+subtest 'auth encoding unit' => sub {
+	plan tests => 12;
+	# The implied assumption here is that anything that *can* be decoded as UTF-8 probably *is* UTF-8.
+	my $a = { scheme => 'basic', principal => "foo\x{100}foo", credentials => '' };
+	lives_ok { $d = 0; $d = Neo4j::Driver->new("http://foo\x{c4}\x{80}foo\@test") } 'uri utf8 auth lives';
+	lives_and { is_deeply $d->{auth}, $a } 'uri utf8 auth';
+	lives_and { ok utf8::is_utf8 $d->{auth}->{principal} } 'uri utf8 auth flag';
+	lives_ok { $d = 0; $d = Neo4j::Driver->new('http://foo%C4%80foo@test') } 'uri encoded utf8 auth lives';
+	lives_and { is_deeply $d->{auth}, $a } 'uri encoded utf8 auth';
+	lives_and { ok utf8::is_utf8 $d->{auth}->{principal} } 'uri encoded utf8 auth flag';
+	$a = { scheme => 'basic', principal => "bar\x{c4}\x{80}\x{ff}bar", credentials => '' };
+	lives_ok { $d = 0; $d = Neo4j::Driver->new("http://bar\x{c4}\x{80}\x{ff}bar\@test") } 'uri latin1 auth lives';
+	lives_and { is_deeply $d->{auth}, $a } 'uri latin1 auth';
+	lives_and { ok ! utf8::is_utf8 $d->{auth}->{principal} } 'uri latin1 auth flag';
+	lives_ok { $d = 0; $d = Neo4j::Driver->new('http://bar%C4%80%ffbar@test') } 'uri encoded latin1 auth lives';
+	lives_and { is_deeply $d->{auth}, $a } 'uri encoded latin1 auth';
+	lives_and { ok ! utf8::is_utf8 $d->{auth}->{principal} } 'uri encoded latin1 auth flag';
+};
+
+
+subtest 'auth encoding integration' => sub {
+	plan tests => 6;
+	my ($m, $uri);
+	$uri = 'http://utf8:%C4%80@test1:10001';
+	lives_ok { $d = 0; $d = Neo4j::Driver->new($uri) } 'utf8 driver lives';
+	lives_ok { $m = 0; $m = Neo4j::Driver::Net::HTTP::LWP->new($d) } 'utf8 net module lives';
+	lives_and { is ''.$m->uri(), $uri } 'utf8 uri';
+	$uri = 'http://latin1:%C4%80%FF@test2:10002';
+	lives_ok { $d = 0; $d = Neo4j::Driver->new($uri) } 'latin1 driver lives';
+	lives_ok { $m = 0; $m = Neo4j::Driver::Net::HTTP::LWP->new($d) } 'latin1 net module lives';
+	lives_and { is ''.$m->uri(), $uri } 'latin1 uri';
 };
 
 

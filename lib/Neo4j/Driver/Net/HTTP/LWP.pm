@@ -27,10 +27,14 @@ sub new {
 	my $uri = $driver->{uri};
 	if ($driver->{auth}) {
 		croak "Only HTTP Basic Authentication is supported" if $driver->{auth}->{scheme} ne 'basic';
-		my $userid = URI::Escape::uri_escape_utf8 $driver->{auth}->{principal};
-		my $passwd = URI::Escape::uri_escape_utf8 $driver->{auth}->{credentials};
+		my $userid = $driver->{auth}->{principal}   // '';
+		my $passwd = $driver->{auth}->{credentials} // '';
+		my $userinfo = join ':', map {
+			utf8::encode $_ if utf8::is_utf8 $_;  # uri_escape doesn't handle wide characters
+			URI::Escape::uri_escape $_;
+		} $userid, $passwd;
 		$uri = $uri->clone;
-		$uri->userinfo("$userid:$passwd");
+		$uri->userinfo($userinfo);
 	}
 	$self->{uri_base} = $uri;
 	

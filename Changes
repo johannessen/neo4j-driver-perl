@@ -1,8 +1,8 @@
 Revision history for Neo4j::Driver
 
-0.2601  2021-08-06
+0.2602  2021-08-07
 
- - Add config option for uri
+ - Add config options for auth and uri
 
 0.26  2021-07-30
 

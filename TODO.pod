@@ -103,17 +103,6 @@ demonstrate some of the net_module functionality and how that can be used.
 
 =over
 
-=item * Make the auth data a config option, so that it can be queried. As
-alternative ways to I<set> the auth data, C<basic_auth()> should continue
-to be supported as an alias and the user info should be parsed from the URL
-if given (however, URLs without user info should not change the auth data
-stored in the driver). A possible implementation would be to create a new
-L<AuthToken|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/AuthTokens.html>
-module that would offer suitable methods, but this seems like overkill.
-While sending/accepting userinfo to/from others is explicitly forbidden now by
-L<RFC7230:2.7.1|https://tools.ietf.org/html/rfc7230#section-2.7.1>,
-it's still allowed to use it in cases such as ours.
-
 =item * Allow passing config options directly to the constructor, e. g. in
 place of the URL (C<< Neo4j::Driver->new({ url=>"bolt:", timeout=>30 }) >>).
 
