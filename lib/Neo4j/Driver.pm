@@ -35,6 +35,7 @@ my %OPTIONS = (
 	timeout => 'http_timeout',
 	tls => 'tls',
 	tls_ca => 'tls_ca',
+	uri => 'uri',
 );
 
 my %DEFAULTS = (
@@ -51,6 +52,17 @@ my %DEFAULTS = (
 
 sub new {
 	my ($class, $uri) = @_;
+	
+	my $self = bless { %DEFAULTS }, $class;
+	
+	return $self->config( uri => $uri );
+}
+
+
+sub _check_uri {
+	my ($self) = @_;
+	
+	my $uri = $self->{uri};
 	
 	if ($uri) {
 		$uri =~ s|^|http://| if $uri !~ m{:|/};
@@ -70,7 +82,7 @@ sub new {
 	}
 	$uri->port( $NEO4J_DEFAULT_PORT{ $uri->scheme } ) if ! $uri->_port;
 	
-	return bless { uri => $uri, %DEFAULTS }, $class;
+	$self->{uri} = $uri;
 }
 
 
@@ -105,6 +117,7 @@ sub config {
 	# set config option
 	foreach my $key (keys %options) {
 		$self->{$OPTIONS{$key}} = $options{$key};
+		$self->_check_uri if $OPTIONS{$key} eq 'uri';
 	}
 	return $self;
 }
@@ -451,6 +464,12 @@ the certificates in this file (or by an intermediary).
 
 Self-signed certificates (such as those automatically provided by
 some Neo4j versions) should also work if their S<"CA bit"> is set.
+
+=head2 uri
+
+ $driver->config(uri => 'http://localhost:7474');
+
+Specifies the Neo4j server connection URI; see L</"new">.
 
 =head1 ENVIRONMENT
 

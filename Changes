@@ -1,5 +1,9 @@
 Revision history for Neo4j::Driver
 
+0.2601  2021-08-06
+
+ - Add config option for uri
+
 0.26  2021-07-30
 
  - Change in experimental feature behaviour: Most methods that return lists

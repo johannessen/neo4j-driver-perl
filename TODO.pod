@@ -103,8 +103,6 @@ demonstrate some of the net_module functionality and how that can be used.
 
 =over
 
-=item * Make the URL a config option, so that it can be queried (and changed).
-
 =item * Make the auth data a config option, so that it can be queried. As
 alternative ways to I<set> the auth data, C<basic_auth()> should continue
 to be supported as an alias and the user info should be parsed from the URL

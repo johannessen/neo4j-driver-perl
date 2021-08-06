@@ -16,7 +16,7 @@ use Neo4j_Test::MockHTTP;
 
 my ($d, $r);
 
-plan tests => 10 + 1;
+plan tests => 11 + 1;
 
 
 subtest 'config read/write' => sub {
@@ -69,6 +69,19 @@ subtest 'config illegal args' => sub {
 	throws_ok {
 		 $d->config( aaa => 1, bbb => 2 );
 	} qr/\bUnsupported\b.*\baaa\b.*\bbbb\b/i, 'illegal name set multi';
+};
+
+
+subtest 'uri config' => sub {
+	plan tests => 8;
+	lives_ok { $d = 0; $d = Neo4j::Driver->new('http://test:10023'); } 'new driver lives';
+	lives_and { is $d->config('uri'), 'http://test:10023'; } 'new driver get';
+	lives_ok { $d = $d->config(timeout => 60); } 'other config set lives';
+	lives_and { is $d->config('uri'), 'http://test:10023'; } 'other config no change';
+	lives_ok { $d = $d->config(uri => 'http://test:10057'); } 'uri set lives';
+	lives_and { is $d->config('uri'), 'http://test:10057'; } 'uri get';
+	lives_ok { $d = $d->config(uri => undef); } 'uri undef lives';
+	lives_and { is $d->config('uri'), 'http://localhost:7474'; } 'uri undef default';
 };
 
 
