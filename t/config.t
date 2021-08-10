@@ -16,7 +16,7 @@ use Neo4j_Test::MockHTTP;
 
 my ($d, $r);
 
-plan tests => 14 + 1;
+plan tests => 15 + 1;
 
 
 subtest 'config read/write' => sub {
@@ -57,6 +57,18 @@ subtest 'direct hash access' => sub {
 };
 
 
+subtest 'constructor config' => sub {
+	plan tests => 7;
+	lives_ok { $d = 0; $d = Neo4j::Driver->new(); } 'new driver default lives';
+	lives_and { is $d->{http_timeout}, undef; } 'new driver default';
+	lives_ok { $d = 0; $d = Neo4j::Driver->new({timeout => 1}); } 'new driver hashref lives';
+	lives_and { is $d->{http_timeout}, 1; } 'new driver hashref';
+	lives_ok { $d = 0; $d = Neo4j::Driver->new('http://test:10047'); } 'new driver uri lives';
+	lives_and { is $d->{uri}, 'http://test:10047'; } 'new driver uri';
+	throws_ok { Neo4j::Driver->new({}, 0) } qr/\bmultiple arguments unsupported\b/i, 'extra arg';
+};
+
+
 subtest 'config illegal args' => sub {
 	plan tests => 8;
 	lives_ok { $d = 0; $d = Neo4j::Driver->new(); } 'new driver';
@@ -85,7 +97,7 @@ subtest 'config illegal args' => sub {
 
 
 subtest 'uri config' => sub {
-	plan tests => 8;
+	plan tests => 10;
 	lives_ok { $d = 0; $d = Neo4j::Driver->new('http://test:10023'); } 'new driver lives';
 	lives_and { is $d->config('uri'), 'http://test:10023'; } 'new driver get';
 	lives_ok { $d = $d->config(timeout => 60); } 'other config set lives';
@@ -94,6 +106,8 @@ subtest 'uri config' => sub {
 	lives_and { is $d->config('uri'), 'http://test:10057'; } 'uri get';
 	lives_ok { $d = $d->config(uri => undef); } 'uri undef lives';
 	lives_and { is $d->config('uri'), 'http://localhost:7474'; } 'uri undef default';
+	lives_ok { $d = 0; $d = Neo4j::Driver->new({uri => 'http://test:10059'}); } 'uri hashref lives';
+	lives_and { is $d->config('uri'), 'http://test:10059'; } 'uri hashref get';
 };
 
 

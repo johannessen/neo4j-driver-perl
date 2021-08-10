@@ -52,11 +52,13 @@ my %DEFAULTS = (
 
 
 sub new {
-	my ($class, $uri) = @_;
+	my ($class, $config, @extra) = @_;
 	
 	my $self = bless { %DEFAULTS }, $class;
 	
-	return $self->config( uri => $uri );
+	croak __PACKAGE__ . "->new() with multiple arguments unsupported" if @extra;
+	$config = { uri => $config } if ref $config ne 'HASH';
+	return $self->config($config);
 }
 
 
@@ -260,7 +262,7 @@ install L<LWP::Protocol::https> separately to enable HTTPS.
 =back
 
 The protocol is automatically chosen based on the URI scheme.
-See L</"new"> for details.
+See L</"uri"> for details.
 
 B<As of version 0.13, the interface of this software may be
 considered stable.>
@@ -301,8 +303,7 @@ is possible.
 
  $session = $driver->config(timeout => 60)->session;
 
-See below for an explanation of
-L<all supported configuration options|/"CONFIGURATION OPTIONS">.
+See L</"CONFIGURATION OPTIONS"> for a list of supported options.
 Setting configuration options on a driver is only allowed before
 creating the driver's first session.
 
@@ -313,28 +314,21 @@ the current value of the config option named by the parameter.
 
 =head2 new
 
- $driver = Neo4j::Driver->new('http://localhost');
+ $driver = Neo4j::Driver->new({ uri => 'http://localhost' });
 
 Construct a new L<Neo4j::Driver> object. This object holds the
 details required to establish connections with a Neo4j database,
 including server URIs, credentials and other configuration.
 
-The URI passed to this method determines the type of driver created. 
-The C<http>, C<https>, and C<bolt> URI schemes are supported.
-Use of C<bolt> URIs requires L<Neo4j::Bolt> to be installed; use
-of C<https> URIs requires L<LWP::Protocol::https> to be installed.
+The C<new()> method accepts one or more configuration options given
+as a hash reference. See L</"CONFIGURATION OPTIONS"> below for a
+list of supported options. Alternatively, instead of the hash
+reference, the Neo4j server URI may be given as a scalar string.
 
-If a part of the URI or even the entire URI is missing, suitable
-default values will be substituted. In particular, the host name
-C<localhost> and the protocol C<http> will be used as defaults;
-if no port is specified, the protocol's default port will be used.
-
- # all of these are semantically equal
- $driver = Neo4j::Driver->new;
- $driver = Neo4j::Driver->new('http:');
- $driver = Neo4j::Driver->new('localhost');
  $driver = Neo4j::Driver->new('http://localhost');
- $driver = Neo4j::Driver->new('http://localhost:7474');
+
+If C<new()> is called with no arguments, a default configuration
+will be used for the driver.
 
 =head2 session
 
@@ -507,7 +501,23 @@ some Neo4j versions) should also work if their S<"CA bit"> is set.
 
  $driver->config(uri => 'http://localhost:7474');
 
-Specifies the Neo4j server connection URI; see L</"new">.
+Specifies the Neo4j server connection URI. The URI scheme determines
+the type of driver created. Supported schemes are C<bolt>, C<http>,
+and C<https>.
+Use of C<bolt> URIs requires L<Neo4j::Bolt> to be installed; use
+of C<https> URIs requires L<LWP::Protocol::https> to be installed.
+
+If a part of the URI or even the entire URI is missing, suitable
+default values will be substituted. In particular, the host name
+C<localhost> and the protocol C<http> will be used as defaults;
+if no port is specified, the protocol's default port will be used.
+
+ # all of these are semantically equal
+ $driver->config(uri =>  undef );
+ $driver->config(uri => 'http:');
+ $driver->config(uri => 'localhost');
+ $driver->config(uri => 'http://localhost');
+ $driver->config(uri => 'http://localhost:7474/');
 
 =head1 ENVIRONMENT
 

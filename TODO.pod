@@ -103,9 +103,6 @@ demonstrate some of the net_module functionality and how that can be used.
 
 =over
 
-=item * Allow passing config options directly to the constructor, e. g. in
-place of the URL (C<< Neo4j::Driver->new({ url=>"bolt:", timeout=>30 }) >>).
-
 =item * The C<neo4j> scheme should work for a community edition server out
 of the box. For starters, C<neo4j> should check if L<Neo4j::Bolt> is loaded
 into C<%INC> and if the specified server actually supports Bolt. If so, it
