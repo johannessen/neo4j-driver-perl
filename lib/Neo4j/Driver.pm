@@ -111,9 +111,12 @@ sub basic_auth {
 sub config {
 	my ($self, @options) = @_;
 	
+	@options = %{$options[0]} if @options == 1 && ref $options[0] eq 'HASH';
+	croak "config() without options unsupported" unless @options;
+	
 	if (@options < 2) {
 		# get config option
-		my $key = $options[0] // '';
+		my $key = $options[0];
 		croak "Unsupported config option: $key" unless grep m/^$key$/, keys %OPTIONS;
 		return $self->{$OPTIONS{$key}};
 	}
@@ -135,6 +138,8 @@ sub session {
 	my ($self, @options) = @_;
 	
 	warnings::warnif deprecated => __PACKAGE__ . "->{die_on_error} is deprecated" unless $self->{die_on_error};
+	
+	@options = %{$options[0]} if @options == 1 && ref $options[0] eq 'HASH';
 	my %options = $self->_parse_options('session', ['database'], @options);
 	
 	$self->{session} = 1;
@@ -287,10 +292,10 @@ chaining is possible.
 
 =head2 config
 
- $driver->config( option1 => 'foo', option2 => 'bar' );
+ $driver->config({ option1 => 'foo', option2 => 'bar' });
 
-Sets the specified configuration option or options on a
-L<Neo4j::Driver> object. The options are given in hash syntax.
+Sets the specified configuration options on a L<Neo4j::Driver>
+object. The options may be given as a hash or as a hash reference.
 This method returns the modified object, so that method chaining
 is possible.
 
@@ -301,8 +306,8 @@ L<all supported configuration options|/"CONFIGURATION OPTIONS">.
 Setting configuration options on a driver is only allowed before
 creating the driver's first session.
 
-Calling this method with just a single parameter will return the
-current value of the config option named by the parameter.
+Calling this method with just a single string parameter will return
+the current value of the config option named by the parameter.
 
  $timeout = $driver->config('timeout');
 
@@ -339,7 +344,8 @@ Creates and returns a new L<Session|Neo4j::Driver::Session>,
 initiating a network connection with the Neo4j server.
 
 Each session connects to a single database, which may be specified
-using the C<database> option. If no defined value is given for this
+using the C<database> option in a hash or hash reference passed
+to this method. If no defined value is given for this
 option, the driver will select the default database configured
 in F<neo4j.conf>.
 

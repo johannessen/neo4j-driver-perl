@@ -16,23 +16,29 @@ use Neo4j_Test::MockHTTP;
 
 my ($d, $r);
 
-plan tests => 13 + 1;
+plan tests => 14 + 1;
 
 
 subtest 'config read/write' => sub {
-	plan tests => 7;
+	plan tests => 12;
 	lives_ok { $d = 0; $d = Neo4j::Driver->new(); } 'new driver';
 	# write and read single options
 	my $timeout = exp(1);
 	lives_and { is $d->config(timeout => $timeout), $d; } 'set timeout';
 	lives_and { is $d->config('timeout'), $timeout; } 'get timeout';
 	lives_and { is $d->config('ca_file'), undef; } 'get unset ca_file';
+	lives_and { is $d->config({ca_file => ''}), $d; } 'set ca_file ref';
+	lives_and { is $d->config('ca_file'), ''; } 'get ca_file ref';
 	# write and read multiple options
 	my $ca_file = '/dev/null';
 	my @options = (timeout => $timeout * 2, ca_file => $ca_file);
 	lives_and { is $d->config(@options), $d; } 'set two options';
 	lives_and { is $d->config('timeout'), $timeout * 2; } 'get timeout 2nd';
 	lives_and { is $d->config('ca_file'), $ca_file; } 'get ca_file';
+	@options = (timeout => $timeout * 3, ca_file => '');
+	lives_and { is $d->config({@options}), $d; } 'set two options ref';
+	lives_and { is $d->config('timeout'), $timeout * 3; } 'get timeout ref';
+	lives_and { is $d->config('ca_file'), ''; } 'get ca_file ref';
 };
 
 
@@ -52,14 +58,20 @@ subtest 'direct hash access' => sub {
 
 
 subtest 'config illegal args' => sub {
-	plan tests => 6;
+	plan tests => 8;
 	lives_ok { $d = 0; $d = Neo4j::Driver->new(); } 'new driver';
 	throws_ok {
 		 $d->config();
 	} qr/\bUnsupported\b/i, 'no args';
 	throws_ok {
+		 $d->config( {} );
+	} qr/\bUnsupported\b/i, 'no opts';
+	throws_ok {
 		 $d->config( timeout => 1,5 );
 	} qr/\bOdd number of elements\b/i, 'illegal hash';
+	throws_ok {
+		 $d->config( {}, 0 );
+	} qr/\bUnsupported\b/i, 'extra arg';
 	throws_ok {
 		 $d->config( 'http_timeout' );
 	} qr/\bUnsupported\b.*\bhttp_timeout\b/i, 'illegal name get';
@@ -283,6 +295,19 @@ subtest 'cypher params' => sub {
 	lives_and { ok !! $d->session(database => 'dummy')->{cypher_params_v2} } 'Sim (0.0.0): filter';
 	$Neo4j_Test::MockHTTP::res[0]->{json}{neo4j_version} = '4.2.5';
 	$Neo4j_Test::MockHTTP::res[0]->{content} = undef;
+};
+
+
+subtest 'session config' => sub {
+	plan tests => 6;
+	my $d = Neo4j::Driver->new('http:');
+	lives_ok { $d->config(net_module => 'Neo4j_Test::MockHTTP') } 'set mock';
+	my %db = (database => 'foobar');
+	lives_and { like $d->session( %db)->{net}{endpoints}{new_commit}, qr/\bfoobar\b/ } 'session hash';
+	lives_and { like $d->session(\%db)->{net}{endpoints}{new_commit}, qr/\bfoobar\b/ } 'session hash ref';
+	throws_ok { $d->session(  ) } qr/\bdefault database\b/i, 'session empty hash';
+	throws_ok { $d->session({}) } qr/\bdefault database\b/i, 'session empty hash ref';
+	throws_ok { $d->session('') } qr/\bOdd number of elements\b/i, 'session no ref';
 };
 
 
