@@ -31,6 +31,7 @@ my %OPTIONS = (
 	cypher_filter => 'cypher_filter',
 	cypher_params => 'cypher_params_v2',
 	cypher_types => 'cypher_types',
+	encrypted => 'tls',
 	jolt => 'jolt',
 	net_module => 'net_module',
 	timeout => 'http_timeout',
@@ -444,24 +445,9 @@ specified as userinfo in the URI.
 The C<auth> config option defaults to the value C<undef>,
 which disables authentication.
 
-=head2 timeout
+=head2 encrypted
 
- $driver->config(timeout => 60);  # seconds
-
-Specifies the connection timeout. The semantics of this config
-option vary by network library. Its default value is therefore
-not defined here and is subject to change.
-
-For details, see L<LWP::UserAgent/"timeout"> when using HTTP or
-L<select(2)> when using Bolt.
-
-The old C<< $driver->{http_timeout} >> syntax remains supported
-for the time being in order to ensure backwards compatibility,
-but its use is discouraged and it may be deprecated in future.
-
-=head2 tls
-
- $driver->config(tls => 1);
+ $driver->config(encrypted => 1);
 
 Specifies whether to use secure communication using TLS. This
 L<implies|IO::Socket::SSL/"Essential Information About SSL/TLS">
@@ -479,6 +465,24 @@ you want if you connect to a server on C<localhost>.
 This option is only useful for Bolt connections. For HTTP
 connections, the use of TLS encryption is governed by the chosen
 URI scheme (C<http> / C<https>).
+
+Before version 0.27, this option was named C<tls>. Use of the
+former name is now discouraged.
+
+=head2 timeout
+
+ $driver->config(timeout => 60);  # seconds
+
+Specifies the connection timeout. The semantics of this config
+option vary by network library. Its default value is therefore
+not defined here and is subject to change.
+
+For details, see L<LWP::UserAgent/"timeout"> when using HTTP or
+L<select(2)> when using Bolt.
+
+The old C<< $driver->{http_timeout} >> syntax remains supported
+for the time being in order to ensure backwards compatibility,
+but its use is discouraged and it may be deprecated in future.
 
 =head2 tls_ca
 

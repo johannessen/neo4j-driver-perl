@@ -198,22 +198,23 @@ subtest 'uris with path/query' => sub {
 
 
 subtest 'tls' => sub {
-	plan tests => 7;
+	plan tests => 8;
 	my $ca_file = '8aA6EPsGYE7sbB7bLWiu.';  # doesn't exist
 	lives_ok { $d = Neo4j::Driver->new('https://test/')->config(tls_ca => $ca_file); } 'create https with CA file';
 	is $d->{tls_ca}, $ca_file, 'tls_ca';
 	throws_ok { $d->session; } qr/\Q$ca_file\E/, 'https session fails with missing CA file';
 	throws_ok {
-		Neo4j::Driver->new('https://test/')->config(tls => 0)->session;
+		Neo4j::Driver->new('https://test/')->config(encrypted => 0)->session;
 	} qr/\bHTTPS does not support unencrypted communication\b/i, 'no unencrypted https';
 	lives_ok {
-		$d = Neo4j::Driver->new('https://test/')->config(tls => 1);
+		$d = Neo4j::Driver->new('https://test/')->config(encrypted => 1);
 		Neo4j_Test->transaction_unconnected($d);
 	} 'encrypted https';
 	ok $d->{tls}, 'tls';
 	throws_ok {
-		Neo4j::Driver->new('http://test/')->config(tls => 1)->session;
+		Neo4j::Driver->new('http://test/')->config(encrypted => 1)->session;
 	} qr/\bHTTP does not support encrypted communication\b/i, 'no encrypted http';
+	lives_and { is(Neo4j::Driver->new->config(tls => 4)->config('encrypted'), 4) } 'config tls';
 };
 
 

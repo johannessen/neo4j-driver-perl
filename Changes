@@ -1,10 +1,11 @@
 Revision history for Neo4j::Driver
 
-0.2604  2021-08-11
+0.2605  2021-08-23
 
  - Add config options for auth and uri
  - Allow config option hashes to be passed by reference
  - Allow passing config options to new()
+ - Rename config option tls to encrypted
 
 0.26  2021-07-30
 
