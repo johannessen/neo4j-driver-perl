@@ -37,6 +37,7 @@ my %OPTIONS = (
 	timeout => 'http_timeout',
 	tls => 'tls',
 	tls_ca => 'tls_ca',
+	trust_ca => 'tls_ca',
 	uri => 'uri',
 );
 
@@ -457,7 +458,7 @@ By default, the local system's trust store will be used to verify
 the server's identity. This will fail unless your Neo4j installation
 uses a key pair that is trusted and verifiable through the global
 CA infrastructure. If that's not the case, you may need to
-additionally use the C<tls_ca> option.
+additionally use the C<trust_ca> option.
 
 This option defaults to C<0> (no encryption). This is generally what
 you want if you connect to a server on C<localhost>.
@@ -484,9 +485,9 @@ The old C<< $driver->{http_timeout} >> syntax remains supported
 for the time being in order to ensure backwards compatibility,
 but its use is discouraged and it may be deprecated in future.
 
-=head2 tls_ca
+=head2 trust_ca
 
- $driver->config(tls_ca => 'neo4j/certificates/neo4j.cert');
+ $driver->config(trust_ca => 'neo4j/certificates/neo4j.cert');
 
 Specifies the path to a file containing one or more trusted TLS
 certificates. When this option is given, encrypted connections will
@@ -500,6 +501,9 @@ the certificates in this file (or by an intermediary).
 
 Self-signed certificates (such as those automatically provided by
 some Neo4j versions) should also work if their S<"CA bit"> is set.
+
+Before version 0.27, this option was named C<tls_ca>. Use of the
+former name is now discouraged.
 
 =head2 uri
 
