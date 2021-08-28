@@ -14,7 +14,7 @@
  @results = $helper->_run($tx, @statements);
  
  # Parsing a JSON result
- die unless $helper->{http_agent}->http_headers->{success};
+ die unless $helper->{http_agent}->http_header->{success};
  $json_coder = $helper->{http_agent}->json_coder;
  $json_coder->decode( $helper->{http_agent}->fetch_all );
 

@@ -145,10 +145,10 @@ This driver only supports execution plans over HTTP.
 =head2 server
 
  $address = $summary->server->address;
- $version = $summary->server->version;
+ $version = $summary->server->agent;
 
 The L<ServerInfo|Neo4j::Driver::ServerInfo>, consisting of
-the host, port and Neo4j version.
+the host, port, protocol and Neo4j version.
 
 =head2 statement
 

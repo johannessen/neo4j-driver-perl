@@ -243,7 +243,7 @@ L<"Configure connectors" in the Neo4j Operations Manual|https://neo4j.com/docs/o
 Bolt is a Neo4j proprietary, binary protocol, available with
 S<Neo4j 3.0> and newer. Bolt communication may be encrypted or
 unencrypted. Because Bolt is faster than HTTP, it is generally
-the recommended protocol. However, support for it may be
+the recommended protocol. However, Perl support for it may be
 lagging after major updates to Neo4j.
 
 This driver supports Bolt, but doesn't bundle the necessary XS
