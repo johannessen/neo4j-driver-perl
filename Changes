@@ -1,5 +1,9 @@
 Revision history for Neo4j::Driver
 
+0.2701  2022-01-22
+
+ - Fix constructor fallback to default uri (issue #14)
+
 0.27  2021-08-28
 
  - Add config options for auth and uri

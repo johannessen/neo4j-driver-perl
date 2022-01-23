@@ -58,13 +58,16 @@ subtest 'direct hash access' => sub {
 
 
 subtest 'constructor config' => sub {
-	plan tests => 7;
+	plan tests => 10;
 	lives_ok { $d = 0; $d = Neo4j::Driver->new(); } 'new driver default lives';
 	lives_and { is $d->{http_timeout}, undef; } 'new driver default';
 	lives_ok { $d = 0; $d = Neo4j::Driver->new({timeout => 1}); } 'new driver hashref lives';
 	lives_and { is $d->{http_timeout}, 1; } 'new driver hashref';
+	lives_and { like $d->{uri}, qr/\blocalhost\b/; } 'new driver default uri';
 	lives_ok { $d = 0; $d = Neo4j::Driver->new('http://test:10047'); } 'new driver uri lives';
 	lives_and { is $d->{uri}, 'http://test:10047'; } 'new driver uri';
+	lives_ok { $d = 0; $d = Neo4j::Driver->new({}); } 'new driver empty hashref lives';
+	lives_and { like $d->{uri}, qr/\blocalhost\b/; } 'new driver empty hashref default uri';
 	throws_ok { Neo4j::Driver->new({}, 0) } qr/\bmultiple arguments unsupported\b/i, 'extra arg';
 };
 

@@ -60,6 +60,7 @@ sub new {
 	
 	croak __PACKAGE__ . "->new() with multiple arguments unsupported" if @extra;
 	$config = { uri => $config } if ref $config ne 'HASH';
+	$config->{uri} //= '';  # force config() to call _check_uri()
 	return $self->config($config);
 }
 
