@@ -187,24 +187,6 @@ continue to inherit from L<Neo4j::Types> and have that interface.
 
 Return the keys and values of this record as a hash reference.
 
-=head1 EXPERIMENTAL FEATURES
-
-L<Neo4j::Driver::Record> implements the following experimental
-features. These are subject to unannounced modification or removal
-in future versions. Expect your code to break if you depend upon
-these features.
-
-=head2 C<graph>
-
- $nodes = $record->{graph}->{nodes};
- $rels  = $record->{graph}->{relationships};
-
-Allows accessing the graph response the Neo4j server can deliver via
-HTTP. Requires the C<return_graph> field to be set on the
-L<Transaction|Neo4j::Driver::Transaction>
-and Jolt to be disabled (which is not recommended)
-before the statement is executed.
-
 =head1 SEE ALSO
 
 =over

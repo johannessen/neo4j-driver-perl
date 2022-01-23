@@ -443,6 +443,35 @@ If you need this feature, you should consider using the
 private C<_run_multiple()> method instead; see
 L<Neo4j::Driver::Transaction/"Execute multiple statements at once">.
 
+=head2 Return results in graph format
+
+I<Deprecated in version 0.28 and to be removed in 1.00.
+Originally added in 0.01 as an experimental feature.>
+
+ $session = $driver->config( jolt => 0 )->session;
+ $transaction = $session->begin_transaction;
+ $transaction->{return_graph} = 1;
+ $records = $transaction->run('...')->list;
+ for $record ( @$records ) {
+   $graph_data = $record->{graph};
+   ...
+ }
+
+The Neo4j HTTP JSON API supports a
+L<"graph" results data format|https://neo4j.com/docs/http-api/4.4/actions/return-results-in-graph-format/>.
+This feature is only available when Jolt is disabled, which is
+not recommended.
+
+To request graph format in future, use a custom networking module
+to disable Jolt and modify the C<resultDataContents> in the server
+request. Note that C<< $record->{graph} >> is an internal API that
+may or may not be available in future versions.
+See L<Neo4j::Driver::Net/"USE OF INTERNAL APIS">.
+
+If there is demand for the graph format, equivalent functionality
+might be added to a future version of the driver itself.
+This would then also be available for Bolt and Jolt connections.
+
 =head1 Neo4j::Driver::Type::Node, Neo4j::Driver::Type::Relationship
 
 =head2 Deletion indicator

@@ -40,6 +40,8 @@ sub run {
 	
 	croak 'Transaction already closed' unless $self->is_open;
 	
+	warnings::warnif deprecated => __PACKAGE__ . "->{return_graph} is deprecated" if $self->{return_graph};
+	
 	my @statements;
 	if (ref $query eq 'ARRAY') {
 		warnings::warnif deprecated => "run() with multiple statements is deprecated";
@@ -471,24 +473,6 @@ Neo4j server by default. When using HTTP, this behaviour can be
 disabled. Doing so might provide a very minor performance increase.
 
 The ability to disable the statistics may be removed in future.
-
-=head2 Return results in graph format
-
- $session = $driver->config( jolt => 0 )->session;
- $transaction = $session->begin_transaction;
- $transaction->{return_graph} = 1;
- $records = $transaction->run('...')->list;
- for $record ( @$records ) {
-   $graph_data = $record->{graph};
-   ...
- }
-
-The Neo4j HTTP JSON API supports a "graph" results data format.
-This feature is only available when Jolt is disabled, which is
-not recommended. The C<return_graph> option will most likely be
-removed entirely in future versions, as requesting the "graph"
-result is also possible by using a custom networking module;
-see L<Neo4j::Driver::Net>.
 
 =head1 SEE ALSO
 
