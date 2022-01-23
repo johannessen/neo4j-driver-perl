@@ -30,6 +30,23 @@ All resources opened by the Perl driver are closed automatically once
 they are no longer required. Explicit calls to C<close()> are neither
 required nor useful.
 
+=head2 Config option C<ca_file>
+
+I<Deprecated in version 0.15 and to be removed in 1.00.
+Originally added in 0.13 as an experimental feature.>
+
+ $driver->config(ca_file => 'neo4j/certificates/neo4j.cert');
+
+Specifies the location of a local copy of the server certificate
+for the then-experimental HTTPS self-signed certificate support.
+The driver config option C<ca_file> corresponded to C<SSL_ca_file>
+in L<LWP::UserAgent> and L<IO::Socket::SSL>.
+
+This option was renamed C<tls_ca> in S<version 0.15> to be more
+consistent with the C<tls> option, then later renamed C<trust_ca>
+in S<version 0.27> to be more consistent with the Neo4j Driver API.
+See L<Neo4j::Driver/"trust_ca">.
+
 =head2 Mutable auth credentials
 
 I<Deprecated in version 0.15 and to be removed in 1.00.

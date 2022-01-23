@@ -1,7 +1,8 @@
 Revision history for Neo4j::Driver
 
-0.2701  2022-01-22
+0.2702  2022-01-22
 
+ - Add deprecation warning for experimental config option ca_file
  - Fix constructor fallback to default uri (issue #14)
 
 0.27  2021-08-28

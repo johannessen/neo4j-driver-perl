@@ -26,19 +26,19 @@ subtest 'config read/write' => sub {
 	my $timeout = exp(1);
 	lives_and { is $d->config(timeout => $timeout), $d; } 'set timeout';
 	lives_and { is $d->config('timeout'), $timeout; } 'get timeout';
-	lives_and { is $d->config('ca_file'), undef; } 'get unset ca_file';
-	lives_and { is $d->config({ca_file => ''}), $d; } 'set ca_file ref';
-	lives_and { is $d->config('ca_file'), ''; } 'get ca_file ref';
+	lives_and { is $d->config('trust_ca'), undef; } 'get unset trust_ca';
+	lives_and { is $d->config({trust_ca => ''}), $d; } 'set trust_ca ref';
+	lives_and { is $d->config('trust_ca'), ''; } 'get trust_ca ref';
 	# write and read multiple options
 	my $ca_file = '/dev/null';
-	my @options = (timeout => $timeout * 2, ca_file => $ca_file);
+	my @options = (timeout => $timeout * 2, trust_ca => $ca_file);
 	lives_and { is $d->config(@options), $d; } 'set two options';
 	lives_and { is $d->config('timeout'), $timeout * 2; } 'get timeout 2nd';
-	lives_and { is $d->config('ca_file'), $ca_file; } 'get ca_file';
-	@options = (timeout => $timeout * 3, ca_file => '');
+	lives_and { is $d->config('trust_ca'), $ca_file; } 'get trust_ca 2';
+	@options = (timeout => $timeout * 3, trust_ca => '');
 	lives_and { is $d->config({@options}), $d; } 'set two options ref';
 	lives_and { is $d->config('timeout'), $timeout * 3; } 'get timeout ref';
-	lives_and { is $d->config('ca_file'), ''; } 'get ca_file ref';
+	lives_and { is $d->config('trust_ca'), ''; } 'get trust_ca 3 ref';
 };
 
 

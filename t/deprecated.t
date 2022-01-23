@@ -18,7 +18,7 @@ my $s = $driver->session;
 # functionality. If the behaviour of such functionality changes, we
 # want it to be a conscious decision, hence we test for it.
 
-use Test::More 0.96 tests => 13 + 3;
+use Test::More 0.96 tests => 14 + 3;
 use Test::Exception;
 use Test::Warnings qw(warning warnings);
 my $transaction = $driver->session->begin_transaction;
@@ -286,6 +286,31 @@ END
 		lives_and { is $a[1]->get('n'), 11; } 'get record 1 in result list (explicit tx)';
 		eval { $t->rollback }; 1;
 	}
+};
+
+
+subtest 'config tls options' => sub {
+	plan tests => 3 + 3*2 + 5;
+	my $ca_file = '/dev/null';
+	my ($d1, $d2, $d3);
+	lives_ok { $d1 = Neo4j::Driver->new(); } 'new driver tls';
+	lives_ok { $d2 = Neo4j::Driver->new(); } 'new driver tls_ca';
+	lives_ok { $d3 = Neo4j::Driver->new(); } 'new driver ca_file';
+	lives_ok { $w = ''; $w = warning { $d1->config(tls => 7) }; } 'set config tls';
+	is_deeply $w, [], 'tls not deprecated'
+		or diag 'got warning(s): ', explain $w;
+	lives_ok { $w = ''; $w = warning { $d2->config(tls_ca => $ca_file) }; } 'set config tls_ca';
+	is_deeply $w, [], 'tls_ca not deprecated'
+		or diag 'got warning(s): ', explain $w;
+	lives_ok { $w = ''; $w = warning { $d3->config(ca_file => $ca_file) }; } 'set config ca_file';
+	like $w, qr/\bca_file\b.*\bdeprecated\b/i, 'ca_file is deprecated'
+		or diag 'got warning(s): ', explain $w;
+	no warnings 'deprecated';  # there may or may not be warnings for the getters
+	lives_and { is $d1->config('tls'), 7; } 'get tls';
+	lives_and { is $d2->config('tls_ca'), $ca_file; } 'get tls_ca';
+	lives_and { is $d2->config('trust_ca'), $ca_file; } 'get tls_ca trust_ca';
+	lives_and { is $d3->config('ca_file'), $ca_file; } 'get ca_file';
+	lives_and { is $d3->config('trust_ca'), $ca_file; } 'get ca_file trust_ca';
 };
 
 
