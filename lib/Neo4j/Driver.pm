@@ -101,7 +101,7 @@ sub _check_uri {
 sub basic_auth {
 	my ($self, $username, $password) = @_;
 	
-	warnings::warnif deprecated => "Deprecated sequence: call basic_auth() before session()" if $self->{session};
+	warnings::warnif deprecated => "Deprecated sequence: call basic_auth() before session()" if $self->{server_info};
 	
 	$self->{auth} = {
 		scheme => 'basic',
@@ -126,7 +126,7 @@ sub config {
 		return $self->{$OPTIONS{$key}};
 	}
 	
-	croak "Unsupported sequence: call config() before session()" if $self->{session};
+	croak "Unsupported sequence: call config() before session()" if $self->{server_info};
 	my %options = $self->_parse_options('config', [keys %OPTIONS], @options);
 	
 	# set config option
@@ -146,8 +146,6 @@ sub session {
 	
 	@options = %{$options[0]} if @options == 1 && ref $options[0] eq 'HASH';
 	my %options = $self->_parse_options('session', ['database'], @options);
-	
-	$self->{session} = 1;
 	
 	my $session = Neo4j::Driver::Session->new($self);
 	return $session->_connect($options{database});

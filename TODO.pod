@@ -145,13 +145,6 @@ only, this should not be a breaking change.
 
 =over
 
-=item * Once a session is created, the driver object becomes immutable. It
-should therefore be possible to store the ServerInfo in the driver object
-once it is obtained. If the default database is added as well, the Discovery
-API doesn't need to be used again for a new session. This change would keep
-down network utilisation in scenarios where many sessions are created (such
-as running the driver's test suite).
-
 =item * Add
 L<transaction functions|https://neo4j.com/docs/driver-manual/4.1/session-api/simple/#driver-simple-transaction-fn>.
 These should probably consist of subrefs passed to methods called

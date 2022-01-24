@@ -279,7 +279,7 @@ subtest 'auth encoding integration' => sub {
 
 
 subtest 'cypher params' => sub {
-	plan tests => 19;
+	plan tests => 21;
 	my ($t, @q);
 	lives_ok { $d = 0; $d = Neo4j::Driver->new(); } 'new driver 1';
 	lives_ok { $d->config(cypher_params => v2); } 'set filter';
@@ -303,12 +303,16 @@ subtest 'cypher params' => sub {
 	lives_ok { $r = 0; $r = $t->_prepare(@q); } 'prepare unfiltered';
 	is $r->{statement}, 'RETURN {a}', 'unfiltered';
 	# verify that filter flag is automatically cleared for Neo4j 2
-	my $d = Neo4j::Driver->new('http:');
-	lives_ok { $d->config(cypher_params => v2, net_module => 'Neo4j_Test::MockHTTP') } 'set filter mock';
+	my $config = {cypher_params => v2, net_module => 'Neo4j_Test::MockHTTP'};
+	my $d;
+	lives_ok { $d = Neo4j::Driver->new($config) } 'Neo4j 4: set filter mock';
 	lives_and { ok !! $d->session(database => 'dummy')->{cypher_params_v2} } 'Neo4j 4: filter';
+	lives_ok { $d = Neo4j::Driver->new($config) } 'Neo4j 2: set filter mock';
 	$Neo4j_Test::MockHTTP::res[0]->{json}{neo4j_version} = '2.3.12';
 	$Neo4j_Test::MockHTTP::res[0]->{content} = undef;
 	lives_and { ok !  $d->session(database => 'dummy')->{cypher_params_v2} } 'Neo4j 2: no filter';
+	$d = Neo4j::Driver->new('http:');
+	lives_ok { $d = Neo4j::Driver->new($config) } 'Sim: set filter mock';
 	$Neo4j_Test::MockHTTP::res[0]->{json}{neo4j_version} = '0.0.0';
 	$Neo4j_Test::MockHTTP::res[0]->{content} = undef;
 	lives_and { ok !! $d->session(database => 'dummy')->{cypher_params_v2} } 'Sim (0.0.0): filter';

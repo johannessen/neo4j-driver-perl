@@ -7,6 +7,8 @@ package Neo4j::Driver::ServerInfo;
 # ABSTRACT: Provides Neo4j server address and version
 
 
+use Carp qw(croak);
+our @CARP_NOT = qw(Neo4j::Driver::Session);
 use URI 1.25;
 
 
@@ -40,6 +42,25 @@ sub protocol {
 	my $bolt_version = $self->{protocol};
 	return "Bolt/$bolt_version" if $bolt_version;
 	return defined $bolt_version ? "Bolt" : "HTTP";
+}
+
+
+# discover default database on Neo4j >= 4 using the given driver config
+sub _default_database {
+	my ($self, $driver) = @_;
+	
+	my $database = $self->{default_database};
+	return $database if defined $database;
+	
+	return if $self->{version} =~ m{^Neo4j/[123]\.};
+	eval {
+		my $sys = $driver->session(database => 'system');
+		$database = $sys->run('SHOW DEFAULT DATABASE')->single->get('name');
+	};
+	croak $@ . "Session creation failed because the default "
+	         . "database of $self->{version} at $self->{uri} "
+	         . "could not be determined" unless defined $database;
+	return $self->{default_database} = $database;
 }
 
 
