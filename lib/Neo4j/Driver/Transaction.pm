@@ -463,18 +463,6 @@ which makes using this feature explicit is expected to remain
 available at least until that time. See also
 L<Neo4j::Driver::Net/"USE OF INTERNAL APIS">.
 
-=head2 Disable obtaining query statistics
-
- $transaction = $session->begin_transaction;
- $transaction->{return_stats} = 0;
- $result = $transaction->run('...');
-
-Since version 0.13, this driver requests query statistics from the
-Neo4j server by default. When using HTTP, this behaviour can be
-disabled. Doing so might provide a very minor performance increase.
-
-The ability to disable the statistics may be removed in future.
-
 =head1 SEE ALSO
 
 =over

@@ -15,7 +15,7 @@ alternatives where possible.
 The intention is that most deprecated features will be removed with
 the next major update to L<Neo4j::Driver>. There is no schedule for
 the release of that update S<(version 1.00),> but there is a decent
-chance that it will happen in the year 2021.
+chance that it will happen in the year 2022.
 
 =head1 Neo4j::Driver
 
@@ -443,6 +443,33 @@ If you need this feature, you should consider using the
 private C<_run_multiple()> method instead; see
 L<Neo4j::Driver::Transaction/"Execute multiple statements at once">.
 
+=head2 Disable obtaining query statistics
+
+I<Deprecated in version 0.28 and now an internal API.
+Originally added in 0.02 / 0.13 as an experimental feature.>
+
+ $transaction = $session->begin_transaction;
+ $transaction->{return_stats} = 0;
+ $result = $transaction->run('...');
+
+The experimental C<{return_stats}> feature for requesting query
+statistics from the Neo4j server was first added to the driver
+in S<version 0.02.> Starting with version 0.13, stats are enabled
+by default. When using HTTP, this feature allowed disabling them.
+Doing so might provide a very minor performance increase.
+
+As of version 0.28, allowing stats to be disabled is considered
+to be a failed experiment. The performance impact is too minor
+to matter; on the other hand, the advantages of a common API
+between Bolt and HTTP connections are very clear. The driver
+currently uses C<{return_stats} = 0> internally, so this feature
+will likely not be removed soon, but going forward, it will be
+treated as an internal API. There will be no deprecation warning.
+See L<Neo4j::Driver::Net/"USE OF INTERNAL APIS">.
+
+To disable query stats in future, use a custom networking module
+to modify C<includeStats> in the server request.
+
 =head2 Return results in graph format
 
 I<Deprecated in version 0.28 and to be removed in 1.00.
@@ -526,9 +553,6 @@ and L<C<relationships()>|Neo4j::Types::Path/"relationships"> are
 plural, implying the return of a list. This was inconsistent.
 Additionally, the C<path()> method led to awkward expressions such
 as C<< $path->path >>, which are needlessly difficult to comprehend.
-
-This experimental feature was added in version 0.13 and
-deprecated in 0.18. It will be removed in 1.00.
 
 Use L<C<elements()>|Neo4j::Types::Path/"elements"> instead.
 
