@@ -59,6 +59,7 @@ sub get {
 # specific examples for such cases are currently known, this method now seems
 # superfluous.
 sub get_bool {
+	# uncoverable pod (see Deprecations.pod)
 	my ($self, $field) = @_;
 	warnings::warnif deprecated => __PACKAGE__ . "->get_bool is deprecated";
 	
@@ -84,11 +85,12 @@ sub summary {
 	my ($self) = @_;
 	
 	$self->{_summary} //= Neo4j::Driver::ResultSummary->new;
-	return $self->{_summary}->init;
+	return $self->{_summary}->_init;
 }
 
 
 sub stats {
+	# uncoverable pod (see Deprecations.pod)
 	my ($self) = @_;
 	warnings::warnif deprecated => __PACKAGE__ . "->stats is deprecated; use summary instead";
 	

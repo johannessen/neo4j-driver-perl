@@ -13,6 +13,7 @@ use Neo4j::Driver::SummaryCounters;
 
 
 sub new {
+	# uncoverable pod (private method)
 	my ($class, $result, $notifications, $statement, $server_info) = @_; 
 	my $self = {};
 	if ($result && $result->{stats}) {
@@ -26,7 +27,7 @@ sub new {
 }
 
 
-sub init {
+sub _init {
 	my ($self) = @_; 
 	
 	# The purpose of this method is to fail as early as possible if we don't

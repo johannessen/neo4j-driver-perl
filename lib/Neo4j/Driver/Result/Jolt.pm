@@ -26,6 +26,7 @@ our $gather_results = 1;  # 1: detach from the stream immediately (yields JSON-s
 
 
 sub new {
+	# uncoverable pod (private method)
 	my ($class, $params) = @_;
 	
 	my $self = {

@@ -37,6 +37,7 @@ sub elements {
 
 
 sub path {
+	# uncoverable pod (see Deprecations.pod)
 	my ($self) = @_;
 	
 	warnings::warnif deprecated => __PACKAGE__ . "->path() is deprecated; use elements()";

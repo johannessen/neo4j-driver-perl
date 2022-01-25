@@ -180,6 +180,7 @@ sub _parse_options {
 
 
 sub close {
+	# uncoverable pod (see Deprecations.pod)
 	warnings::warnif deprecated => __PACKAGE__ . "->close() is deprecated";
 }
 

@@ -16,6 +16,7 @@ our $gather_results = 0;  # 1: detach from the stream immediately (yields JSON-s
 
 
 sub new {
+	# uncoverable pod (private method)
 	my ($class, $params) = @_;
 	
 	# Holding a reference to the Bolt connection is important, because

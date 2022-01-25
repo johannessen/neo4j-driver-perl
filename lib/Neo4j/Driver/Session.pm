@@ -17,6 +17,7 @@ use Neo4j::Driver::Transaction;
 
 
 sub new {
+	# uncoverable pod (private method)
 	my ($class, $driver) = @_;
 	
 	return Neo4j::Driver::Session::Bolt->new($driver) if $driver->{uri}->scheme eq 'bolt';
@@ -53,6 +54,7 @@ sub run {
 
 
 sub close {
+	# uncoverable pod (see Deprecations.pod)
 	warnings::warnif deprecated => __PACKAGE__ . "->close() is deprecated";
 }
 

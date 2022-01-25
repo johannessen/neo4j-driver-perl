@@ -17,6 +17,7 @@ our @CARP_NOT = qw(Neo4j::Driver::Net::HTTP);
 
 
 sub new {
+	# uncoverable pod (private method)
 	my ($class, $params) = @_;
 	
 	my $header = $params->{http_header};

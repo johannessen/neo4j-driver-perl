@@ -20,6 +20,7 @@ use Neo4j::Driver::Result;
 
 
 sub new {
+	# uncoverable pod (private method)
 	my ($class, $session) = @_;
 	
 	my $transaction = {

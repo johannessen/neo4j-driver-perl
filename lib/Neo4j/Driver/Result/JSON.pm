@@ -24,6 +24,7 @@ my $ACCEPT_HEADER_POST = "$MEDIA_TYPE;q=0.5";
 
 
 sub new {
+	# uncoverable pod (private method)
 	my ($class, $params) = @_;
 	
 	($TRUE, $FALSE) = @{ $params->{http_agent}->json_coder->decode('[true,false]') } unless $TRUE;
