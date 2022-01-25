@@ -358,7 +358,9 @@ END
 subtest 'graph queries' => sub {
 	plan skip_all => "graph response not implemented for Bolt" if $Neo4j_Test::bolt;
 	plan tests => 10;
-	my $t = $driver->session->begin_transaction;
+	my $s_json = $driver->session;
+	$s_json->{net}->{want_jolt} = 0;
+	my $t = $s_json->begin_transaction;
 	$t->{return_graph} = 1;
 	$q = <<END;
 CREATE ({name:'Alice'})-[k:KNOWS{since:1978}]->({name:'Bob'}) RETURN id(k)
@@ -372,7 +374,6 @@ END
 	lives_and { $w = ''; $w = warning { $r = $t->run($q, id => $r) }; ok $r; } 'match graph';
 	like $w, qr/\breturn_graph\b.*\bdeprecated\b/i, 'return_graph is deprecated'
 		or diag 'got warning(s): ', explain $w;
-	local $TODO = 'graph response not yet implemented for Jolt' if ref $r eq 'Neo4j::Driver::Result::Jolt';
 	lives_ok { $r = $r->single; } 'single';
 	my ($n, $e);
 	lives_ok { $n = $r->{graph}->{nodes}; } 'got nodes';
