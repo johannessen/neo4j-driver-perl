@@ -5,7 +5,7 @@ use lib qw(./lib t/lib);
 
 use Test::More 0.88;
 use Test::Exception;
-use Test::Warnings;
+use Test::Warnings qw(warning);
 
 
 # The Neo4j::Driver package itself mostly deals with configuration
@@ -14,9 +14,9 @@ use Test::Warnings;
 use Neo4j_Test;
 use Neo4j_Test::MockHTTP;
 
-my ($d, $r);
+my ($d, $r, $w);
 
-plan tests => 15 + 1;
+plan tests => 16 + 1;
 
 
 subtest 'config read/write' => sub {
@@ -96,6 +96,25 @@ subtest 'config illegal args' => sub {
 	throws_ok {
 		 $d->config( aaa => 1, bbb => 2 );
 	} qr/\bUnsupported\b.*\baaa\b.*\bbbb\b/i, 'illegal name set multi';
+};
+
+
+subtest 'config/session sequence' => sub {
+	plan tests => 8;
+	my $config = {net_module => 'Neo4j_Test::MockHTTP'};
+	lives_ok { $d = 0; $d = Neo4j::Driver->new($config) } 'new mock driver';
+	lives_ok { $d->basic_auth(user => 'pw') } 'basic_auth before session';
+	lives_ok { $d->config(auth => undef) } 'config before session';
+	lives_ok { $d->session(database => 'dummy') } 'first session';
+	lives_ok { $w = ''; $w = warning {
+		$d->basic_auth(user => 'pw');
+	}} 'basic_auth after session lives';
+	like $w, qr/\bDeprecated sequence\b.*\bsession\b/i, 'basic_auth after session deprecated'
+		or diag 'got warning(s): ', explain $w;
+	throws_ok {
+		$d->config(auth => undef);
+	} qr/\bUnsupported sequence\b.*\bsession\b/i, 'config after session';
+	lives_ok { $d->session(database => 'dummy') } 'second session';
 };
 
 
