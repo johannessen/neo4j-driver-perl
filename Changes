@@ -1,9 +1,10 @@
 Revision history for Neo4j::Driver
 
-0.2901  2022-05-12
+0.2902  2022-05-12
 
  - Deprecate experimental config option jolt (Jolt has been enabled by default
    since version 0.24)
+ - Deprecate experimental methods Result->attached() and Result->detach()
 
 0.28  2022-01-25
 

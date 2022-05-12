@@ -155,17 +155,19 @@ sub has_next {
 
 
 sub attached {
-	# uncoverable pod (experimental feature)
+	# uncoverable pod (see Deprecations.pod)
 	my ($self) = @_;
 	
+	warnings::warnif deprecated => __PACKAGE__ . "->attached is deprecated";
 	return $self->{attached};
 }
 
 
 sub detach {
-	# uncoverable pod (experimental feature)
+	# uncoverable pod (see Deprecations.pod)
 	my ($self) = @_;
 	
+	warnings::warnif deprecated => __PACKAGE__ . "->detach is deprecated";
 	return $self->_fill_buffer;
 }
 
@@ -348,21 +350,6 @@ The C<keys()> method returns the number of columns if called in scalar
 context.
 
 Until version 0.25, it returned an array reference instead.
-
-=head2 Control result stream attachment
-
- $buffered = $result->attached;  # boolean
- $count = $result->detach;  # number of records fetched
-
-If necessary, C<detach()> can force the entire result stream to
-be buffered locally, so that it will be available to C<fetch()>
-indefinitely, irrespective of other statements run on the same
-session. Essentially, the outcome is the same as calling C<list()>,
-except that C<fetch()> can continue to be used because the result
-is not exhausted.
-
-Most of the official drivers do not offer these methods. Their
-usefulness is doubtful. They may be removed in future versions.
 
 =head2 Discarding the result stream
 

@@ -20,7 +20,7 @@ my $s = $driver->session;
 # those features or moved elsewhere once the features are documented
 # and thus officially supported.
 
-use Test::More 0.96 tests => 12 + 1;
+use Test::More 0.96 tests => 11 + 1;
 use Test::Exception;
 use Test::Warnings qw(warnings);
 
@@ -207,18 +207,6 @@ subtest 'multiple statements' => sub {
 		@a = $s->begin_transaction->_run_multiple([''], ['RETURN 23']);
 	} qr/\bempty statements not allowed\b/i, 'include empty statement';
 	# TODO: also check statement order in summary
-};
-
-
-subtest 'result stream interface: attachment' => sub {
-	plan tests => 5;
-	$r = $s->run('RETURN 42');
-	my ($a, $c);
-	lives_ok { $a = $r->attached } 'is attached';
-	lives_ok { $c = $r->detach } 'detach';
-	is $c, ($a ? 1 : 0), 'one row detached';
-	lives_and { ok ! $r->attached } 'not attached';
-	lives_and { ok $r->has_next } 'not exhausted';
 };
 
 

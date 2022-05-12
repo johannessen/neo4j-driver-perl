@@ -327,6 +327,26 @@ structure under their own control.
 
 =head1 Neo4j::Driver::Result
 
+=head2 Control result stream attachment
+
+I<Deprecated in version 0.29 and to be removed in 1.00.
+Originally added in 0.13 as an experimental feature.>
+
+ $buffered = $result->attached;  # boolean
+ $count = $result->detach;  # number of records fetched
+
+C<detach()> forces the entire result stream to be buffered locally,
+so that it is available to C<fetch()> indefinitely, irrespective of
+other statements run on the same session. Essentially, the outcome
+is the same as calling C<list()>, except that C<fetch()> can continue
+to be used because the result is not exhausted.
+
+The utility of these methods could never be demonstrated. Clients are
+more likely to call C<list()> instead. (To begin statement execution,
+calling <has_next()> is a potentially cheaper alternative.) Only one
+of the official Neo4j drivers has ever offered these methods, and even
+that one no longer does so in its latest version.
+
 =head2 stats()
 
 I<Deprecated in version 0.07 and to be removed in 1.00.

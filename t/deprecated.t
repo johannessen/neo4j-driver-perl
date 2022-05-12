@@ -18,7 +18,7 @@ my $s = $driver->session;
 # functionality. If the behaviour of such functionality changes, we
 # want it to be a conscious decision, hence we test for it.
 
-use Test::More 0.96 tests => 16 + 3;
+use Test::More 0.96 tests => 17 + 3;
 use Test::Exception;
 use Test::Warnings qw(warning warnings);
 my $transaction = $driver->session->begin_transaction;
@@ -284,6 +284,23 @@ subtest 'multiple statements via run([])' => sub {
 	like $w, qr/\bmultiple statements\b.*\bdeprecated\b/i, 'wantarray multiple statements deprecated'
 		or diag 'got warning(s): ', explain $w;
 	lives_and { is $a[0]->single->get * $a[1]->single->get, 7 * 11 } 'wantarray values';
+};
+
+
+subtest 'result stream interface: attachment' => sub {
+	plan tests => 8;
+	$r = $s->run('RETURN 42');
+	my ($a, $c);
+	lives_ok { $w = ''; $w = warning { $a = $r->attached } } 'is attached lives';
+	like $w, qr/\battached\b.*\bdeprecated\b/i, 'attached deprecated'
+		or diag 'got warning(s): ', explain $w;
+	lives_ok { $w = ''; $w = warning { $c = $r->detach } } 'detach lives';
+	like $w, qr/\bdetach\b.*\bdeprecated\b/i, 'detach deprecated'
+		or diag 'got warning(s): ', explain $w;
+	is $c, ($a ? 1 : 0), 'one row detached';
+	lives_ok { warning { $a = $r->attached } } 'not attached lives';
+	ok ! $a, 'not attached';
+	lives_and { ok $r->has_next } 'not exhausted';
 };
 
 

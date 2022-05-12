@@ -37,10 +37,6 @@ See also L<#7|https://github.com/johannessen/neo4j-driver-perl/issues/7>.
 =item * L<Neo4j::Driver/"Custom networking modules">: make stable, but
 not until at least part of the C<result_handlers> API has been specified
 
-=item * L<Neo4j::Driver::Result/"Control result stream attachment">:
-deprecate, as it really doesn't seem to be needed (also, this feature used
-to be available in I<one> of the official drivers, but it no longer is now)
-
 =item * L<Neo4j::Driver::Result/"Look ahead in the result stream">:
 make C<peek()> stable once C<fetch()> reliably buffers two records
 
