@@ -168,7 +168,7 @@ sub _parse_options {
 		croak "Unimplemented cypher filter '$options{cypher_filter}'" if $options{cypher_filter} ne 'params';
 		$options{cypher_params} = v2;
 	}
-	warnings::warnif deprecated => "Config option jolt is deprecated: Jolt is now enabled by default" if $options{jolt};
+	warnings::warnif deprecated => "Config option jolt is deprecated: Jolt is now enabled by default" if defined $options{jolt};
 	
 	my @unsupported = ();
 	foreach my $key (keys %options) {
