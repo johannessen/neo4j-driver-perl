@@ -56,11 +56,6 @@ L<in Result|Neo4j::Driver::Result/"Calling in scalar context">, and
 L<in ResultSummary|Neo4j::Driver::ResultSummary/"Calling in scalar context">):
 make stable
 
-=item * Jolt: The C<jolt> config option will be deprecated once
-Jolt implementation is fully complete. Those who use a modern Neo4j
-version and still want to get plain old JSON responses can easily
-write their own net module overriding the C<Accept> header.
-
 =back
 
 =head2 Tests, code quality, documentation

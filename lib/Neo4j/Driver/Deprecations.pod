@@ -47,6 +47,33 @@ consistent with the C<tls> option, then later renamed C<trust_ca>
 in S<version 0.27> to be more consistent with the Neo4j Driver API.
 See L<Neo4j::Driver/"trust_ca">.
 
+=head2 Disable or enforce Jolt
+
+I<Deprecated in version 0.29 and to be removed in 1.00.
+Originally added in 0.21 as an experimental feature.>
+
+ $d->config(jolt => undef);  # prefer Jolt (the default)
+ $d->config(jolt => 0);      # accept only JSON
+ $d->config(jolt => 1);      # accept only Jolt
+ 
+ # Accept only Jolt and request ...
+ $d->config(jolt => 'sparse');  # sparse Jolt mode + RFC 7464
+ $d->config(jolt => 'strict');  # strict Jolt mode + RFC 7464
+ $d->config(jolt => 'ndjson');  # newline delimited mode (non RFC)
+
+Since driver S<version 0.24>, the
+L<Jolt|https://neo4j.com/docs/http-api/4.3/actions/result-format/#_jolt>
+response format (JSON Bolt) is preferred for HTTP connections
+because the older REST-style JSON response format has several
+known issues and is much slower than Jolt.
+
+This option is no longer useful. The driver will pick the fastest
+and most reliable format automatically (S<RFC 7464> sparse Jolt, if
+available). If you do need a specific response format, for example
+because you use driver internals to access the raw server response,
+you can use a custom networking module to manipulate the HTTP
+C<Accept> header according to your needs. See L<Neo4j::Driver::Net>.
+
 =head2 Mutable auth credentials
 
 I<Deprecated in version 0.15 and to be removed in 1.00.

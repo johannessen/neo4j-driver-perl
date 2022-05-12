@@ -168,6 +168,7 @@ sub _parse_options {
 		croak "Unimplemented cypher filter '$options{cypher_filter}'" if $options{cypher_filter} ne 'params';
 		$options{cypher_params} = v2;
 	}
+	warnings::warnif deprecated => "Config option jolt is deprecated: Jolt is now enabled by default" if $options{jolt};
 	
 	my @unsupported = ();
 	foreach my $key (keys %options) {
@@ -257,6 +258,10 @@ Support for HTTP is built into this driver, so it is always
 available. HTTP is still fast enough for many use cases and
 works even in a "Pure Perl" environment. It may also be
 quicker than Bolt to add support for future changes in Neo4j.
+
+HTTP connections will use B<Jolt> (JSON Bolt) when available.
+For older Neo4j servers (before S<version 4.2>), the driver
+will automatically fall back to REST-style JSON.
 
 The driver also supports encrypted communication using HTTPS,
 but doesn't bundle the necessary packages. You will need to
@@ -357,24 +362,6 @@ L<Neo4j::Driver> implements the following experimental features.
 These are subject to unannounced modification or removal in future
 versions. Expect your code to break if you depend upon these
 features.
-
-=head2 Disable or enforce Jolt
-
- $d->config(jolt => undef);  # prefer Jolt (the default)
- $d->config(jolt => 0);      # accept only JSON
- $d->config(jolt => 1);      # accept only Jolt
-
-The L<Jolt|https://neo4j.com/docs/http-api/4.3/actions/result-format/#_jolt>
-response format (JSON Bolt) is preferred for HTTP connections
-because the older JSON response format has several known issues
-and is much slower than Jolt.
-
-The Jolt format can be enforced or disabled as shown above.
-If you use the scalars C<'sparse'>, C<'strict'> or C<'ndjson'>
-instead of just C<1>, the driver will request that particular
-Jolt mode from the server. However, there is generally no
-advantage to enforcing Jolt or to manually selecting one
-of these modes. This feature is for testing purposes only.
 
 =head2 Custom networking modules
 

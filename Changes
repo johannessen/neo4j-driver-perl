@@ -1,5 +1,10 @@
 Revision history for Neo4j::Driver
 
+0.2901  2022-05-12
+
+ - Deprecate experimental config option jolt (Jolt has been enabled by default
+   since version 0.24)
+
 0.28  2022-01-25
 
  - Deprecate experimental return of results in JSON "graph" format

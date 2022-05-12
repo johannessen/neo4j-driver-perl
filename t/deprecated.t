@@ -18,7 +18,7 @@ my $s = $driver->session;
 # functionality. If the behaviour of such functionality changes, we
 # want it to be a conscious decision, hence we test for it.
 
-use Test::More 0.96 tests => 15 + 3;
+use Test::More 0.96 tests => 16 + 3;
 use Test::Exception;
 use Test::Warnings qw(warning warnings);
 my $transaction = $driver->session->begin_transaction;
@@ -144,6 +144,28 @@ subtest 'driver mutability (config/auth)' => sub {
 	lives_ok { $w = warning { $d->basic_auth(@credentials) }; } 'auth mutable lives';
 	(like $w, qr/\bDeprecate.*\bbasic_auth\b.*\bsession\b/i, 'auth mutable deprecated') or diag 'got warning(s): ', explain($w);
 	is $d->{auth}->{principal}, $credentials[0], 'auth mutable';
+};
+
+
+subtest 'jolt config option' => sub {
+	plan tests => 13;
+	lives_ok { $d = 0; $d = Neo4j_Test->driver_maybe(); } 'get driver';
+	lives_ok { $w = ''; $w = warning { $d->config(jolt => 1); }; } 'jolt 1 lives';
+	like $w, qr/\bjolt\b.*\bdeprecated\b/i, 'jolt 1 deprecated'
+		or diag 'got warning(s): ', explain $w;
+	is $d->{jolt}, 1, 'jolt 1';
+	lives_ok { $w = ''; $w = warning { $d->config(jolt => 0); }; } 'jolt 0 lives';
+	like $w, qr/\bjolt\b.*\bdeprecated\b/i, 'jolt 0 deprecated'
+		or diag 'got warning(s): ', explain $w;
+	is $d->{jolt}, 0, 'jolt 0';
+	lives_ok { $w = ''; $w = warning { $d->config(jolt => undef); }; } 'jolt undef lives';
+	is_deeply $w, [], 'jolt undef not deprecated'
+		or diag 'got warning(s): ', explain $w;
+	is $d->{jolt}, undef, 'jolt undef';
+	lives_ok { $w = ''; $w = warning { $d->config(jolt => 'foo'); }; } 'jolt mode lives';
+	like $w, qr/\bjolt\b.*\bdeprecated\b/i, 'jolt mode deprecated'
+		or diag 'got warning(s): ', explain $w;
+	is $d->{jolt}, 'foo', 'jolt mode';
 };
 
 
