@@ -387,6 +387,11 @@ This config option is experimental because the API for custom
 networking modules is still evolving. See L<Neo4j::Driver::Net>
 for details.
 
+It is likely that this option will soon be replaced with a new
+option that allows specifying multiple plugins instead of just a
+single module. Existing networking modules will work as plugins
+with only minimal changes.
+
 =head2 Nested transactions in HTTP sessions
 
  $session = Neo4j::Driver->new({
