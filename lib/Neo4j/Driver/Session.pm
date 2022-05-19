@@ -148,6 +148,11 @@ necessary.
 Only one open transaction per session at a time is supported. To
 work with multiple concurrent transactions, simply use more than
 one session.
+On C<http:> and C<https:> connections, you can
+alternatively enable concurrent transactions within the same
+session through a config option (currently experimental);
+see L<Neo4j::Driver/"Nested transactions in HTTP sessions">
+for details.
 
 =head1 METHODS
 
@@ -191,7 +196,8 @@ these features.
 
 =head2 Concurrent transactions
 
- $session = Neo4j::Driver->new('http://...')->basic_auth(...)->session;
+ %config = ( uri => 'http://...', nested_tx => 1 );
+ $session = Neo4j::Driver->new(\%config)->session;
  $tx1 = $session->begin_transaction;
  $tx2 = $session->begin_transaction;
  $tx3 = $session->run(...);
@@ -200,7 +206,8 @@ Since HTTP is a stateless protocol, the Neo4j HTTP API effectively
 allows multiple concurrently open transactions without special
 client-side considerations. This driver exposes this feature to the
 client and will continue to do so, but the interface is not yet
-finalised.
+finalised. See L<Neo4j::Driver/"Nested transactions in HTTP sessions">
+for further details.
 
 The Bolt protocol does not support concurrent transactions (also
 known as "nested transactions") within the same session.

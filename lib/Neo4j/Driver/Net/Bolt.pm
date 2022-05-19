@@ -36,6 +36,8 @@ sub new {
 	# uncoverable pod
 	my ($class, $driver) = @_;
 	
+	croak "Nested transactions are unsupported for Bolt" if $driver->{nested_tx};
+	
 	my $uri = $driver->{uri};
 	if ($driver->{auth}) {
 		croak "Only Basic Authentication is supported" if $driver->{auth}->{scheme} ne 'basic';

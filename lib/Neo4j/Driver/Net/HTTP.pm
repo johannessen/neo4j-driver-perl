@@ -10,7 +10,7 @@ package Neo4j::Driver::Net::HTTP;
 # This package is not part of the public Neo4j::Driver API.
 
 
-use Carp qw(croak);
+use Carp qw(carp croak);
 our @CARP_NOT = qw(Neo4j::Driver::Transaction Neo4j::Driver::Transaction::HTTP);
 
 use Time::Piece 1.20 qw();
@@ -44,6 +44,7 @@ sub new {
 		server_info => $driver->{server_info},
 		http_agent => $net_module->new($driver),
 		want_jolt => $driver->{jolt},
+		want_nested => $driver->{nested_tx} // 1,
 		active_tx => {},
 	}, $class;
 	
@@ -110,6 +111,12 @@ sub _set_database {
 # Send statements to the Neo4j server and return a list of all results.
 sub _run {
 	my ($self, $tx, @statements) = @_;
+	
+	if ( ! $self->{want_nested} ) {
+		my $is_nested = %{$self->{active_tx}} && ! defined $tx->{commit_endpoint};
+		$is_nested ||= keys %{$self->{active_tx}} > 1;
+		$is_nested and carp "Nested transactions for HTTP are disabled; use the nested_tx config option to enable them (this warning may become fatal in a future Neo4j::Driver version)";
+	}
 	
 	my $json = { statements => \@statements };
 	return $self->_request($tx, 'POST', $json)->_results;
