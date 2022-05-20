@@ -5,7 +5,7 @@ use lib qw(./lib t/lib);
 
 use Test::More 0.88;
 use Test::Exception;
-use Test::Warnings;
+use Test::Warnings qw(warning);
 use Mock::Quick;
 
 
@@ -113,7 +113,7 @@ subtest 'response' => sub {
 	lives_and { is $m->http_header->{status}, '200' } 'status';
 	lives_and { ok $m->http_header->{success} } 'success';
 	lives_and { is $m->http_reason(), 'OK' } 'reason';
-	lives_and { is $m->protocol(), 'HTTP/1.1' } 'protocol';
+	lives_and { my $p; warning { $p = $m->protocol() }; is $p, 'HTTP/1.1' } 'protocol';  # deprecated
 };
 
 
@@ -127,7 +127,7 @@ subtest 'response error' => sub {
 	lives_and { is $m->http_header->{status}, '300' } 'status error';
 	lives_and { ok ! $m->http_header->{success} } 'no success';
 	lives_and { is $m->http_reason(), '' } 'reason no default';
-	lives_and { is $m->protocol(), 'HTTP' } 'protocol no version';
+	lives_and { my $p; warning { $p = $m->protocol() }; is $p, 'HTTP' } 'protocol no version';  # deprecated
 	$m->{response} = HTTP::Response->new;
 	SKIP: { skip "(HTTP::Status too old)", 2 if $HTTP::Headers::VERSION lt '6.12';
 		lives_and { is $m->http_header->{status}, '' } 'status empty';

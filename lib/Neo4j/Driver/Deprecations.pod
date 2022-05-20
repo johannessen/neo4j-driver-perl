@@ -206,6 +206,24 @@ This approach offers even more flexibility (albeit at the cost
 of some degree of convenience).
 See L<Neo4j::Driver::Net/"Custom result handlers"> for details.
 
+=head1 Neo4j::Driver::Net::HTTP::LWP
+
+=head2 protocol
+
+I<Deprecated in version 0.30 and currently planned to be removed
+in 1.00. Originally added in 0.21 as an experimental feature.>
+
+ use parent 'Neo4j::Driver::Net::HTTP::LWP';
+ sub foo {
+   my ($self) = @_;
+   my $http_version = $self->protocol;
+   ...
+ }
+
+Returns the HTTP version of the last response (typically
+C<"HTTP/1.1">). Since version 0.26, this method was no longer
+required for a net module and using it was discouraged.
+
 =head1 Neo4j::Driver::Record
 
 =head2 Cypher type system

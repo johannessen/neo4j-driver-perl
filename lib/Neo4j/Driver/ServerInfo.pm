@@ -37,8 +37,6 @@ sub protocol {
 	# uncoverable pod (see Deprecations.pod)
 	my ($self) = @_;
 	warnings::warnif deprecated => __PACKAGE__ . "->protocol() is deprecated; use protocol_version() instead";
-	my $protocol = $self->{protocol_string};
-	return $protocol if defined $protocol;
 	my $bolt_version = $self->{protocol};
 	return "Bolt/$bolt_version" if $bolt_version;
 	return defined $bolt_version ? "Bolt" : "HTTP";

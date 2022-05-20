@@ -63,6 +63,14 @@ sub new {
 }
 
 
+sub protocol {
+	# uncoverable pod (see Deprecations.pod)
+	my ($self) = @_;
+	warnings::warnif deprecated => __PACKAGE__ . "->protocol() is deprecated";
+	return $self->{response}->protocol // 'HTTP';
+}
+
+
 sub agent { shift->{agent} }
 
 sub uri { shift->{uri_base} }
@@ -70,8 +78,6 @@ sub uri { shift->{uri_base} }
 sub json_coder { shift->{json_coder} }
 
 sub result_handlers { }
-
-sub protocol { shift->{response}->protocol // 'HTTP' }
 
 sub http_reason { shift->{response}->message // '' }
 
@@ -190,7 +196,7 @@ has been fully received. Therefore none of the other methods will
 ever block.
 
 In addition to the methods listed above,
-L<Neo4j::Driver::Net::HTTP::LWP> implements the following methods.
+L<Neo4j::Driver::Net::HTTP::LWP> implements the following method.
 
 =head2 agent
 
@@ -203,12 +209,6 @@ L<Neo4j::Driver::Net::HTTP::LWP> implements the following methods.
 
 Returns the L<LWP::UserAgent> instance in use.
 Meant to facilitate subclassing.
-
-=head2 protocol
-
-Returns the HTTP version of the last response (typically
-C<"HTTP/1.1">). Since version 0.26, this method is no longer
-required for a net module and using it is now discouraged.
 
 =head1 BUGS
 
