@@ -71,7 +71,15 @@ sub protocol {
 }
 
 
-sub agent { shift->{agent} }
+sub agent {
+	# uncoverable pod (see Deprecations.pod)
+	my ($self) = @_;
+	warnings::warnif deprecated => __PACKAGE__ . "->agent() is deprecated; call ua() instead";
+	return $self->{agent};
+}
+
+
+sub ua { shift->{agent} }
 
 sub uri { shift->{uri_base} }
 
@@ -150,7 +158,7 @@ You can also extend this module through inheritance:
  use parent 'Neo4j::Driver::Net::HTTP::LWP';
  sub new {
    my $self = shift->SUPER::new(@_);
-   $self->agent->proxy('http', 'http://proxy.example.net:8081/');
+   $self->ua->proxy('http', 'http://proxy.example.net:8081/');
    return $self;
  }
 
@@ -198,12 +206,12 @@ ever block.
 In addition to the methods listed above,
 L<Neo4j::Driver::Net::HTTP::LWP> implements the following method.
 
-=head2 agent
+=head2 ua
 
  use parent 'Neo4j::Driver::Net::HTTP::LWP';
  sub foo {
    my $self = shift;
-   $ua = $self->agent;
+   $ua = $self->ua;
    ...
  }
 

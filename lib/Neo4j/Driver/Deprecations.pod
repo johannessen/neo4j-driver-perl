@@ -208,6 +208,26 @@ See L<Neo4j::Driver::Net/"Custom result handlers"> for details.
 
 =head1 Neo4j::Driver::Net::HTTP::LWP
 
+=head2 agent
+
+I<Deprecated in version 0.30 and currently planned to be removed
+in 1.00. Originally added in 0.21 as an experimental feature.>
+
+ use parent 'Neo4j::Driver::Net::HTTP::LWP';
+ sub foo {
+   my ($self) = @_;
+   my $lwp_ua = $self->agent;
+   ...
+ }
+
+Returns the L<LWP::UserAgent> instance in use.
+Meant to facilitate subclassing.
+In version 0.30, this method was renamed
+L<C<ua()>|Neo4j::Driver::Net::HTTP::LWP/"ua">
+because L<LWP> itself uses C<agent> for the User-Agent
+identification string and this was deemed a possible
+source of confusion.
+
 =head2 protocol
 
 I<Deprecated in version 0.30 and currently planned to be removed
