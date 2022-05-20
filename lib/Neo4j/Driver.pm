@@ -33,7 +33,7 @@ my %OPTIONS = (
 	cypher_types => 'cypher_types',
 	encrypted => 'tls',
 	jolt => 'jolt',
-	nested_tx => 'nested_tx',
+	concurrent_tx => 'concurrent_tx',
 	net_module => 'net_module',
 	timeout => 'http_timeout',
 	tls => 'tls',
@@ -392,37 +392,39 @@ option that allows specifying multiple plugins instead of just a
 single module. Existing networking modules will work as plugins
 with only minimal changes.
 
-=head2 Nested transactions in HTTP sessions
+=head2 Concurrent transactions in HTTP sessions
 
  $session = Neo4j::Driver->new({
-   uri       => 'http://...',
-   nested_tx => 1,
+   concurrent_tx => 1,
+   uri => 'http://...',
  })->session;
  $tx1 = $session->begin_transaction;
  $tx2 = $session->begin_transaction;
  $tx3 = $session->run(...);
 
 The Neo4j Driver API officially doesn't allow multiple concurrent
-transactions (or "nested transactions") to be open within the same
-session. The standard way to work with multiple concurrent
-transactions is to simply use multiple sessions. However, since
-HTTP is a stateless protocol, nested transactions are still possible
-on connections which use the C<http:> or C<https:> protocol scheme.
+transactions (sometimes called "nested transactions") to be open
+within the same session. The standard way to work with multiple
+concurrent transactions is to simply use multiple sessions. However,
+since HTTP is a stateless protocol, concurrent transactions are
+still possible on connections which use the C<http:> or C<https:>
+protocol scheme.
 
-This driver allows nested transactions on HTTP when the
-C<nested_tx> config option is enabled. Trying to enable this
+This driver allows concurrent transactions on HTTP when the
+C<concurrent_tx> config option is enabled. Trying to enable this
 option on a Bolt connection is a fatal error.
 
-The default for HTTP connections is currently to enable nested
+The default for HTTP connections is currently to enable concurrent
 transactions, but this will likely change in a future version.
 The driver will currently give warnings on a best-effort basis
-when using nested transactions on HTTP I<without> enabling this
+when using concurrent transactions on HTTP I<without> enabling this
 option, but these warnings may become fatal errors in future.
 
 When using HTTP, you should consider making a conscious choice
-regarding whether or not to use nested transactions, and configuring
-your driver accordingly. This can help to avoid surprising behaviour
-in case you switch to Bolt at a later point in time.
+regarding whether or not to use concurrent transactions, and
+configuring your driver accordingly. This can help to avoid
+surprising behaviour in case you switch to Bolt at a later point
+in time.
 
 This config option is experimental because its name and semantics
 are still evolving.

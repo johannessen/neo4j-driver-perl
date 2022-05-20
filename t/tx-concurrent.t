@@ -8,10 +8,11 @@ use Test::Exception;
 use Test::Warnings qw(warning);
 
 
-# Nested transactions (concurrent transactions within the same session) are not
-# allowed in the Neo4j Driver API, but are actually supported just fine in the
+# Concurrent transactions within the same session (in the context of Bolt
+# called "nested transactions") are not allowed in the Neo4j Driver API,
+# but are actually supported just fine when implemented via the
 # Transactional HTTP API, which this driver can use for network communication.
-# Therefore, this driver supports nested transactions for HTTP sessions.
+# Therefore, this driver supports concurrent transactions for HTTP sessions.
 # As of 0.30, this is an experimental feature (but expected to be mainlined).
 
 use Neo4j_Test;
@@ -69,13 +70,13 @@ subtest 'config for bolt: uri' => sub {
 	plan tests => 6;
 	# config 1
 	$d = Neo4j::Driver->new({ net_module => 'Local::Bolt' });
-	lives_ok { $d->config( uri => 'bolt:', nested_tx => 1 ); } 'config on lives';
+	lives_ok { $d->config( uri => 'bolt:', concurrent_tx => 1 ); } 'config on lives';
 	throws_ok {
 		$d->session(database => 'dummy');
-	} qr/\bNested transactions\b.*\bunsupported\b.*\bBolt\b/, 'bolt session on dies';
+	} qr/\bConcurrent transactions\b.*\bunsupported\b.*\bBolt\b/i, 'bolt session on dies';
 	# config 0
 	$d = Neo4j::Driver->new({ net_module => 'Local::Bolt' });
-	lives_ok { $d->config( uri => 'bolt:', nested_tx => 0 ); } 'config off lives';
+	lives_ok { $d->config( uri => 'bolt:', concurrent_tx => 0 ); } 'config off lives';
 	lives_ok { $d->session(database => 'dummy'); } 'bolt session off lives';
 	# config undef
 	$d = Neo4j::Driver->new({ net_module => 'Local::Bolt' });
@@ -88,19 +89,19 @@ subtest 'config for http: uri' => sub {
 	plan tests => 9;
 	# config 1
 	$d = Neo4j::Driver->new({ net_module => 'Neo4j_Test::MockHTTP' });
-	lives_ok { $d->config( uri => 'http:', nested_tx => 1 ); } 'config on lives';
+	lives_ok { $d->config( uri => 'http:', concurrent_tx => 1 ); } 'config on lives';
 	lives_ok { $s = 0; $s = $d->session(database => 'dummy'); } 'session on lives';
-	ok $s->{net}{want_nested}, 'nested tx on';
+	ok $s->{net}{want_concurrent}, 'concurrent tx on';
 	# config 0
 	$d = Neo4j::Driver->new({ net_module => 'Neo4j_Test::MockHTTP' });
-	lives_ok { $d->config( uri => 'http:', nested_tx => 0 ); } 'config off lives';
+	lives_ok { $d->config( uri => 'http:', concurrent_tx => 0 ); } 'config off lives';
 	lives_ok { $s = 0; $s = $d->session(database => 'dummy'); } 'session off lives';
-	ok ! $s->{net}{want_nested}, 'nested tx off';
+	ok ! $s->{net}{want_concurrent}, 'concurrent tx off';
 	# config undef
 	$d = Neo4j::Driver->new({ net_module => 'Neo4j_Test::MockHTTP' });
-	lives_ok { $d->config( uri => 'http:', nested_tx => undef ); } 'config undef lives';
+	lives_ok { $d->config( uri => 'http:', concurrent_tx => undef ); } 'config undef lives';
 	lives_ok { $s = 0; $s = $d->session(database => 'dummy'); } 'session undef lives';
-	ok $s->{net}{want_nested}, 'nested tx http default on';
+	ok $s->{net}{want_concurrent}, 'concurrent tx http default on';
 };
 
 
@@ -108,19 +109,19 @@ subtest 'config for https: uri' => sub {
 	plan tests => 9;
 	# config 1
 	$d = Neo4j::Driver->new({ net_module => 'Neo4j_Test::MockHTTP' });
-	lives_ok { $d->config( uri => 'https:', nested_tx => 1 ); } 'config on lives';
+	lives_ok { $d->config( uri => 'https:', concurrent_tx => 1 ); } 'config on lives';
 	lives_ok { $s = 0; $s = $d->session(database => 'dummy'); } 'session on lives';
-	ok $s->{net}{want_nested}, 'nested tx on';
+	ok $s->{net}{want_concurrent}, 'concurrent tx on';
 	# config 0
 	$d = Neo4j::Driver->new({ net_module => 'Neo4j_Test::MockHTTP' });
-	lives_ok { $d->config( uri => 'https:', nested_tx => 0 ); } 'config off lives';
+	lives_ok { $d->config( uri => 'https:', concurrent_tx => 0 ); } 'config off lives';
 	lives_ok { $s = 0; $s = $d->session(database => 'dummy'); } 'session off lives';
-	ok ! $s->{net}{want_nested}, 'nested tx off';
+	ok ! $s->{net}{want_concurrent}, 'concurrent tx off';
 	# config undef
 	$d = Neo4j::Driver->new({ net_module => 'Neo4j_Test::MockHTTP' });
-	lives_ok { $d->config( uri => 'https:', nested_tx => undef ); } 'config undef lives';
+	lives_ok { $d->config( uri => 'https:', concurrent_tx => undef ); } 'config undef lives';
 	lives_ok { $s = 0; $s = $d->session(database => 'dummy'); } 'session undef lives';
-	ok $s->{net}{want_nested}, 'nested tx https default on';
+	ok $s->{net}{want_concurrent}, 'concurrent tx https default on';
 };
 
 
@@ -131,7 +132,7 @@ subtest 'bolt explicit' => sub {
 	lives_and { ok $t = $s->begin_transaction } 'begin 1';
 	throws_ok {
 		$s->begin_transaction;
-	}  qr/\bNested transactions\b.*\bunsupported\b.*\bBolt\b/, 'nested explicit dies';
+	}  qr/\bConcurrent transactions\b.*\bunsupported\b.*\bBolt\b/i, 'concurrent explicit dies';
 	lives_ok { $t->commit } 'commit 1';
 	lives_and { ok ! $t->is_open } 'closed 1';
 };
@@ -144,16 +145,16 @@ subtest 'bolt autocommit' => sub {
 	lives_and { ok $t = $s->begin_transaction } 'begin 1';
 	throws_ok {
 		$s->run('');
-	}  qr/\bNested transactions\b.*\bunsupported\b.*\bBolt\b/, 'nested auto dies';
+	}  qr/\bConcurrent transactions\b.*\bunsupported\b.*\bBolt\b/i, 'concurrent auto dies';
 	lives_ok { $t->commit } 'commit 1';
 	lives_and { ok ! $t->is_open } 'closed 1';
 };
 
 
-subtest 'http explicit, nested enabled' => sub {
+subtest 'http explicit, concurrent enabled' => sub {
 	plan tests => 8;
 	$d = Neo4j::Driver->new({ net_module => 'Neo4j_Test::MockHTTP' });
-	lives_ok { $d->config( uri => 'http:', nested_tx => 1 ); } 'config on lives';
+	lives_ok { $d->config( uri => 'http:', concurrent_tx => 1 ); } 'config on lives';
 	lives_ok { $s = 0; $s = $d->session(database => 'dummy'); } 'session';
 	my ($t1, $t2);
 	lives_and { ok $t1 = $s->begin_transaction } 'begin 1';
@@ -165,10 +166,10 @@ subtest 'http explicit, nested enabled' => sub {
 };
 
 
-subtest 'http autocommit, nested enabled' => sub {
+subtest 'http autocommit, concurrent enabled' => sub {
 	plan tests => 6;
 	$d = Neo4j::Driver->new({ net_module => 'Neo4j_Test::MockHTTP' });
-	lives_ok { $d->config( uri => 'http:', nested_tx => 1 ); } 'config on lives';
+	lives_ok { $d->config( uri => 'http:', concurrent_tx => 1 ); } 'config on lives';
 	lives_ok { $s = 0; $s = $d->session(database => 'dummy'); } 'session';
 	lives_and { ok $t = $s->begin_transaction } 'begin expl';
 	lives_and { isa_ok $r = $t->run('bar'), Neo4j::Driver::Result:: } 'run expl';
@@ -177,35 +178,35 @@ subtest 'http autocommit, nested enabled' => sub {
 };
 
 
-subtest 'http explicit, nested disabled' => sub {
+subtest 'http explicit, concurrent disabled' => sub {
 	plan tests => 11;
 	$d = Neo4j::Driver->new({ net_module => 'Neo4j_Test::MockHTTP' });
-	lives_ok { $d->config( uri => 'http:', nested_tx => 0 ); } 'config on lives';
+	lives_ok { $d->config( uri => 'http:', concurrent_tx => 0 ); } 'config on lives';
 	lives_ok { $s = 0; $s = $d->session(database => 'dummy'); } 'session';
 	my ($t1, $t2);
 	lives_and { ok $t1 = $s->begin_transaction } 'begin 1';
 	lives_and { isa_ok $r = $t1->run('foo'), Neo4j::Driver::Result:: } 'run 1';
 	lives_and { ok $t2 = $s->begin_transaction } 'begin 2';
 	lives_ok { $w = ''; $w = warning { $r = $t2->run('bar') } } 'run 2 lives';
-	like $w, qr/\bNested transactions\b/i, 'run 2 warns'
+	like $w, qr/\bConcurrent transactions\b/i, 'run 2 warns'
 		or diag 'got warning(s): ', explain $w;
 	isa_ok $r, Neo4j::Driver::Result::, 'run 2 result';
 	lives_ok { $w = ''; $w = warning { $t2->commit } } 'commit 2';
-	like $w, qr/\bNested transactions\b/i, 'commit 2 warns'
+	like $w, qr/\bConcurrent transactions\b/i, 'commit 2 warns'
 		or diag 'got warning(s): ', explain $w;
 	lives_ok { $t1->commit } 'commit 1';
 };
 
 
-subtest 'http autocommit, nested disabled' => sub {
+subtest 'http autocommit, concurrent disabled' => sub {
 	plan tests => 8;
 	$d = Neo4j::Driver->new({ net_module => 'Neo4j_Test::MockHTTP' });
-	lives_ok { $d->config( uri => 'http:', nested_tx => 0 ); } 'config on lives';
+	lives_ok { $d->config( uri => 'http:', concurrent_tx => 0 ); } 'config on lives';
 	lives_ok { $s = 0; $s = $d->session(database => 'dummy'); } 'session';
 	lives_and { ok $t = $s->begin_transaction } 'begin expl';
 	lives_and { isa_ok $r = $t->run('bar'), Neo4j::Driver::Result:: } 'run expl';
 	lives_ok { $w = ''; $w = warning { $r = $s->run('') } } 'run auto lives';
-	like $w, qr/\bNested transactions\b/i, 'run auto warns'
+	like $w, qr/\bConcurrent transactions\b/i, 'run auto warns'
 		or diag 'got warning(s): ', explain $w;
 	isa_ok $r, Neo4j::Driver::Result::, 'run auto result';
 	lives_ok { $t->commit } 'commit expl';
@@ -247,7 +248,7 @@ subtest 'live: explicit (Bolt)' => sub {
 	throws_ok {
 		$t2 = $session->begin_transaction;
 		$t2->run("CREATE (nested2:Test)");
-	} qr/\bnested\b/i, 'explicit nested transactions: 2nd';
+	} qr/\bconcurrent\b/i, 'explicit nested transactions: 2nd';
 	lives_ok { $t1->rollback; } 'explicit nested transactions: close 1st';
 	dies_ok { $t2->rollback; } 'explicit nested transactions: close 2nd';
 };

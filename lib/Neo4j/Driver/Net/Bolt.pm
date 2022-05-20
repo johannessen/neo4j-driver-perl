@@ -36,7 +36,7 @@ sub new {
 	# uncoverable pod
 	my ($class, $driver) = @_;
 	
-	croak "Nested transactions are unsupported for Bolt" if $driver->{nested_tx};
+	croak "Concurrent transactions are unsupported in Bolt; use multiple sessions" if $driver->{concurrent_tx};
 	
 	my $uri = $driver->{uri};
 	if ($driver->{auth}) {

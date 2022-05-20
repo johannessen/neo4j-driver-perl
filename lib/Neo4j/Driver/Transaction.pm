@@ -111,7 +111,7 @@ use Try::Tiny;
 sub _begin {
 	my ($self) = @_;
 	
-	croak 'Nested transactions unsupported in Bolt' if $self->{net}->{active_tx};
+	croak "Concurrent transactions are unsupported in Bolt (there is already an open transaction in this session)" if $self->{net}->{active_tx};
 	
 	$self->{bolt_txn} = $self->{net}->_new_tx;
 	$self->{net}->{active_tx} = 1;
@@ -123,7 +123,7 @@ sub _begin {
 sub _run_autocommit {
 	my ($self, $query, @parameters) = @_;
 	
-	croak 'Nested transactions unsupported in Bolt' if $self->{net}->{active_tx};
+	croak "Concurrent transactions are unsupported in Bolt (there is already an open transaction in this session)" if $self->{net}->{active_tx};
 	
 	$self->{net}->{active_tx} = 1;  # run() requires an active tx
 	my $results;
