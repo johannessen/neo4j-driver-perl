@@ -37,7 +37,7 @@ which L<Neo4j::Bolt> depends on internally. Use HTTP instead.
 =item * Equivalent documentation for the official Neo4j drivers:
 L<Point (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/types/Point.html>
 
-=item * L<"Spatial values" in Neo4j Cypher Manual|https://neo4j.com/docs/cypher-manual/current/syntax/temporal/>
+=item * L<"Spatial values" in Neo4j Cypher Manual|https://neo4j.com/docs/cypher-manual/current/syntax/spatial/>
 
 =back
 

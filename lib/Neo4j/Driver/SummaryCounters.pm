@@ -73,6 +73,9 @@ __END__
 
 Contains counters for various operations that a statement triggered.
 
+To obtain summary counters, call
+L<Neo4j::Driver::ResultSummary/"counters">.
+
 =head1 ATTRIBUTES
 
 L<Neo4j::Driver::SummaryCounters> implements the following read-only

@@ -80,6 +80,8 @@ __END__
 Provides some basic information of the server where the result
 is obtained from.
 
+To obtain server info, call L<Neo4j::Driver::Session/"server">.
+
 =head1 METHODS
 
 L<Neo4j::Driver::ServerInfo> implements the following methods.

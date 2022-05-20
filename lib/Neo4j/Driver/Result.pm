@@ -250,6 +250,8 @@ an explicit transaction) until the transaction is closed, whichever
 comes first. When a result stream has become invalid I<before> it
 was detached, calling any methods in this class may fail.
 
+To obtain a query result, call L<Neo4j::Driver::Transaction/"run">.
+
 Until version 0.18, this module was named C<StatementResult>.
 
 =head1 METHODS
@@ -365,6 +367,9 @@ As a side effect, discarding the result yields a summary of it.
 
  $result_summary = $result->consume;
 
+Using a result after this method has been called is discouraged.
+This may become a fatal error in future versions.
+
 All of the official drivers offer this method, but it doesn't appear
 to be necessary here, since L<Neo4j::Bolt::ResultStream> reliably
 calls C<neo4j_close_results()> in its C<DESTROY()> method. It may
@@ -391,8 +396,8 @@ L<Neo4j::Driver::B<ResultSummary>>
 =item * Equivalent documentation for the official Neo4j drivers:
 L<Result (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/Result.html>,
 L<Result (Python)|https://neo4j.com/docs/api/python-driver/current/api.html#result>,
-L<Result (JavaScript)|https://neo4j.com/docs/api/javascript-driver/4.3/class/lib6/result.js~Result.html>,
-L<IResult (.NET)|https://neo4j.com/docs/api/dotnet-driver/4.0/html/f1ac31ec-c6dd-798b-b5d6-3ca0794d7502.htm>
+L<Result (JavaScript)|https://neo4j.com/docs/api/javascript-driver/4.4/class/lib6/result.js~Result.html>,
+L<IResult (.NET)|https://neo4j.com/docs/api/dotnet-driver/4.4/html/f1ac31ec-c6dd-798b-b5d6-3ca0794d7502.htm>
 
 =back
 

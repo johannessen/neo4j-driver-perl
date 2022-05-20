@@ -49,7 +49,7 @@ See L<Neo4j::Driver/"trust_ca">.
 
 =head2 Disable or enforce Jolt
 
-I<Deprecated in version 0.29 and to be removed in 1.00.
+I<Deprecated in version 0.30 and to be removed in 1.00.
 Originally added in 0.21 as an experimental feature.>
 
  $d->config(jolt => undef);  # prefer Jolt (the default)
@@ -367,7 +367,7 @@ structure under their own control.
 
 =head2 Control result stream attachment
 
-I<Deprecated in version 0.29 and to be removed in 1.00.
+I<Deprecated in version 0.30 and to be removed in 1.00.
 Originally added in 0.13 as an experimental feature.>
 
  $buffered = $result->attached;  # boolean
@@ -381,7 +381,7 @@ to be used because the result is not exhausted.
 
 The utility of these methods could never be demonstrated. Clients are
 more likely to call C<list()> instead. (To begin statement execution,
-calling <has_next()> is a potentially cheaper alternative.) Only one
+calling C<has_next()> is a potentially cheaper alternative.) Only one
 of the official Neo4j drivers has ever offered these methods, and even
 that one no longer does so in its latest version.
 

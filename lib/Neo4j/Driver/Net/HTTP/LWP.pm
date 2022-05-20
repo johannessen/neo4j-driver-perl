@@ -51,7 +51,7 @@ sub new {
 		croak "HTTPS does not support unencrypted communication; use HTTP" if $unencrypted;
 		$agent->ssl_opts( verify_hostname => 1 );
 		if (defined( my $trust_ca = $driver->config('trust_ca') )) {
-			croak "tls_ca file '$trust_ca' can't be used: $!" if ! open(my $fh, '<', $trust_ca);
+			croak "trust_ca file '$trust_ca' can't be used: $!" if ! open(my $fh, '<', $trust_ca);
 			$agent->ssl_opts( SSL_ca_file => $trust_ca );
 		}
 	}
