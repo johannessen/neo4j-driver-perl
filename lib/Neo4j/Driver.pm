@@ -408,6 +408,21 @@ option that allows specifying multiple plugins instead of just a
 single module. Existing networking modules will work as plugins
 with only minimal changes.
 
+=head2 Plug-in modules
+
+ $driver->plugin('Local::MyPlugin');
+
+The driver offers a simple plug-in interface. Plug-ins are modules
+providing handlers for events that may be triggered by the driver.
+Plug-ins are loaded by calling the C<plugin()> method with the
+module name as parameter. Your code must C<use> or C<require> the
+module it specifies here.
+
+B<Note: The plug-in API is currently unimplemented.>
+
+Details on the implementation of plug-ins including descriptions of
+individual events are provided in L<Neo4j::Driver::Plugins>.
+
 =head2 Concurrent transactions in HTTP sessions
 
  $session = Neo4j::Driver->new({
