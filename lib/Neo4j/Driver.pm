@@ -10,6 +10,7 @@ package Neo4j::Driver;
 use Carp qw(croak);
 
 use URI 1.25;
+use Neo4j::Driver::PluginManager;
 use Neo4j::Driver::Session;
 
 use Neo4j::Driver::Type::Node;
@@ -58,6 +59,7 @@ sub new {
 	my ($class, $config, @extra) = @_;
 	
 	my $self = bless { %DEFAULTS }, $class;
+	$self->{plugins} = Neo4j::Driver::PluginManager->new;
 	
 	croak __PACKAGE__ . "->new() with multiple arguments unsupported" if @extra;
 	$config = { uri => $config } if ref $config ne 'HASH';
@@ -178,6 +180,15 @@ sub _parse_options {
 	croak "Unsupported $context option: " . join ", ", sort @unsupported if @unsupported;
 	
 	return %options;
+}
+
+
+sub plugin {
+	# uncoverable pod (experimental feature)
+	my ($self, $package) = @_;
+	
+	$self->{plugins}->_register_plugin($package);
+	return $self;
 }
 
 
@@ -418,7 +429,7 @@ Plug-ins are loaded by calling the C<plugin()> method with the
 module name as parameter. Your code must C<use> or C<require> the
 module it specifies here.
 
-B<Note: The plug-in API is currently unimplemented.>
+B<Warning: The entire plug-in API is currently highly experimental.>
 
 Details on the implementation of plug-ins including descriptions of
 individual events are provided in L<Neo4j::Driver::Plugins>.

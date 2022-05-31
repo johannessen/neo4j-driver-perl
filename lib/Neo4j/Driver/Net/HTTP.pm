@@ -36,13 +36,17 @@ sub new {
 	# uncoverable pod
 	my ($class, $driver) = @_;
 	
-	my $net_module = $driver->{net_module} || 'Neo4j::Driver::Net::HTTP::LWP';
+	$driver->{plugins}->{default_handlers}->{http_adapter_factory} //= sub {
+		my $net_module = $driver->{net_module} || 'Neo4j::Driver::Net::HTTP::LWP';
+		return $net_module->new($driver);
+	};
+	my $http_adapter = $driver->{plugins}->trigger_event('http_adapter_factory', $driver);
 	
 	my $self = bless {
 		die_on_error => $driver->{die_on_error},
 		cypher_types => $driver->{cypher_types},
 		server_info => $driver->{server_info},
-		http_agent => $net_module->new($driver),
+		http_agent => $http_adapter,
 		want_jolt => $driver->{jolt},
 		want_concurrent => $driver->{concurrent_tx} // 1,
 		active_tx => {},
