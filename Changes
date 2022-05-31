@@ -1,5 +1,9 @@
 Revision history for Neo4j::Driver
 
+0.3051  2022-05-31
+
+ - The cypher_params config option is no longer experimental
+
 0.30  2022-05-20
 
  - Add experimental config option concurrent_tx to explicitly enable support

@@ -445,26 +445,6 @@ in time.
 This config option is experimental because its name and semantics
 are still evolving.
 
-=head2 Parameter syntax conversion
-
- $driver->config( cypher_params => v2 );
- $bar = $driver->session->run('RETURN {foo}', foo => 'bar');
-
-When this option is set, the driver automatically uses a regular
-expression to convert the old Cypher parameter syntax C<{param}>
-supported by Neo4j S<version 2> to the modern syntax C<$param>
-supported by Neo4j S<version 3> and newer.
-
-The only allowed value for this config option is the unquoted
-literal L<v-string|perldata/"Version Strings"> C<v2>.
-
-Cypher's modern C<$> parameter syntax unfortunately may cause string
-interpolations in Perl, which decreases database performance because
-Neo4j can re-use query plans less often. It is also a potential
-security risk (Cypher injection attacks). Using this config option
-enables your code to use the C<{}> parameter syntax instead. This
-option is currently experimental because the API is still evolving.
-
 =head1 CONFIGURATION OPTIONS
 
 L<Neo4j::Driver> implements the following configuration options.
@@ -492,6 +472,23 @@ specified as userinfo in the URI.
 
 The C<auth> config option defaults to the value C<undef>,
 which disables authentication.
+
+=head2 cypher_params
+
+ $driver->config( cypher_params => v2 );
+ $foo = $driver->session->run('RETURN {bar}', bar => 'foo');
+
+Enables conversion of the old Cypher parameter syntax C<{param}>
+supported by Neo4j S<version 2> to the modern syntax C<$param>
+supported by Neo4j S<version 3> and newer. The only allowed value
+for this config option is the unquoted literal
+L<v-string|perldata/"Version Strings"> C<v2>.
+
+Cypher's modern C<$> parameter syntax unfortunately may cause string
+interpolations in Perl, which decreases database performance because
+Neo4j can re-use query plans less often. It is also a potential
+security risk (Cypher injection attacks). Using this config option
+enables your code to use the safer C<{}> parameter syntax instead.
 
 =head2 encrypted
 
