@@ -21,6 +21,7 @@ my $s = $driver->session;
 use Test::More 0.96 tests => 17 + 3;
 use Test::Exception;
 use Test::Warnings qw(warning warnings);
+use Neo4j_Test::MockHTTP qw(response_for);
 my $transaction = $driver->session->begin_transaction;
 $transaction->{return_stats} = 0;  # optimise sim
 
@@ -70,10 +71,6 @@ subtest 'path()' => sub {
 };
 
 
-{
-package Neo4j_Test::Deprecated::DeletionIndicator;
-use parent 'Neo4j_Test::MockHTTP';
-sub response_for { &Neo4j_Test::MockHTTP::response_for }
 response_for 'deleted' => { json => <<END };
 {"errors":[],"results":[{"columns":["n"],"data":[
 {"meta":[{"deleted":true,"id":1,"type":"node"}],"rest":[{"metadata":{"id":1,"labels":["Test"]},"self":"/db/data/node/1"}],"row":[{}]},
@@ -81,11 +78,10 @@ response_for 'deleted' => { json => <<END };
 {"rest":[{"metadata":{"id":3,"labels":["Test"]},"self":"/db/data/node/3"}],"row":[{}]}
 ]}]}
 END
-}
 subtest 'deleted()' => sub {
 	plan tests => 8;
 	my $d = Neo4j::Driver->new('http:');
-	$d->config(net_module => 'Neo4j_Test::Deprecated::DeletionIndicator');
+	$d->plugin('Neo4j_Test::MockHTTP');
 	lives_and { $r = 0; ok $r = $d->session(database => 'dummy')->run('deleted') } 'run';
 	lives_and { $w = warning { ok $r->fetch->get->deleted }; } 'deleted true';
 	like $w, qr/\bdeleted\b.* deprecated\b/i, 'deleted true deprecated'
@@ -216,7 +212,7 @@ subtest 'ServerInfo protocol()' => sub {
 	lives_and { ok $si = Neo4j::Driver::ServerInfo->new({%uri, protocol => '2.2'}) } 'new version';
 	lives_and { is $si->protocol(), 'Bolt/2.2' } 'protocol version';
 	my $d = Neo4j::Driver->new('http:');
-	$d->config(net_module => 'Neo4j_Test::MockHTTP::NoProtocol');
+	$d->plugin('Neo4j_Test::MockHTTP::NoProtocol');
 	lives_and { $si = 0; ok $si = $d->session(database => 'dummy')->server } 'no protocol()';
 	lives_and { is $si->protocol(), 'HTTP' } 'no protocol() string';
 };
