@@ -1,6 +1,6 @@
 Revision history for Neo4j::Driver
 
-0.3052  2022-06-03
+0.3053  2022-06-03
 
  - Replace experimental net_module config option by plug-in interface
 

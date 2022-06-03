@@ -1,11 +1,19 @@
-# PODNAME: Neo4j::Driver::Plugins
-# ABSTRACT: Specification of the driver's plug-in interface
+use 5.010;
+use strict;
+use warnings;
+
+package Neo4j::Driver::Plugin;
+# ABSTRACT: Plug-in interface for Neo4j::Driver
+
+
+1;
 
 =encoding utf8
 
 =head1 SYNPOSIS
 
  package Local::MyNeo4jPlugin;
+ use parent 'Neo4j::Driver::Plugin';
  use feature 'signatures';
  
  sub new ($class) { bless {}, $class }
@@ -68,6 +76,9 @@ have side effects. In some cases, an event can only be handled a
 single time, with any additional handlers being ignored. In some
 cases, the return value of an event handler may be significant.
 All of these API details are still evolving.
+
+Plug-ins must inherit from C<Neo4j::Driver::Plugin>. They must
+also implement the methods described in L</"METHODS"> below.
 
 I'm grateful for any feedback you I<(yes, you!)> might have on
 this driver's plug-in API. Please open a GitHub issue or get in
