@@ -185,8 +185,9 @@ sub _parse_options {
 
 sub plugin {
 	# uncoverable pod (experimental feature)
-	my ($self, $package) = @_;
+	my ($self, $package, @extra) = @_;
 	
+	croak "plugin() with more than one argument is unsupported" if @extra;
 	$self->{plugins}->_register_plugin($package);
 	return $self;
 }
@@ -421,13 +422,15 @@ with only minimal changes.
 
 =head2 Plug-in modules
 
- $driver->plugin('Local::MyPlugin');
+ $driver->plugin( 'Local::MyPlugin' );
+ $driver->plugin(  Local::MyPlugin->new );
 
 The driver offers a simple plug-in interface. Plug-ins are modules
 providing handlers for events that may be triggered by the driver.
 Plug-ins are loaded by calling the C<plugin()> method with the
 module name as parameter. Your code must C<use> or C<require> the
-module it specifies here.
+module it specifies here. Alternatively, the blessed instance of
+a plug-in may be given.
 
 B<Warning: The entire plug-in API is currently highly experimental.>
 

@@ -8,6 +8,7 @@ package Neo4j::Driver::PluginManager;
 
 
 # This package is not part of the public Neo4j::Driver API.
+# (except as far as documented in Plugins.pod)
 
 
 use Carp qw(croak);
@@ -27,6 +28,8 @@ sub add_event_handler {
 	my ($self, $event, $handler, @extra) = @_;
 	
 	croak "add_event_handler() with more than one handler unsupported" if @extra;
+	croak "Event handler must be a subroutine reference" unless ref $handler eq 'CODE';
+	croak "Event name must be defined" unless defined $event;
 	
 	push @{$self->{handlers}->{$event}}, $handler;
 }
@@ -38,8 +41,7 @@ sub trigger_event {
 	
 	my $default_handler = $self->{default_handlers}->{$event};
 	my $handlers = $self->{handlers}->{$event}
-		or $default_handler and return $default_handler->()
-		or return;
+		or return $default_handler ? $default_handler->() : undef;
 	
 	my @callbacks;
 	for my $handler ( reverse @$handlers ) {
@@ -60,7 +62,8 @@ sub _register_plugin {
 	croak "Can't locate object method new() via package $plugin (perhaps you forgot to load \"$plugin\"?)" unless $plugin->can('new');
 	croak "Method register() not implemented by package $plugin (is this a Neo4j::Driver plug-in?)" unless $plugin->can('register');
 	
-	$plugin->new->register($self);
+	$plugin = $plugin->new if ref $plugin eq '';
+	$plugin->register($self);
 }
 
 
