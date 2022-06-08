@@ -273,16 +273,19 @@ response.
 
 HTTP networking modules must implement the following methods.
 
-The driver will make all method calls using the arrow operator
-(C<< -> >>). The method descriptions below use a syntax similar to
-that of C<use feature 'signatures'>; however, the first argument
-(C<$class> or C<$self>) is omitted from the signatures for clarity.
+Be warned that future updates to the driver may change this API
+such that existing methods need to accept additional parameters.
+If you use subroutine signatures, you should end them with C<@>
+in order to prevent arity errors.
 
 =over
 
 =item date_header
 
- sub date_header () { $date }
+ sub date_header {
+   my ($self) = @_;
+   ...
+ }
 
 Return the HTTP C<Date:> header from the last response as string.
 If the server doesn't have a clock, the header will be missing;
@@ -294,7 +297,10 @@ May block until the response headers have been fully received.
 
 =item fetch_all
 
- sub fetch_all () { $response_content }
+ sub fetch_all {
+   my ($self) = @_;
+   ...
+ }
 
 Block until the response to the last network request has been fully
 received, then return the entire content of the response buffer.
@@ -305,7 +311,10 @@ the same request is undefined.
 
 =item fetch_event
 
- sub fetch_event () { $next_event }
+ sub fetch_event {
+   my ($self) = @_;
+   ...
+ }
 
 Return the next Jolt event from the response to the last network
 request as a string. When there are no further Jolt events, this
@@ -320,7 +329,10 @@ C<fetch_all()> has already been called for the same request.
 
 =item http_header
 
- sub http_header () { \%headers }
+ sub http_header {
+   my ($self) = @_;
+   ...
+ }
 
 Return a hashref with the following entries, representing
 headers and status of the last response.
@@ -343,7 +355,10 @@ Blocks until the response headers have been fully received.
 
 =item http_reason
 
- sub http_reason () { $reason_phrase }
+ sub http_reason {
+   my ($self) = @_;
+   ...
+ }
 
 Return the HTTP reason phrase (S<e. g.> C<"Not Found"> for
 status 404). If unavailable, C<""> is returned instead.
@@ -351,7 +366,10 @@ May block until the response headers have been fully received.
 
 =item json_coder
 
- sub json_coder () { $json_coder }
+ sub json_coder {
+   my ($self) = @_;
+   ...
+ }
 
 Return a L<JSON::XS>-compatible coder object (for result parsers).
 It must offer a method C<decode()> that can handle the return
@@ -364,7 +382,10 @@ of L<JSON::MaybeXS>.
 
 =item new
 
- sub new ($driver) { $self }
+ sub new {
+   my ($class, $driver) = @_;
+   ...
+ }
 
 Initialises the object. May or may not establish a network
 connection. May access C<$driver> config options using the
@@ -372,7 +393,10 @@ method L<Neo4j::Driver/"config"> only.
 
 =item request
 
- sub request ($method, $url, $json, $accept) { }
+ sub request {
+   my ($self, $method, $url, $json, $accept) = @_;
+   ...
+ }
 
 Start an HTTP request on the network. The following positional
 parameters are given:
@@ -406,7 +430,10 @@ has been received.
 
 =item result_handlers
 
- sub result_handlers () { @module_names }
+ sub result_handlers {
+   my ($self) = @_;
+   ...
+ }
 
 Return a list of result handler modules to be used to parse
 Neo4j statement results delivered through this module.
@@ -417,7 +444,10 @@ See L</"Custom result handlers"> below.
 
 =item uri
 
- sub uri () { $uri }
+ sub uri {
+   my ($self) = @_;
+   ...
+ }
 
 Return the server base URL as string or L<URI> object
 (for L<Neo4j::Driver::ServerInfo>).

@@ -14,11 +14,14 @@ package Neo4j::Driver::Plugin;
 
  package Local::MyNeo4jPlugin;
  use parent 'Neo4j::Driver::Plugin';
- use feature 'signatures';
  
- sub new ($class) { bless {}, $class }
+ sub new {
+   my ($class) = @_;
+   return bless {}, $class;
+ }
  
- sub register ($self, $manager, @) {
+ sub register {
+   my ($self, $manager) = @_;
    $manager->add_event_handler(
      http_adapter_factory => sub {
        Local::MyNeo4jLWPAdapter->new();
@@ -38,11 +41,7 @@ package Neo4j::Driver::Plugin;
 
 =head1 WARNING: EXPERIMENTAL
 
-Take great care when implementing plug-ins, because even small
-deviations from this specification may cause your code to break
-with future versions of the driver in non-obvious ways.
-
-Additionally, the design of the plug-in API is not finalised.
+The design of the plug-in API is not finalised.
 You should probably let me know if you already are writing
 plug-ins, so that I can try to accommodate your use case
 and give you advance notice of changes.
@@ -98,7 +97,8 @@ Future versions may introduce new events or remove existing ones.
 =item http_adapter_factory
 
  $manager->add_event_handler(
-   http_adapter_factory => sub ($continue, $driver, @) {
+   http_adapter_factory => sub {
+     my ($continue, $driver) = @_;
      my $adapter;
      ...
      return $adapter // $continue->();
@@ -108,8 +108,7 @@ Future versions may introduce new events or remove existing ones.
 This event is triggered when a new HTTP adapter instance is
 needed during session creation. Parameters given are a code
 reference for continuing with the next handler registered for
-this event, the driver, and an indeterminate number of extra
-arguments that are to be ignored.
+this event and the driver.
 
 A handler for this event must return the blessed instance of
 an HTTP adapter module (formerly known as "networking module")
@@ -140,19 +139,23 @@ The plug-in itself must implement the following methods.
 
 =item new
 
- sub new ($class, @) { ... }
+ sub new {
+   my ($class) = @_;
+   ...
+ }
 
 Plug-in constructor. Returns a blessed reference. Parameters
-given are the plug-in package name and an indeterminate number
-of extra arguments that are to be ignored.
+given are the plug-in package name.
 
 =item register
 
- sub register ($self, $manager, @) { ... }
+ sub register {
+   my ($self, $manager) = @_;
+   ...
+ }
 
 Called by the driver when a plug-in is loaded. Parameters given
-are the plug-in, a plug-in manager, and an indeterminate number of
-extra arguments that are to be ignored.
+are the plug-in and a plug-in manager.
 
 This method is expected to attach this plug-in's event handlers
 by calling the plug-in manager's L</"add_event_handler"> method.
@@ -184,10 +187,10 @@ is triggered, the handler will be invoked (unless another plug-in's
 handler for the same event prevents this). Handlers will not be
 invoked in any particular defined order.
 
-If you use signatures, take care to specify the correct arity for
-your handlers. Future updates to the driver may change existing
-events to provide more parameters. The correct way to specify the
-signature of an event handler is to end it with C<@>.
+Note that future updates to the driver may change existing events
+to provide additional arguments. Because subroutine signatures
+perform strict checks of the number of arguments, they are not
+recommended for event handlers.
 
 =item trigger_event
 
