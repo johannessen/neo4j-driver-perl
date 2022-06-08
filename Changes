@@ -1,8 +1,9 @@
 Revision history for Neo4j::Driver
 
-0.3051  2022-05-31
+0.3054  2022-06-08
 
  - The cypher_params config option is no longer experimental
+ - Announce plan to switch from JSON::PP::Boolean to Perl distinguished booleans
 
 0.30  2022-05-20
 

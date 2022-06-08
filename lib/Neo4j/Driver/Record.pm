@@ -162,8 +162,13 @@ types as shown in the following table.
  List            array reference
  Map             hash reference
 
-Boolean values are returned as JSON types; use C<!!> to force-convert
-to a plain Perl boolean value if necessary.
+Boolean values are returned in a type that is trackable such
+that their being boolean is preserved in case they are sent back
+to Neo4j as a query parameter. They are currently provided as
+L<JSON::PP::Boolean>, but you can use C<!!> to force-convert to
+a plain scalar L<Perl distinguished boolean|builtin/"is_bool">
+value if necessary. Future versions of this driver may switch
+to always provide distinguished booleans.
 
 Neo4j types are currently implemented by the following packages:
 
@@ -180,8 +185,8 @@ L<Neo4j::Driver::Type::Path>.
 
 =back
 
-In a future version of this driver, values retrieved over a Bolt
-connection will be implemented by other packages, but they will
+In a future version of this driver, these types will
+be implemented by other packages, but they will
 continue to inherit from L<Neo4j::Types> and have that interface.
 
 =head2 data
