@@ -172,7 +172,9 @@ subtest 'net_module config option' => sub {
 	lives_ok { $w = ''; $w = warning { $d->config(net_module => 'Neo4j_Test::Sim'); }; } 'config 1 lives';
 	like $w, qr/\bnet_module\b.*\bdeprecated\b/i, 'net_module 1 deprecated'
 		or diag 'got warning(s): ', explain $w;
+	SKIP: { skip 'test design requires Sim', 1 unless $Neo4j_Test::sim;
 	lives_ok { @w = (); @w = warnings { $d->session }; } 'session 1 lives';
+	}
 	lives_ok { $d = 0; $d = Neo4j::Driver->new(); } 'new driver 2';
 	lives_ok { $w = ''; $w = warning { $d->config(net_module => 'Neo4j_Test::NoSuchModule_'); }; } 'config 2 lives';
 	like $w, qr/\bnet_module\b.*\bdeprecated\b/i, 'net_module 2 deprecated'
