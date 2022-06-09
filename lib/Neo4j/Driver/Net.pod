@@ -269,13 +269,8 @@ method L<Neo4j::Driver/"config"> only.
 
 =head2 Custom result handlers
 
-The result handler API is currently not formally specified.
-It is an internal API that is still evolving and may be subject
-to unannounced change.
-
-Even so, it's fully possible to implement a custom result handler.
-You should probably drop me a line when you begin work on one;
-see L</"USE OF INTERNAL APIS">.
+This section has been replaced by
+L<Neo4j:::Driver::Plugin/"Result handler API">.
 
 =head1 USE OF INTERNAL APIS
 

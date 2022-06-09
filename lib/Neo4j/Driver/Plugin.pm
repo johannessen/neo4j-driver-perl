@@ -408,6 +408,13 @@ Neo4j statement results delivered through this module.
 The module names returned will be used in preference to the
 result handlers built into the driver.
 
+Unlike any other method, C<result_handlers()> is optional for
+a Neo4j HTTP adapter module. It may only be implemented by
+network adapters that actually offer custom result handlers.
+Note that the result handler API is currently internal and
+expected to change, and this method will likely disappear
+entirely in future; see L</"RESULT HANDLER API"> below.
+
 =item uri
 
  sub uri {
@@ -420,6 +427,47 @@ Return the server base URL as string or L<URI> object
 At least scheme, host, and port must be included.
 
 =back
+
+=head2 Result handler API
+
+Making a Neo4j result handler API available to plug-ins will
+require significant internal changes to the driver. These
+are currently being postponed, at least until most of the
+L<deprecated functionality|Neo4j::Driver::Deprecations> has
+been removed from the driver's code base.
+
+Even then, the result handler API may have low priority.
+However, new plug-in events are anticipated in a future version
+that should enable clients to achieve some of the same goals.
+
+In the meantime, the result handler API remains not formally
+specified. It is an internal API that is evolving and may be
+subject to unannounced change; see L</"USE OF INTERNAL APIS">.
+
+A few notes on the result handler API that may or may not be
+accurate by the time you read this:
+
+ sub new ($class, $params) {}
+ sub _fetch_next ($self) {}
+   # ^ optional if results are always fully detached
+ sub _init_record ($self, $record) {}
+ 
+ # for HTTP additionally:
+ sub _accept_header ($, $want_jolt, $method) {}
+ sub _acceptable ($, $content_type) {}
+ sub _info ($self) {}
+ sub _json ($self) {}
+   # ^ only required for handlers that accept application/json
+   #   (solely used by the Discovery API to get raw JSON)
+ 
+ # For the API, these methods should gain public names (no _).
+ # Currently the driver's own result handlers access the internal
+ # data structures directly. For the API, some kind of accessors
+ # will be needed, and for simplicity, all results should always
+ # begin as attached (JSON: $fake_attached = 1).
+
+B<WARNING:> All of these methods are currently private APIs.
+See L</"USE OF INTERNAL APIS">.
 
 =head1 USE OF INTERNAL APIS
 

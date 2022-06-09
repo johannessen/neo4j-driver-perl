@@ -85,8 +85,6 @@ sub uri { shift->{uri_base} }
 
 sub json_coder { shift->{json_coder} }
 
-sub result_handlers { }
-
 sub http_reason { shift->{response}->message // '' }
 
 sub date_header { scalar shift->{response}->header('Date') // '' }
@@ -190,8 +188,6 @@ see L<Neo4j::Driver::Plugin/"Network adapter API for HTTP">.
 =item * C<json_coder>
 
 =item * C<request>
-
-=item * C<result_handlers>
 
 =item * C<uri>
 
