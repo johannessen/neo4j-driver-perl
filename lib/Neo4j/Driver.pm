@@ -172,6 +172,7 @@ sub _parse_options {
 		$options{cypher_params} = v2;
 	}
 	warnings::warnif deprecated => "Config option jolt is deprecated: Jolt is now enabled by default" if defined $options{jolt};
+	warnings::warnif deprecated => "Config option net_module is deprecated; use plug-in interface" if defined $options{net_module};
 	
 	my @unsupported = ();
 	foreach my $key (keys %options) {
@@ -288,15 +289,9 @@ See L</"uri"> for details.
 
 B<This driver's development is not yet considered finalised.>
 
-As of version 0.30, the major open items are:
+As of version 0.31, the major open items are:
 
 =over
-
-=item *
-
-Finalising the API for custom networking modules.
-(This is expected to require moving closer to a plugin API,
-in addition to formal specification of the result handler API.)
 
 =item *
 
@@ -392,31 +387,6 @@ These are subject to unannounced modification or removal in future
 versions. Expect your code to break if you depend upon these
 features.
 
-=head2 Custom networking modules
-
- use Local::MyNetworkAgent;
- $driver->config(net_module => 'Local::MyNetworkAgent');
-
-The module to be used for network communication may be specified
-using the C<net_module> config option. The specified module must
-implement the API described in L<Neo4j::Driver::Net/"EXTENSIONS">.
-Your code must C<use> or C<require> the module it specifies here.
-
-By default, the driver will try to auto-detect a suitable module.
-This will currently always result in the driver's built-in modules
-being used. Alternatively, you may specify the empty string to ask
-for the built-in modules explicitly, which will disable
-auto-detection.
-
- $driver->config(net_module => undef);  # auto-detect (the default)
- $driver->config(net_module => '');     # use the built-in modules
-
-This config option is experimental because the API for custom
-networking modules is in the process of being replaced by
-L<Neo4j::Driver::Plugin/"http_adapter_factory">.
-Existing networking modules will work as plugins
-with only minimal changes.
-
 =head2 Plug-in modules
 
  $driver->plugin( 'Local::MyPlugin' );
@@ -505,7 +475,7 @@ L<Neo4j::Driver> implements the following configuration options.
 
 Specifies the authentication details for the Neo4j server.
 The authentication details are provided as a Perl reference
-that is made available to the networking module. Typically,
+that is made available to the network adapter. Typically,
 this is an unblessed hash reference with the authentication
 scheme declared in the hash entry C<scheme>.
 

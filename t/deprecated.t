@@ -18,10 +18,11 @@ my $s = $driver->session;
 # functionality. If the behaviour of such functionality changes, we
 # want it to be a conscious decision, hence we test for it.
 
-use Test::More 0.96 tests => 17 + 3;
+use Test::More 0.96 tests => 18 + 3;
 use Test::Exception;
 use Test::Warnings qw(warning warnings);
 use Neo4j_Test::MockHTTP qw(response_for);
+use Neo4j_Test::Sim;
 my $transaction = $driver->session->begin_transaction;
 $transaction->{return_stats} = 0;  # optimise sim
 
@@ -162,6 +163,21 @@ subtest 'jolt config option' => sub {
 	like $w, qr/\bjolt\b.*\bdeprecated\b/i, 'jolt mode deprecated'
 		or diag 'got warning(s): ', explain $w;
 	is $d->{jolt}, 'foo', 'jolt mode';
+};
+
+
+subtest 'net_module config option' => sub {
+	plan tests => 8;
+	lives_ok { $d = 0; $d = Neo4j::Driver->new(); } 'new driver 1';
+	lives_ok { $w = ''; $w = warning { $d->config(net_module => 'Neo4j_Test::Sim'); }; } 'config 1 lives';
+	like $w, qr/\bnet_module\b.*\bdeprecated\b/i, 'net_module 1 deprecated'
+		or diag 'got warning(s): ', explain $w;
+	lives_ok { @w = (); @w = warnings { $d->session }; } 'session 1 lives';
+	lives_ok { $d = 0; $d = Neo4j::Driver->new(); } 'new driver 2';
+	lives_ok { $w = ''; $w = warning { $d->config(net_module => 'Neo4j_Test::NoSuchModule_'); }; } 'config 2 lives';
+	like $w, qr/\bnet_module\b.*\bdeprecated\b/i, 'net_module 2 deprecated'
+		or diag 'got warning(s): ', explain $w;
+	dies_ok { warnings { $d->session }; } 'session 2 dies';
 };
 
 

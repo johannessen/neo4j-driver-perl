@@ -46,9 +46,9 @@ You should probably let me know if you already are writing
 plug-ins, so that I can try to accommodate your use case
 and give you advance notice of changes.
 
-B<The entire plug-in API is currently highly experimental.>
+B<The entire plug-in API is currently experimental.>
 
-The driver's C<plugins()> method is
+The driver's C<plugin()> method is
 L<experimental|Neo4j::Driver/"Plug-in modules"> as well.
 
 =head1 OVERVIEW

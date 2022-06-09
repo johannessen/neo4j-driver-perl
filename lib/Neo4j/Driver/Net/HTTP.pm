@@ -4,7 +4,7 @@ use warnings;
 use utf8;
 
 package Neo4j::Driver::Net::HTTP;
-# ABSTRACT: Networking delegate for Neo4j HTTP
+# ABSTRACT: Network controller for Neo4j HTTP
 
 
 # This package is not part of the public Neo4j::Driver API.

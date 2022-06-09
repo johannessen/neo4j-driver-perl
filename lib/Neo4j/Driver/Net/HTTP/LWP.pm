@@ -4,7 +4,7 @@ use warnings;
 use utf8;
 
 package Neo4j::Driver::Net::HTTP::LWP;
-# ABSTRACT: HTTP agent adapter for libwww-perl
+# ABSTRACT: HTTP network adapter for libwww-perl
 
 
 use Carp qw(croak);
@@ -144,16 +144,24 @@ __END__
 
 =head1 SYNOPSIS
 
- use Neo4j::Driver::Net::HTTP::LWP;
- $driver->config( net_module => 'Neo4j::Driver::Net::HTTP::LWP' );
+ use parent 'Neo4j::Driver::Plugin';
+ 
+ sub register {
+   my ($self, $manager) = @_;
+   $manager->add_event_handler(
+     http_adapter_factory => sub {
+       my ($continue, $driver) = @_;
+       my $adapter = Neo4j::Driver::Net::HTTP::LWP->new($driver);
+       ...
+       return $adapter;
+     },
+   );
+ }
 
 You can also extend this module through inheritance:
 
- use Local::MyProxy;
- $driver->config( net_module => 'Local::MyProxy' );
- 
- package Local::MyProxy;
  use parent 'Neo4j::Driver::Net::HTTP::LWP';
+ 
  sub new {
    my $self = shift->SUPER::new(@_);
    $self->ua->proxy('http', 'http://proxy.example.net:8081/');
@@ -162,8 +170,8 @@ You can also extend this module through inheritance:
 
 =head1 DESCRIPTION
 
-The L<Neo4j::Driver::Net::HTTP::LWP> package is an HTTP networking
-module for L<Neo4j::Driver>, using L<LWP::UserAgent> to connect to
+The L<Neo4j::Driver::Net::HTTP::LWP> package is an HTTP network
+adapter for L<Neo4j::Driver>, using L<LWP::UserAgent> to connect to
 the Neo4j server via HTTP or HTTPS.
 
 HTTPS connections require L<LWP::Protocol::https> to be installed.
@@ -217,7 +225,7 @@ configures it using the given L<Neo4j::Driver>.
  }
 
 Returns the L<LWP::UserAgent> instance in use.
-Meant to facilitate subclassing.
+Meant to facilitate reuse.
 
 =head1 BUGS
 
