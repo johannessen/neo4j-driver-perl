@@ -113,7 +113,7 @@ this event and the driver.
 A handler for this event must return the blessed instance of
 an HTTP adapter module (formerly known as "networking module")
 to be used instead of the default adapter built into the driver.
-See L<Neo4j::Driver::Net/"API of an HTTP networking module">.
+See L</"Network adapter API for HTTP"> below.
 
 =back
 
@@ -212,6 +212,212 @@ ignored. This will likely change in a future version of the driver.
 Calling this method in list context is discouraged, because doing
 so might be treated specially by a future version of the driver.
 Use C<scalar> to be safe.
+
+=back
+
+=head1 EXTENDING THE DRIVER
+
+=head2 Network adapter API for Bolt
+
+At this time (2022), there is only one known implementation of the
+Bolt protocol for Perl: L<Neo4j::Bolt>, created by Mark A. Jensen.
+
+For this reason, an abstraction API for Bolt network adapters has
+not yet been specified. This driver currently expects that any
+module implementing Bolt behaves I<exactly> like L<Neo4j::Bolt>
+itself does.
+
+If you're writing another Perl module for Bolt, please get in
+touch with me. I would like to collaborate with you on writing
+the abstraction API for the driver.
+
+=head2 Network adapter API for HTTP
+
+HTTP network adapters (formerly known as "HTTP networking
+modules") are used by the driver to delegate networking
+tasks to one of the common Perl modules for HTTP, such as L<LWP>
+or L<Mojo::UserAgent>. Driver plug-ins can also use this low-level
+access to implement special features, for example dynamic rewriting
+of Cypher queries.
+
+The driver primarily uses HTTP network adapters by first calling
+the C<request()> method, which initiates a request on the network,
+and then calling other methods to obtain information about the
+response. See L<Neo4j::Driver::Net> for more information.
+
+ $adapter->request('GET', '/', undef, 'application/json');
+ $status  = $adapter->http_header->{status};
+ $type    = $adapter->http_header->{content_type};
+ $content = $adapter->fetch_all;
+
+HTTP network adapters must implement the following methods.
+
+=over
+
+=item date_header
+
+ sub date_header {
+   my ($self) = @_;
+   ...
+ }
+
+Return the HTTP C<Date:> header from the last response as string.
+If the server doesn't have a clock, the header will be missing;
+in this case, the value returned must be either the empty
+string or (optionally) the current time in non-obsolete
+L<RFC5322:3.3|https://tools.ietf.org/html/rfc5322#section-3.3>
+format.
+May block until the response headers have been fully received.
+
+=item fetch_all
+
+ sub fetch_all {
+   my ($self) = @_;
+   ...
+ }
+
+Block until the response to the last network request has been fully
+received, then return the entire content of the response buffer.
+
+This method must generally be idempotent, but the behaviour of this
+method if called after C<fetch_event()> has already been called for
+the same request is undefined.
+
+=item fetch_event
+
+ sub fetch_event {
+   my ($self) = @_;
+   ...
+ }
+
+Return the next Jolt event from the response to the last network
+request as a string. When there are no further Jolt events, this
+method returns an undefined value. If the response hasn't been
+fully received at the time this method is called and the internal
+response buffer does not contain at least one event, this method
+will block until at least one event is available.
+
+The behaviour of this method is undefined for responses that
+are not in Jolt format. The behaviour is also undefined if
+C<fetch_all()> has already been called for the same request.
+
+A future version of this driver will likely replace this method
+with something that performs JSON decoding on the event before
+returning it; this change may allow increased optimisation of
+Jolt event parsing.
+
+=item http_header
+
+ sub http_header {
+   my ($self) = @_;
+   ...
+ }
+
+Return a hashref with the following entries, representing
+headers and status of the last response.
+
+=over
+
+=item * C<content_type> – S<e. g.> C<"application/json">
+
+=item * C<location> – URI reference
+
+=item * C<status> – status code, S<e. g.> C<"404">
+
+=item * C<success> – truthy for 2xx status codes
+
+=back
+
+All of these entries must exist and be defined scalars.
+Unavailable values must use the empty string.
+Blocks until the response headers have been fully received.
+
+=item http_reason
+
+ sub http_reason {
+   my ($self) = @_;
+   ...
+ }
+
+Return the HTTP reason phrase (S<e. g.> C<"Not Found"> for
+status 404). If unavailable, C<""> is returned instead.
+May block until the response headers have been fully received.
+
+=item json_coder
+
+ sub json_coder {
+   my ($self) = @_;
+   ...
+ }
+
+Return a L<JSON::XS>-compatible coder object (for result parsers).
+It must offer a method C<decode()> that can handle the return
+values of C<fetch_event()> and C<fetch_all()> (which may be
+expected to be a byte sequence that is valid UTF-8) and should
+produce sensible output for booleans (S<e. g.> C<$JSON::PP::true>
+and C<$JSON::PP::false>, or native booleans on newer Perls).
+
+The default adapter included with the driver uses L<JSON::MaybeXS>.
+
+=item request
+
+ sub request {
+   my ($self, $method, $url, $json, $accept) = @_;
+   ...
+ }
+
+Start an HTTP request on the network. The following positional
+parameters are given:
+
+=over
+
+=item * C<$method> – HTTP method, S<e. g.> C<"POST">
+
+=item * C<$url> – string with request URL
+
+=item * C<$json> – reference to hash of JSON object
+
+=item * C<$accept> – string with value for the C<Accept:> header
+
+=back
+
+The request C<$url> is to be interpreted relative to the server
+base URL given in the driver config.
+
+The C<$json> hashref must be serialised before transmission.
+It may include booleans encoded as the values C<\1> and C<\0>.
+For requests to be made without request content, the value
+of C<$json> will be C<undef>.
+
+C<$accept> will have different values depending on C<$method>;
+this is a workaround for a known issue in the Neo4j server
+(L<#12644|https://github.com/neo4j/neo4j/issues/12644>).
+
+The C<request()> method may or may not block until the response
+has been received.
+
+=item result_handlers
+
+ sub result_handlers {
+   my ($self) = @_;
+   ...
+ }
+
+Return a list of result handler modules to be used to parse
+Neo4j statement results delivered through this module.
+The module names returned will be used in preference to the
+result handlers built into the driver.
+
+=item uri
+
+ sub uri {
+   my ($self) = @_;
+   ...
+ }
+
+Return the server base URL as string or L<URI> object
+(for L<Neo4j::Driver::ServerInfo>).
+At least scheme, host, and port must be included.
 
 =back
 

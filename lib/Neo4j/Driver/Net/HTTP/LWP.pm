@@ -173,7 +173,7 @@ HTTPS connections require L<LWP::Protocol::https> to be installed.
 =head1 METHODS
 
 L<Neo4j::Driver::Net::HTTP::LWP> implements the following methods;
-see L<Neo4j::Driver::Net/"API of an HTTP networking module">.
+see L<Neo4j::Driver::Plugin/"Network adapter API for HTTP">.
 
 =over
 
@@ -189,8 +189,6 @@ see L<Neo4j::Driver::Net/"API of an HTTP networking module">.
 
 =item * C<json_coder>
 
-=item * C<new>
-
 =item * C<request>
 
 =item * C<result_handlers>
@@ -204,7 +202,14 @@ has been fully received. Therefore none of the other methods will
 ever block.
 
 In addition to the methods listed above,
-L<Neo4j::Driver::Net::HTTP::LWP> implements the following method.
+L<Neo4j::Driver::Net::HTTP::LWP> implements the following methods.
+
+=head2 new
+
+ $adapter = Neo4j::Driver::Net::HTTP::LWP->new( $driver );
+
+Creates a new L<Neo4j::Driver::Net::HTTP::LWP> adapter and
+configures it using the given L<Neo4j::Driver>.
 
 =head2 ua
 

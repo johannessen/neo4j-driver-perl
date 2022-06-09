@@ -24,8 +24,8 @@ See L<Neo4j:::Driver::Plugin/"USE OF INTERNAL APIS">.
 =head1 WARNING: EXPERIMENTAL
 
 The design of the networking helper APIs is not entirely finalised.
-In particular, it is expected that the driver's C<net_module> config
-option will be replaced with a new option that allows specifying
+In particular, the driver's C<net_module> config option is in the
+process of being replaced by L<Neo4j::Driver/"plugin">, allowing for
 multiple plugins instead of just a single module. Existing
 networking modules will work as plugins with only minimal changes.
 
@@ -247,139 +247,12 @@ The included module may change in future. As of S<version 0.21>,
 the default module uses L<LWP> directly. Earlier versions used
 L<REST::Client>.
 
-It is possible to set a factory object as C<net_module> instead of
-providing a module name. The factory object must have a C<new()>
-method returning an object that implements the interface described
-in the following section.
-
-If you look at the source of existing networking modules for
-inspiration, please note that they may use internal APIs.
-Please make sure you read L</"USE OF INTERNAL APIS"> before you
-start copying existing code.
-
-=head3 API of an HTTP networking module
-
-The driver primarily uses HTTP networking modules by first calling
-the C<request()> method, which initiates a request on the network,
-and then calling other methods to obtain information about the
-response.
-
- $net_module = $driver->config('net_module');
- $agent = $net_module->new($driver);
- 
- $agent->request('GET', '/', undef, 'application/json');
- $status  = $agent->http_header->{status};
- $type    = $agent->http_header->{content_type};
- $content = $agent->fetch_all;
-
-HTTP networking modules must implement the following methods.
-
-Be warned that future updates to the driver may change this API
-such that existing methods need to accept additional parameters.
-If you use subroutine signatures, you should end them with C<@>
-in order to prevent arity errors.
+Modules to be used as C<net_module> must implement the API
+for an HTTP adapter; see
+L<Neo4j:::Driver::Plugin/"Network adapter API for HTTP">.
+Additionally, they must implement the following method:
 
 =over
-
-=item date_header
-
- sub date_header {
-   my ($self) = @_;
-   ...
- }
-
-Return the HTTP C<Date:> header from the last response as string.
-If the server doesn't have a clock, the header will be missing;
-in this case, the value returned must be either the empty
-string or (optionally) the current time in non-obsolete
-L<RFC5322:3.3|https://tools.ietf.org/html/rfc5322#section-3.3>
-format.
-May block until the response headers have been fully received.
-
-=item fetch_all
-
- sub fetch_all {
-   my ($self) = @_;
-   ...
- }
-
-Block until the response to the last network request has been fully
-received, then return the entire content of the response buffer.
-
-This method must generally be idempotent, but the behaviour of this
-method if called after C<fetch_event()> has already been called for
-the same request is undefined.
-
-=item fetch_event
-
- sub fetch_event {
-   my ($self) = @_;
-   ...
- }
-
-Return the next Jolt event from the response to the last network
-request as a string. When there are no further Jolt events, this
-method returns an undefined value. If the response hasn't been
-fully received at the time this method is called and the internal
-response buffer does not contain at least one event, this method
-will block until at least one event is available.
-
-The behaviour of this method is undefined for responses that
-are not in Jolt format. The behaviour is also undefined if
-C<fetch_all()> has already been called for the same request.
-
-=item http_header
-
- sub http_header {
-   my ($self) = @_;
-   ...
- }
-
-Return a hashref with the following entries, representing
-headers and status of the last response.
-
-=over
-
-=item * C<content_type> – S<e. g.> C<"application/json">
-
-=item * C<location> – URI reference
-
-=item * C<status> – status code, S<e. g.> C<"404">
-
-=item * C<success> – truthy for 2xx status codes
-
-=back
-
-All of these entries must exist and be defined scalars.
-Unavailable values must use the empty string.
-Blocks until the response headers have been fully received.
-
-=item http_reason
-
- sub http_reason {
-   my ($self) = @_;
-   ...
- }
-
-Return the HTTP reason phrase (S<e. g.> C<"Not Found"> for
-status 404). If unavailable, C<""> is returned instead.
-May block until the response headers have been fully received.
-
-=item json_coder
-
- sub json_coder {
-   my ($self) = @_;
-   ...
- }
-
-Return a L<JSON::XS>-compatible coder object (for result parsers).
-It must offer a method C<decode()> that can handle the return
-values of C<fetch_event()> and C<fetch_all()> (which may be
-expected to be a byte sequence that is valid UTF-8) and should
-produce C<$JSON::PP::true> and C<$JSON::PP::false> for booleans.
-
-The default module included with the driver returns an instance
-of L<JSON::MaybeXS>.
 
 =item new
 
@@ -391,68 +264,6 @@ of L<JSON::MaybeXS>.
 Initialises the object. May or may not establish a network
 connection. May access C<$driver> config options using the
 method L<Neo4j::Driver/"config"> only.
-
-=item request
-
- sub request {
-   my ($self, $method, $url, $json, $accept) = @_;
-   ...
- }
-
-Start an HTTP request on the network. The following positional
-parameters are given:
-
-=over
-
-=item * C<$method> – HTTP method, S<e. g.> C<"POST">
-
-=item * C<$url> – string with request URL
-
-=item * C<$json> – reference to hash of JSON object
-
-=item * C<$accept> – string with value for the C<Accept:> header
-
-=back
-
-The request C<$url> is to be interpreted relative to the server
-base URL given in the driver config.
-
-The C<$json> hashref must be serialised before transmission.
-It may include booleans encoded as the values C<\1> and C<\0>.
-For requests to be made without request content, the value
-of C<$json> will be C<undef>.
-
-C<$accept> will have different values depending on C<$method>;
-this is a workaround for a known issue in the Neo4j server
-(L<#12644|https://github.com/neo4j/neo4j/issues/12644>).
-
-The C<request()> method may or may not block until the response
-has been received.
-
-=item result_handlers
-
- sub result_handlers {
-   my ($self) = @_;
-   ...
- }
-
-Return a list of result handler modules to be used to parse
-Neo4j statement results delivered through this module.
-The module names returned will be used in preference to the
-result handlers built into the driver.
-
-See L</"Custom result handlers"> below.
-
-=item uri
-
- sub uri {
-   my ($self) = @_;
-   ...
- }
-
-Return the server base URL as string or L<URI> object
-(for L<Neo4j::Driver::ServerInfo>).
-At least scheme, host, and port must be included.
 
 =back
 
