@@ -464,7 +464,7 @@ This feature might eventually be used to implement lazy statement
 execution for this driver. The private C<_run_multiple()> method
 which makes using this feature explicit is expected to remain
 available at least until that time. See also
-L<Neo4j::Driver::Net/"USE OF INTERNAL APIS">.
+L<Neo4j::Driver::Plugin/"USE OF INTERNAL APIS">.
 
 =head1 SEE ALSO
 

@@ -19,7 +19,7 @@
  $json_coder->decode( $helper->{http_agent}->fetch_all );
 
 B<WARNING:> Some of these calls are private APIs.
-See L</"USE OF INTERNAL APIS">.
+See L<Neo4j:::Driver::Plugin/"USE OF INTERNAL APIS">.
 
 =head1 WARNING: EXPERIMENTAL
 
@@ -64,7 +64,8 @@ hand is an internal implementation detail of the driver and as such
 is B<subject to unannounced change.> While some of those details are
 explained in this document, this is done only to help contributors
 and users of I<public> APIs better understand the driver's design.
-See L</"USE OF INTERNAL APIS"> for more information on this topic.
+See L<Neo4j:::Driver::Plugin/"USE OF INTERNAL APIS"> for more
+information on this topic.
 
 =head1 FEATURES
 
@@ -467,33 +468,7 @@ see L</"USE OF INTERNAL APIS">.
 
 =head1 USE OF INTERNAL APIS
 
-B<Public APIs> generally include everything that is documented
-in POD. However, I<this> document may contain some mentions of
-I<private> APIs (where it does, it tries to be explicit about it).
-The section L</"Custom HTTP networking modules"> describes a
-public API.
-
-B<Private internals,> on the other hand, include all package-global
-variables (C<our ...>), all methods with names that begin with an
-underscore (C<_>) and I<all> cases of accessing the data structures
-of blessed objects directly (S<e. g.> C<< $session->{net} >>).
-Additionally, the C<new()> methods of packages without POD
-documentation of their own are to be considered private internals.
-
-You are of course free to use any driver internals in your own code,
-but if you do so, you also bear the sole responsibility for keeping
-it working after updates to the driver. Changes to internals are
-usually not announced in the F<Changes> list, so you should consider
-watching GitHub commits. It is discouraged to try this approach if
-your code is used in production.
-
-If you have difficulties achieving your goals without the use of
-driver internals or private APIs, you are most welcome to file a
-GitHub issue about that (or write to my CPAN email address with
-your concerns; make sure you mention Neo4j in the subject to beat
-the spam filters).
-
-I can't I<promise> that I'll be able to accommodate your use case,
-but I am going to try.
+This section has been replaced by
+L<Neo4j:::Driver::Plugin/"USE OF INTERNAL APIS">.
 
 =cut

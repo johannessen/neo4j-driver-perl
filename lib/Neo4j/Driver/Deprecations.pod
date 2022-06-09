@@ -550,7 +550,7 @@ between Bolt and HTTP connections are very clear. The driver
 currently uses C<{return_stats} = 0> internally, so this feature
 will likely not be removed soon, but going forward, it will be
 treated as an internal API. There will be no deprecation warning.
-See L<Neo4j::Driver::Net/"USE OF INTERNAL APIS">.
+See L<Neo4j::Driver::Plugin/"USE OF INTERNAL APIS">.
 
 To disable query stats in future, use a custom networking module
 to modify C<includeStats> in the server request.
@@ -578,7 +578,7 @@ To request graph format in future, use a custom networking module
 to disable Jolt and modify the C<resultDataContents> in the server
 request. Note that C<< $record->{graph} >> is an internal API that
 may or may not be available in future versions.
-See L<Neo4j::Driver::Net/"USE OF INTERNAL APIS">.
+See L<Neo4j::Driver::Plugin/"USE OF INTERNAL APIS">.
 
 If there is demand for the graph format, equivalent functionality
 might be added to a future version of the driver itself.
@@ -617,7 +617,7 @@ Given the low availability and reliability of this indicator,
 consistency suggests to remove the C<deleted()> method entirely.
 To obtain this indicator in the future, use a custom net module
 to disable Jolt, then try to access the result's raw meta data.
-For caveats, see L<Neo4j::Driver::Net/"USE OF INTERNAL APIS">.
+For caveats, see L<Neo4j::Driver::Plugin/"USE OF INTERNAL APIS">.
 
 =head1 Neo4j::Driver::Type::Path
 

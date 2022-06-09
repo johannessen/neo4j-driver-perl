@@ -214,3 +214,33 @@ so might be treated specially by a future version of the driver.
 Use C<scalar> to be safe.
 
 =back
+
+=head1 USE OF INTERNAL APIS
+
+B<Public APIs> generally include everything that is documented
+in POD, unless explicitly noted otherwise.
+
+B<Private internals,> on the other hand, include all package-global
+variables (C<our ...>), all methods with names that begin with an
+underscore (C<_>) and I<all> cases of accessing the data structures
+of blessed objects directly (S<e. g.> C<< $session->{net} >>). In
+addition, methods without any POD documentation are to be considered
+private internals (S<e. g.> C<< Neo4j::Driver::Session->new() >>).
+
+You are of course free to use any driver internals in your own code,
+but if you do so, you also bear the sole responsibility to keep it
+working after updates to the driver. Changes to internals are often
+not announced in the F<Changes> list, so you should consider to
+watch GitHub commits. It is discouraged to try this approach if
+your code is used in production.
+
+If you have difficulties achieving your goals without the use of
+driver internals or private APIs, you are most welcome to file a
+GitHub issue about that (or write to my CPAN email address with
+your concerns; make sure you mention Neo4j in the subject to beat
+the spam filters).
+
+I can't I<promise> that I'll be able to accommodate your use case,
+but I am going to try.
+
+=cut
