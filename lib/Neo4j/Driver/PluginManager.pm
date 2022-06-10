@@ -8,7 +8,7 @@ package Neo4j::Driver::PluginManager;
 
 
 # This package is not part of the public Neo4j::Driver API.
-# (except as far as documented in Plugins.pod)
+# (except as far as documented in Plugin.pm)
 
 
 use Carp qw(croak);

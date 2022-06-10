@@ -399,10 +399,11 @@ module name as parameter. Your code must C<use> or C<require> the
 module it specifies here. Alternatively, the blessed instance of
 a plug-in may be given.
 
-B<Warning: The entire plug-in API is currently highly experimental.>
-
 Details on the implementation of plug-ins including descriptions of
-individual events are provided in L<Neo4j::Driver::Plugins>.
+individual events are provided in L<Neo4j::Driver::Plugin>.
+
+This config option is experimental because some parts of the plug-in
+API are still evolving.
 
 =head2 Concurrent transactions in HTTP sessions
 

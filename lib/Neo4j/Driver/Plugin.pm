@@ -12,32 +12,31 @@ package Neo4j::Driver::Plugin;
 
 =head1 SYNPOSIS
 
- package Local::MyNeo4jPlugin;
+ package Local::MyProxyPlugin;
  use parent 'Neo4j::Driver::Plugin';
  
- sub new {
-   my ($class) = @_;
-   return bless {}, $class;
- }
+ sub new { bless {}, shift }
  
  sub register {
    my ($self, $manager) = @_;
-   $manager->add_event_handler(
-     http_adapter_factory => sub {
-       Local::MyNeo4jLWPAdapter->new();
-     },
-   );
+   $manager->add_event_handler( http_adapter_factory => sub {
+     my ($continue, $driver) = @_;
+     
+     # Get and modify the default adapter
+     # (currently Neo4j::Driver::Net::HTTP::LWP)
+     my $adapter = $continue->();
+     $adapter->ua->proxy('http', 'http://192.0.2.2:3128/');
+     return $adapter;
+   });
  }
  
- package Local::MyNeo4jLWPAdapter;
- use parent 'Neo4j::Driver::Net::HTTP::LWP';
- ...;
  
  package main;
  use Neo4j::Driver 0.31;
+ use Local::MyProxyPlugin;
  
  $driver = Neo4j::Driver->new();
- $driver->plugin('Local::MyNeo4jPlugin');
+ $driver->plugin('Local::MyProxyPlugin');
 
 =head1 WARNING: EXPERIMENTAL
 
@@ -51,38 +50,25 @@ B<The entire plug-in API is currently experimental.>
 The driver's C<plugin()> method is
 L<experimental|Neo4j::Driver/"Plug-in modules"> as well.
 
-=head1 OVERVIEW
+I'm grateful for any feedback you I<(yes, you!)> might have on
+this driver's plug-in API. Please open a GitHub issue or get in
+touch via email (make sure you mention Neo4j in the subject to
+beat the spam filters).
+
+=head1 DESCRIPTION
+
+This is the abstract base class for L<Neo4j::Driver> plug-ins.
+All plug-ins must inherit from L<Neo4j::Driver::Plugin>
+(or perform the role another way). For a description of the
+required behaviour for plug-ins, see L</"METHODS"> below.
 
 Plug-ins can be used to extend and customise L<Neo4j::Driver>
 to a significant degree. Upon being loaded, a plug-in will be
 asked to register event handlers with the driver. Handlers
 are references to custom subroutines defined by the plug-in.
 They will be invoked when the event they were registered for
-is triggered.
-
-Events triggered by the driver are specified in this document;
-see L</"EVENTS"> below. Plug-ins can also define custom events.
-
-Event handlers may receive a code reference for continuing with
-the next handler registered for that event. When provided, this
-callback should be treated as the default driver action for that
-event. Depending on what a plug-in's purpose is, it may be useful
-to either invoke this callback and work with the results, or to
-ignore it entirely and handle the event independently.
-
-In some cases, handling an event or not handling an event can
-have side effects. In some cases, an event can only be handled a
-single time, with any additional handlers being ignored. In some
-cases, the return value of an event handler may be significant.
-All of these API details are still evolving.
-
-Plug-ins must inherit from C<Neo4j::Driver::Plugin>. They must
-also implement the methods described in L</"METHODS"> below.
-
-I'm grateful for any feedback you I<(yes, you!)> might have on
-this driver's plug-in API. Please open a GitHub issue or get in
-touch via email (make sure you mention Neo4j in the subject to
-beat the spam filters).
+is triggered. Events triggered by the driver are specified in
+L</"EVENTS"> below. Plug-ins can also define custom events.
 
 I<The plug-in interface as described in this document is available
 since version 0.31.>
@@ -125,15 +111,10 @@ If your plug-in defines custom events of its own, it must only
 use event names that beginn with C<x_>. All other event names
 are reserved for use by the driver itself.
 
-Note that future versions of the driver may trigger events with
-different arguments based on their name. In particular, you
-should for the time being avoid using custom event names that
-start with C<x_after_> and C<x_before_>, but other event names
-may also be affected.
-
 =head1 METHODS
 
-The plug-in itself must implement the following methods.
+All plug-ins must implement the following methods, which are
+required for the L<Neo4j::Driver::Plugin> role.
 
 =over
 
@@ -141,7 +122,7 @@ The plug-in itself must implement the following methods.
 
  sub new {
    my ($class) = @_;
-   ...
+   bless {}, $class;
  }
 
 Plug-in constructor. Returns a blessed reference. Parameters
@@ -184,8 +165,21 @@ The plug-in manager implements the following methods.
 
 Registers the given handler for the named event. When that event
 is triggered, the handler will be invoked (unless another plug-in's
-handler for the same event prevents this). Handlers will not be
-invoked in any particular defined order.
+handler for the same event prevents this). Handlers will be invoked
+the order they are added (but the order may be subject to change).
+
+Certain events provide handlers with a code reference for
+continuing with the next handler registered for that event. This
+callback should be treated as the default driver action for that
+event. Depending on what a plug-in's purpose is, it may be useful
+to either invoke this callback and work with the results, or to
+ignore it entirely and handle the event independently.
+
+ $manager->add_event_handler( get_value => sub {
+   my ($continue) = @_;
+   my $default = $continue->();
+   return eval { maybe_value() } // $default;
+ });
 
 Note that future updates to the driver may change existing events
 to provide additional arguments. Because subroutine signatures
@@ -206,6 +200,11 @@ that begin with C<x_>. Plug-ins should not trigger events with
 other names, as these are reserved for internal use by the driver
 itself.
 
+You should avoid using custom event names that start with
+C<x_after_> and C<x_before_>, because a future version of the
+driver may give special treatment to such names. There is a
+chance that certain other names may similarly be affected.
+
 Events that are triggered, but not handled, are currently silently
 ignored. This will likely change in a future version of the driver.
 
@@ -216,6 +215,41 @@ Use C<scalar> to be safe.
 =back
 
 =head1 EXTENDING THE DRIVER
+
+=head2 Module namespaces
+
+Plug-in authors are free to use the Neo4j::Driver::Plugin::
+namespace for modules that perform the L<Neo4j::Driver::Plugin>
+role. Plug-ins in this namespace should be uploaded to CPAN.
+
+Supporting modules should be placed in the sub-namespace defined by
+the plug-in. Network adapters may alternatively be placed in the
+Neo4j::Driver::Net:: namespaces, separated by network protocol.
+Adapters for generic modules should be given short names that
+indicate the module distribution (L<Neo4j::Driver::Net::HTTP::LWP>
+for L<LWP::UserAgent> etc.).
+The following module names are reserved
+for future use by the driver itself:
+
+=over
+
+=item * Neo4j::Driver::Net::Bolt::Base
+
+=item * Neo4j::Driver::Net::Bolt::Role
+
+=item * Neo4j::Driver::Net::HTTP::Base
+
+=item * Neo4j::Driver::Net::HTTP::Role
+
+=item * Neo4j::Driver::Net::HTTP::Tiny
+
+=back
+
+Result handlers that perform the L<Neo4j::Driver::Result> role
+should be placed in the Neo4j::Driver::Result:: namespace.
+
+Please don't place plug-ins or other supporting modules directly
+into the Neo4j::Driver:: namespace.
 
 =head2 Network adapter API for Bolt
 
@@ -238,7 +272,7 @@ modules") are used by the driver to delegate networking
 tasks to one of the common Perl modules for HTTP, such as L<LWP>
 or L<Mojo::UserAgent>. Driver plug-ins can also use this low-level
 access to implement special features, for example dynamic rewriting
-of Cypher queries.
+of Cypher queries or custom object-graph mapping.
 
 The driver primarily uses HTTP network adapters by first calling
 the C<request()> method, which initiates a request on the network,
@@ -303,7 +337,7 @@ C<fetch_all()> has already been called for the same request.
 
 A future version of this driver will likely replace this method
 with something that performs JSON decoding on the event before
-returning it; this change may allow increased optimisation of
+returning it; this change may allow for better optimisation of
 Jolt event parsing.
 
 =item http_header
