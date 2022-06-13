@@ -41,14 +41,14 @@ sub trigger_event {
 	
 	my $default_handler = $self->{default_handlers}->{$event};
 	my $handlers = $self->{handlers}->{$event}
-		or return $default_handler ? $default_handler->() : undef;
+		or return $default_handler ? $default_handler->() : ();
 	
-	my @callbacks;
+	my $callback = $default_handler // sub {};
 	for my $handler ( reverse @$handlers ) {
-		my $continue = $callbacks[$#callbacks] // $default_handler // sub {};
-		push @callbacks, sub { $handler->($continue, @params) };
+		my $continue = $callback;
+		$callback = sub { $handler->($continue, @params) };
 	}
-	return $callbacks[$#callbacks]->();
+	return $callback->();
 	
 	# Right now, ALL events get a continuation callback.
 	# But this will almost certainly change eventually.
