@@ -402,7 +402,7 @@ a plug-in may be given.
 Details on the implementation of plug-ins including descriptions of
 individual events are provided in L<Neo4j::Driver::Plugin>.
 
-This config option is experimental because some parts of the plug-in
+This feature is experimental because some parts of the plug-in
 API are still evolving.
 
 =head2 Concurrent transactions in HTTP sessions
@@ -571,6 +571,10 @@ if no port is specified, the protocol's default port will be used.
 The C<neo4j> URI scheme is not yet implemented. Once it is added
 to a future version of this driver, the default URI scheme will
 likely change to C<neo4j>.
+
+Note that some network environments may have issues with dual-stack
+hostnames such as C<localhost>. The connection may appear to "hang".
+Literal IP addresses like C<127.0.0.1> are not affected.
 
 =head1 ENVIRONMENT
 

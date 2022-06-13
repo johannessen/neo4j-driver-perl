@@ -43,8 +43,6 @@ later expansion).
 
 =over
 
-=item * L<Neo4j::Driver/"Parameter syntax conversion">: make stable
-
 =item * L<Neo4j::Driver::Result/"Look ahead in the result stream">:
 make C<peek()> stable once C<fetch()> reliably buffers two records
 
@@ -52,6 +50,10 @@ make C<peek()> stable once C<fetch()> reliably buffers two records
 for both nested explicit and nested autocommit transactions (for
 consistency with Bolt), but provide a driver config option (e. g.
 C<< nested_transactions => 1 >>) that lifts this restriction for HTTP
+
+Note that L<Neo4j 4.4|https://neo4j.com/release-notes/database/neo4j-4-4-0/>
+added what looks like nested tx for Bolt using C<CALL {…} TRANSACTIONS>.
+Needs investigation.
 
 =item * Calling list methods in scalar context
 (L<in Node|Neo4j::Driver::Type::Node/"Calling in scalar context">,
@@ -117,6 +119,11 @@ in a dist named S<e. g.> Neo4j::Driver::Net::HTTP::Extra. Such a plug-in might
 be directly useful to some users, but most importantly, it would serve to
 demonstrate some of the plug-in API's functionality and how that can be used.
 
+=item * We don't really target
+L<AuraDB|https://neo4j.com/cloud/platform/aura-graph-database/> or
+L<Memgraph|https://memgraph.com> etc., but it might nevertheless be
+interesting to actually try those some time.
+
 =back
 
 =head1 Other ideas for specific modules
@@ -142,6 +149,10 @@ driver and the driver's behaviour won't change it it is not present, and
 also because HTTP-only features have so far been experimental features
 only, this should not be a breaking change.
 
+=item * Convert the "unsupported option" check from C<grep> to
+<List::Util/"none"> (in C<config()> and C<_parse_options()>;
+slightly improves both performance and clarity).
+
 =back
 
 =head2 L<Neo4j::Driver::Session>
@@ -151,10 +162,11 @@ only, this should not be a breaking change.
 =item * Add
 L<transaction functions|https://neo4j.com/docs/driver-manual/4.1/session-api/simple/#driver-simple-transaction-fn>.
 These should probably consist of subrefs passed to methods called
-C<write_transaction> and C<read_transaction>. These access modes are only an
-optimisation for Enterprise features. We don't target those at present, but
-C<read_transaction> could then eventually be routed to a high-performance
-read-only server (for Bolt connections) once clusters are supported.
+C<execute_write> and C<execute_read>
+(see L<https://github.com/neo4j/neo4j-java-driver/pull/1196>).
+
+=item * Add transaction configuration; see:
+L<https://neo4j.com/docs/http-api/4.4/actions/transaction-configuration/>
 
 =back
 
@@ -193,11 +205,18 @@ the Result object, these seem slightly superfluous though.
 =item * Implement C<graph>; see
 L<https://github.com/neo4j/neo4j/blob/3.5/community/server/src/main/java/org/neo4j/server/rest/transactional/GraphExtractionWriter.java>,
 L<https://github.com/neo4j/neo4j-python-driver/wiki/1.6-changelog#160a1>.
+L<https://github.com/neo4j/neo4j-javascript-driver/issues/140#issuecomment-247203874>.
 
 =item * Add C<field()> as alias for C<get()>, enabling clients to avoid the
 possibly confusing C<< $record->get->get >> pattern. The official drivers
 only offer C<get()>, and C<field()> might be too similar to C<fields()> in
 the official Java driver, so this alias should perhaps be experimental.
+
+=item * For the query C<RETURN 1, 0, 2 AS NaN> (in F<record.t>), C<get("2")>
+should succeed. This is because in Perl, there is supposed to be no difference
+between numbers and strings; there is no field with the name C<"2">, so the
+field with I<index> C<2> needs to be returned instead. However, right now,
+C<get("2")> dies.
 
 =back
 

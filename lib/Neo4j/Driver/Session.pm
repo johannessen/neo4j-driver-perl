@@ -183,11 +183,11 @@ commit the transaction.
 
 =head2 server
 
- $address = $summary->server->address;
- $version = $summary->server->version;
+ $address = $session->server->address;
+ $version = $session->server->agent;
 
 Obtain the L<ServerInfo|Neo4j::Driver::ServerInfo>, consisting of
-the host, port and Neo4j version.
+the host, port, protocol and Neo4j version.
 
 =head1 EXPERIMENTAL FEATURES
 

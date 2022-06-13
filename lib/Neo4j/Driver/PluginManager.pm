@@ -24,7 +24,7 @@ sub new {
 
 
 sub add_event_handler {
-	# uncoverable pod (see Plugins.pod)
+	# uncoverable pod (see Plugin.pm)
 	my ($self, $event, $handler, @extra) = @_;
 	
 	croak "add_event_handler() with more than one handler unsupported" if @extra;
@@ -36,7 +36,7 @@ sub add_event_handler {
 
 
 sub trigger_event {
-	# uncoverable pod (see Plugins.pod)
+	# uncoverable pod (see Plugin.pm)
 	my ($self, $event, @params) = @_;
 	
 	my $default_handler = $self->{default_handlers}->{$event};
