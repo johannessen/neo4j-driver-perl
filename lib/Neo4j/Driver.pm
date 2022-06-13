@@ -10,6 +10,7 @@ package Neo4j::Driver;
 use Carp qw(croak);
 
 use URI 1.25;
+use Neo4j::Driver::PluginManager;
 use Neo4j::Driver::Session;
 
 use Neo4j::Driver::Type::Node;
@@ -58,6 +59,7 @@ sub new {
 	my ($class, $config, @extra) = @_;
 	
 	my $self = bless { %DEFAULTS }, $class;
+	$self->{plugins} = Neo4j::Driver::PluginManager->new;
 	
 	croak __PACKAGE__ . "->new() with multiple arguments unsupported" if @extra;
 	$config = { uri => $config } if ref $config ne 'HASH';
@@ -170,6 +172,7 @@ sub _parse_options {
 		$options{cypher_params} = v2;
 	}
 	warnings::warnif deprecated => "Config option jolt is deprecated: Jolt is now enabled by default" if defined $options{jolt};
+	warnings::warnif deprecated => "Config option net_module is deprecated; use plug-in interface" if defined $options{net_module};
 	
 	my @unsupported = ();
 	foreach my $key (keys %options) {
@@ -178,6 +181,16 @@ sub _parse_options {
 	croak "Unsupported $context option: " . join ", ", sort @unsupported if @unsupported;
 	
 	return %options;
+}
+
+
+sub plugin {
+	# uncoverable pod (experimental feature)
+	my ($self, $package, @extra) = @_;
+	
+	croak "plugin() with more than one argument is unsupported" if @extra;
+	$self->{plugins}->_register_plugin($package);
+	return $self;
 }
 
 
@@ -276,15 +289,9 @@ See L</"uri"> for details.
 
 B<This driver's development is not yet considered finalised.>
 
-As of version 0.30, the major open items are:
+As of version 0.31, the major open items are:
 
 =over
-
-=item *
-
-Finalising the API for custom networking modules.
-(This is expected to require moving closer to a plugin API,
-in addition to formal specification of the result handler API.)
 
 =item *
 
@@ -380,33 +387,23 @@ These are subject to unannounced modification or removal in future
 versions. Expect your code to break if you depend upon these
 features.
 
-=head2 Custom networking modules
+=head2 Plug-in modules
 
- use Local::MyNetworkAgent;
- $driver->config(net_module => 'Local::MyNetworkAgent');
+ $driver->plugin( 'Local::MyPlugin' );
+ $driver->plugin(  Local::MyPlugin->new );
 
-The module to be used for network communication may be specified
-using the C<net_module> config option. The specified module must
-implement the API described in L<Neo4j::Driver::Net/"EXTENSIONS">.
-Your code must C<use> or C<require> the module it specifies here.
+The driver offers a simple plug-in interface. Plug-ins are modules
+providing handlers for events that may be triggered by the driver.
+Plug-ins are loaded by calling the C<plugin()> method with the
+module name as parameter. Your code must C<use> or C<require> the
+module it specifies here. Alternatively, the blessed instance of
+a plug-in may be given.
 
-By default, the driver will try to auto-detect a suitable module.
-This will currently always result in the driver's built-in modules
-being used. Alternatively, you may specify the empty string to ask
-for the built-in modules explicitly, which will disable
-auto-detection.
+Details on the implementation of plug-ins including descriptions of
+individual events are provided in L<Neo4j::Driver::Plugin>.
 
- $driver->config(net_module => undef);  # auto-detect (the default)
- $driver->config(net_module => '');     # use the built-in modules
-
-This config option is experimental because the API for custom
-networking modules is still evolving. See L<Neo4j::Driver::Net>
-for details.
-
-It is likely that this option will soon be replaced with a new
-option that allows specifying multiple plugins instead of just a
-single module. Existing networking modules will work as plugins
-with only minimal changes.
+This config option is experimental because some parts of the plug-in
+API are still evolving.
 
 =head2 Concurrent transactions in HTTP sessions
 
@@ -459,7 +456,7 @@ L<Neo4j::Driver> implements the following configuration options.
 
 Specifies the authentication details for the Neo4j server.
 The authentication details are provided as a Perl reference
-that is made available to the networking module. Typically,
+that is made available to the network adapter. Typically,
 this is an unblessed hash reference with the authentication
 scheme declared in the hash entry C<scheme>.
 

@@ -45,9 +45,6 @@ later expansion).
 
 =item * L<Neo4j::Driver/"Parameter syntax conversion">: make stable
 
-=item * L<Neo4j::Driver/"Custom networking modules">: make stable, but
-not until at least part of the C<result_handlers> API has been specified
-
 =item * L<Neo4j::Driver::Result/"Look ahead in the result stream">:
 make C<peek()> stable once C<fetch()> reliably buffers two records
 
@@ -115,10 +112,10 @@ L<majensen/libneo4j-client#8|https://github.com/majensen/libneo4j-client/commit/
 allowing for indexing by search engines.
 
 =item * We need complete working code examples, such as that Neo4j movies app.
-Some of the deprecated functionality could also be implemented as a custom
-module named S<e. g.> Neo4j::Driver::Net::HTTP::Extra. Such a module might
+Some of the deprecated functionality could also be implemented as plug-ins
+in a dist named S<e. g.> Neo4j::Driver::Net::HTTP::Extra. Such a plug-in might
 be directly useful to some users, but most importantly, it would serve to
-demonstrate some of the net_module functionality and how that can be used.
+demonstrate some of the plug-in API's functionality and how that can be used.
 
 =back
 
@@ -271,30 +268,10 @@ L<Neo4j::Bolt> 0.4201 according to the docs; need to check source.
 
 =over
 
-=item * The lingo for the different components is not very clear. Options
-to be considered:
-
-=over
-
-=item Should "net helper" be renamed to "net controller"?
-
-=item Should "net module" be renamed to "net agent"?
-
-Problem is, "agent" is already an overloaded term.
-
-=item Should "net module" be renamed to "net plugin"?
-
-The primary problem would seem to be that usually zero or multiple plugins
-are supported, but we require exactly one plugin here. Also, currently we
-I<include> a net module with the distribution, so that's not really a plugin;
-however, we could probably just describe that as the "default plugin".
-
-=back
-
-=item * As a micro-optimisation for the HTTP net_module API, it could be
+=item * As a micro-optimisation for the HTTP net adapter API, it could be
 guaranteed for the C<http_header()> method that the returned hashref will not
 be used by the driver/controller after the next call to C<request()>, so that
-the underlying hash may be reused by the net module.
+the underlying hash may be reused by the net adapter.
 
 =back
 

@@ -4,7 +4,7 @@ use warnings;
 use utf8;
 
 package Neo4j::Driver::Net::HTTP::LWP;
-# ABSTRACT: HTTP agent adapter for libwww-perl
+# ABSTRACT: HTTP network adapter for libwww-perl
 
 
 use Carp qw(croak);
@@ -85,8 +85,6 @@ sub uri { shift->{uri_base} }
 
 sub json_coder { shift->{json_coder} }
 
-sub result_handlers { }
-
 sub http_reason { shift->{response}->message // '' }
 
 sub date_header { scalar shift->{response}->header('Date') // '' }
@@ -146,16 +144,24 @@ __END__
 
 =head1 SYNOPSIS
 
- use Neo4j::Driver::Net::HTTP::LWP;
- $driver->config( net_module => 'Neo4j::Driver::Net::HTTP::LWP' );
+ use parent 'Neo4j::Driver::Plugin';
+ 
+ sub register {
+   my ($self, $manager) = @_;
+   $manager->add_event_handler(
+     http_adapter_factory => sub {
+       my ($continue, $driver) = @_;
+       my $adapter = Neo4j::Driver::Net::HTTP::LWP->new($driver);
+       ...
+       return $adapter;
+     },
+   );
+ }
 
 You can also extend this module through inheritance:
 
- use Local::MyProxy;
- $driver->config( net_module => 'Local::MyProxy' );
- 
- package Local::MyProxy;
  use parent 'Neo4j::Driver::Net::HTTP::LWP';
+ 
  sub new {
    my $self = shift->SUPER::new(@_);
    $self->ua->proxy('http', 'http://proxy.example.net:8081/');
@@ -164,8 +170,8 @@ You can also extend this module through inheritance:
 
 =head1 DESCRIPTION
 
-The L<Neo4j::Driver::Net::HTTP::LWP> package is an HTTP networking
-module for L<Neo4j::Driver>, using L<LWP::UserAgent> to connect to
+The L<Neo4j::Driver::Net::HTTP::LWP> package is an HTTP network
+adapter for L<Neo4j::Driver>, using L<LWP::UserAgent> to connect to
 the Neo4j server via HTTP or HTTPS.
 
 HTTPS connections require L<LWP::Protocol::https> to be installed.
@@ -173,7 +179,7 @@ HTTPS connections require L<LWP::Protocol::https> to be installed.
 =head1 METHODS
 
 L<Neo4j::Driver::Net::HTTP::LWP> implements the following methods;
-see L<Neo4j::Driver::Net/"API of an HTTP networking module">.
+see L<Neo4j::Driver::Plugin/"Network adapter API for HTTP">.
 
 =over
 
@@ -189,11 +195,7 @@ see L<Neo4j::Driver::Net/"API of an HTTP networking module">.
 
 =item * C<json_coder>
 
-=item * C<new>
-
 =item * C<request>
-
-=item * C<result_handlers>
 
 =item * C<uri>
 
@@ -204,7 +206,14 @@ has been fully received. Therefore none of the other methods will
 ever block.
 
 In addition to the methods listed above,
-L<Neo4j::Driver::Net::HTTP::LWP> implements the following method.
+L<Neo4j::Driver::Net::HTTP::LWP> implements the following methods.
+
+=head2 new
+
+ $adapter = Neo4j::Driver::Net::HTTP::LWP->new( $driver );
+
+Creates a new L<Neo4j::Driver::Net::HTTP::LWP> adapter and
+configures it using the given L<Neo4j::Driver>.
 
 =head2 ua
 
@@ -216,7 +225,7 @@ L<Neo4j::Driver::Net::HTTP::LWP> implements the following method.
  }
 
 Returns the L<LWP::UserAgent> instance in use.
-Meant to facilitate subclassing.
+Meant to facilitate reuse.
 
 =head1 BUGS
 
