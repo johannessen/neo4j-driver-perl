@@ -74,11 +74,15 @@ sub _check_uri {
 	my $uri = $self->{uri};
 	
 	if ($uri) {
-		$uri =~ s|^|http://| if $uri !~ m{:|/};
+		$uri = "[$uri]" if $uri =~ m{^[0-9a-f:]*::|^(?:[0-9a-f]+:){6}}i;
+		$uri =~ s|^|http://| if $uri !~ m{:|/} || $uri =~ m{^\[.+\]$};
 		$uri =~ s|^|http:| if $uri =~ m{^//};
 		$uri = URI->new($uri);
 		
-		if (! $uri->scheme || $uri->scheme !~ m/^https?|bolt$/) {
+		if ( ! $uri->scheme ) {
+			croak sprintf "Failed to parse URI '%s'", $uri;
+		}
+		if ( $uri->scheme !~ m/^https?$|^bolt$/ ) {
 			croak sprintf "URI scheme '%s' unsupported; use 'http' or 'bolt'", $uri->scheme // "";
 		}
 		

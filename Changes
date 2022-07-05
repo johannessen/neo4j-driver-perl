@@ -1,5 +1,9 @@
 Revision history for Neo4j::Driver
 
+0.3151  2022-07-05
+
+ - Improve IPv6 support
+
 0.31  2022-06-13
 
  - Replace experimental net_module config option with plug-in interface
