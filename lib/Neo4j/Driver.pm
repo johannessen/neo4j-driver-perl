@@ -576,9 +576,11 @@ The C<neo4j> URI scheme is not yet implemented. Once it is added
 to a future version of this driver, the default URI scheme will
 likely change to C<neo4j>.
 
-Note that some network environments may have issues with dual-stack
-hostnames such as C<localhost>. The connection may appear to "hang".
-Literal IP addresses like C<127.0.0.1> are not affected.
+Note that there sometimes are issues with IPv4/IPv6 dual-stack
+hostnames such as C<localhost> when using HTTP. The connection may
+appear to "hang". Literal IP addresses like C<127.0.0.1> are not
+affected. See L<Neo4j::Driver::Net/"IPv6 / dual-stack support">
+for further discussion.
 
 =head1 ENVIRONMENT
 

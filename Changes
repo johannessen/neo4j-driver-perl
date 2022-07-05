@@ -3,6 +3,8 @@ Revision history for Neo4j::Driver
 0.3151  2022-07-05
 
  - Improve IPv6 support
+ - Add possible strategies to resolve HTTP connection problems when using
+   dual-stack host names (e. g. localhost) to driver documentation
 
 0.31  2022-06-13
 
