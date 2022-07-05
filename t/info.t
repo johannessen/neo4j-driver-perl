@@ -98,11 +98,10 @@ my $session = eval { $driver->session(database => 'system') };
 
 subtest 'live ServerInfo' => sub {
 	plan skip_all => "(no session)" unless $session;
-	plan tests => 8;
+	plan tests => 7;
 	my $server;
 	lives_and { ok $server = $session->server } 'get ServerInfo';
 	isa_ok $server, 'Neo4j::Driver::ServerInfo', 'ServerInfo';
-	lives_and { my $a = Neo4j_Test->server_address(); like($server->address(), qr/$a$/) } 'server address';
 	my ($vinfo, $protocol, $result) = ("") x 3;
 	lives_and { ok $vinfo = $server->agent } 'server version';
 	like $vinfo, qr(^Neo4j/\d+\.\d+\.\d), 'server version syntax';
