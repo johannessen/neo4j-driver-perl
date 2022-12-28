@@ -60,16 +60,3 @@ sub _results { () }  # no actual results provided here
 
 
 1;
-
-__END__
-
-=head1 DESCRIPTION
-
-The L<Neo4j::Driver::Result::Text> package is not part of the
-public L<Neo4j::Driver> API.
-
-=head1 SEE ALSO
-
-L<Neo4j::Driver::Net>
-
-=cut
