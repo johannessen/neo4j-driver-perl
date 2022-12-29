@@ -1,6 +1,7 @@
 name: Build and Test
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - "*"
@@ -15,7 +16,7 @@ jobs:
     name: Build distribution
     runs-on: ubuntu-latest
     container:
-      image: perldocker/perl-tester:5.32
+      image: perldocker/perl-tester:5.36
     steps:
       - name: git checkout
         uses: actions/checkout@v2
@@ -48,30 +49,45 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - neo4j: "4.3.0"
+          - neo4j: "5.3.0"   # Neo4j 5
+            perl: "5.36"
+          - neo4j: "4.4.15"  # Neo4j 4
             perl: "5.34"
-          #- neo4j: "4.2.8"
+          #- neo4j: "4.2.4"   # Neo4j 4, old-style Jolt
           #  perl: "5.32"
-          - neo4j: "4.2.4"   # Neo4j 4, old-style Jolt
-            perl: "5.32"
-          - neo4j: "4.0.11"  # Neo4j 4, without Jolt
-            perl: "5.24"
-          - neo4j: "3.5.28"  # Neo4j 3
-            perl: "5.14"
+          #- neo4j: "4.0.11"  # Neo4j 4, without Jolt
+          #  perl: "5.30"
+          - neo4j: "3.5.35"  # Neo4j 3
+            perl: "5.26"
           - neo4j: "2.3.12"  # Neo4j 2
-            perl: "5.10"
+            perl: "5.16"
     env:
       TEST_NEO4J_PASSWORD: xkcd_792
       NEO4J_DISTS: "https://dist.neo4j.org"
       NEO4J: ${{ matrix.neo4j }}
     steps:
 
+      - name: Install Neo4j 5
+        if: ${{ startsWith( matrix.neo4j , '5.') }}
+        run: |
+          curl -sLO https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.5%2B8/OpenJDK17U-jre_x64_linux_hotspot_17.0.5_8.tar.gz
+          tar -xzf ibm-semeru-open-jre_x64_linux_17.0.5_8_openj9-0.35.0.tar.gz
+          export JAVA_HOME=jdk-17.0.5+8-jre
+          eval "${JAVA_HOME:-/usr}/bin/java -version"
+          curl -sLO $NEO4J_DISTS/neo4j-community-$NEO4J-unix.tar.gz
+          tar -xzf neo4j-community-$NEO4J-unix.tar.gz
+          neo4j-community-$NEO4J/bin/neo4j-admin dbms set-initial-password "$TEST_NEO4J_PASSWORD" || echo "Password change using neo4j-admin failed."
+          neo4j-community-$NEO4J/bin/neo4j start
+          perl -E "print'Waiting for server to be ready ...';for(0..60){last if 0+\`grep Started neo4j-community-$NEO4J/logs/neo4j.log > /dev/null 2>&1 && echo 1 || echo 0\`;print'.';sleep 1}say' OK.'"
+          cat neo4j-community-$NEO4J/logs/neo4j.log
+          neo4j-community-$NEO4J/bin/neo4j status
+
       - name: Install Neo4j 4
         if: ${{ startsWith( matrix.neo4j , '4.') }}
         run: |
-          curl -sLO https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.11%2B9/OpenJDK11U-jre_x64_linux_hotspot_11.0.11_9.tar.gz
-          tar -xzf OpenJDK11U-jre_x64_linux_hotspot_11.0.11_9.tar.gz
-          export JAVA_HOME=jdk-11.0.11+9-jre
+          curl -sLO https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.17%2B8/OpenJDK11U-jre_x64_linux_hotspot_11.0.17_8.tar.gz
+          tar -xzf OpenJDK11U-jre_x64_linux_hotspot_11.0.17_8.tar.gz
+          export JAVA_HOME=jdk-11.0.17+8-jre
           eval "${JAVA_HOME:-/usr}/bin/java -version"
           curl -sLO $NEO4J_DISTS/neo4j-community-$NEO4J-unix.tar.gz
           tar -xzf neo4j-community-$NEO4J-unix.tar.gz
@@ -84,9 +100,9 @@ jobs:
       - name: Install Neo4j 2/3
         if: ${{ startsWith( matrix.neo4j , '3.') || startsWith( matrix.neo4j , '2.') }}
         run: |
-          curl -sLO https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u292-b10/OpenJDK8U-jre_x64_linux_hotspot_8u292b10.tar.gz
-          tar -xzf OpenJDK8U-jre_x64_linux_hotspot_8u292b10.tar.gz
-          export JAVA_HOME="`pwd`/jdk8u292-b10-jre"
+          curl -sLO https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u352-b08/OpenJDK8U-jre_x64_linux_hotspot_8u352b08.tar.gz
+          tar -xzf OpenJDK8U-jre_x64_linux_hotspot_8u352b08.tar.gz
+          export JAVA_HOME="`pwd`/jdk8u352-b08-jre"
           eval "${JAVA_HOME:-/usr}/bin/java -version"
           curl -sLO $NEO4J_DISTS/neo4j-community-$NEO4J-unix.tar.gz
           tar -xzf neo4j-community-$NEO4J-unix.tar.gz

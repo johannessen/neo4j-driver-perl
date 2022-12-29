@@ -25,17 +25,39 @@ sub type {
 }
 
 
+sub start_element_id {
+	my ($self) = @_;
+	
+	return $$self->{_meta}->{element_start} if defined $$self->{_meta}->{element_start};
+	return $$self->{_meta}->{start};
+}
+
+
 sub start_id {
 	my ($self) = @_;
 	
-	return $$self->{_meta}->{start};
+	return $$self->{_meta}->{start} if defined $$self->{_meta}->{start};
+	my ($id) = $$self->{_meta}->{element_start} =~ m/^4:[^:]*:([0-9]+)/;
+	$id = 0 + $id if defined $id;
+	return $id;
+}
+
+
+sub end_element_id {
+	my ($self) = @_;
+	
+	return $$self->{_meta}->{element_end} if defined $$self->{_meta}->{element_end};
+	return $$self->{_meta}->{end};
 }
 
 
 sub end_id {
 	my ($self) = @_;
 	
-	return $$self->{_meta}->{end};
+	return $$self->{_meta}->{end} if defined $$self->{_meta}->{end};
+	my ($id) = $$self->{_meta}->{element_end} =~ m/^4:[^:]*:([0-9]+)/;
+	$id = 0 + $id if defined $id;
+	return $id;
 }
 
 
@@ -48,10 +70,21 @@ sub properties {
 }
 
 
+sub element_id {
+	my ($self) = @_;
+	
+	return $$self->{_meta}->{element_id} if defined $$self->{_meta}->{element_id};
+	return $$self->{_meta}->{id};
+}
+
+
 sub id {
 	my ($self) = @_;
 	
-	return $$self->{_meta}->{id};
+	return $$self->{_meta}->{id} if defined $$self->{_meta}->{id};
+	my ($id) = $$self->{_meta}->{element_id} =~ m/^5:[^:]*:([0-9]+)/;
+	$id = 0 + $id if defined $id;
+	return $id;
 }
 
 
@@ -89,9 +122,9 @@ __END__
  $q = "MATCH (a:Person)-[k:KNOWS]->(b:Person) RETURN k";
  $rel = $driver->session->run($q)->list->[0]->get('k');
  
- print 'Person # ', $rel->start_id;
+ print 'Person id ', $rel->start_element_id;
  print ' ', $rel->type;
- print ' person # ', $rel->end_id;
+ print ' person id ', $rel->end_element_id;
  print ' since ', $rel->properties->{since};
 
 =head1 DESCRIPTION
@@ -109,12 +142,27 @@ distinct L<Neo4j::Driver::Type::Relationship> objects will be
 created by the driver. If your intention is to verify that two
 L<Neo4j::Driver::Type::Relationship> objects in Perl describe the
 same node in the Neo4j database, you need to compare their
-IDs.
+element IDs.
 
 =head1 METHODS
 
 L<Neo4j::Driver::Type::Relationship> inherits all methods from
 L<Neo4j::Types::Relationship>.
+
+=head2 element_id
+
+ $string = $relationship->element_id;
+
+Return an ID for this relationship that is unique within
+a particular context, for example the current transaction.
+
+For relationships retrieved from S<Neo4j 5>, this method
+provides the new element ID string. For older Neo4j versions,
+this method provides the legacy numeric ID instead.
+
+Neo4j element IDs are not designed to be persistent. As such,
+if you want a public identity to use for your relationships,
+attaching an explicit 'id' property is a better choice.
 
 =head2 get
 
@@ -124,9 +172,24 @@ See L<Neo4j::Types::Relationship/"get">.
 
 =head2 id
 
- $id = $relationship->id;
+ $number = $relationship->id;
 
-See L<Neo4j::Types::Relationship/"id">.
+Return a legacy numeric ID for this relationship that is unique
+within a particular context, for example the current transaction.
+
+Neo4j 5 has B<deprecated> numeric IDs. They will likely become
+unavailable in future Neo4j versions. This method will try to
+auto-generate a S<numeric ID> from the new S<element ID> value
+(or return C<undef> if that fails). A deprecation warning will
+be issued by this method in a future version of this driver.
+
+Neo4j relationship IDs are not designed to be persistent. As such,
+if you want a public identity to use for your relationships,
+attaching an explicit 'id' property is a better choice.
+
+Legacy IDs are always integer numbers.
+A relationship with the ID C<0> may exist.
+Nodes and relationships do not share the same ID space.
 
 =head2 properties
 
@@ -135,17 +198,49 @@ See L<Neo4j::Types::Relationship/"id">.
 
 See L<Neo4j::Types::Relationship/"properties">.
 
+=head2 start_element_id
+
+ $string = $relationship->start_element_id;
+
+Return an element ID for the node where this relationship starts.
+
+For relationships retrieved from S<Neo4j 5>, this method
+provides the new element ID string. For older Neo4j versions,
+this method provides the legacy numeric ID instead.
+
 =head2 start_id
 
- $id = $relationship->start_id;
+ $number = $relationship->start_id;
 
-See L<Neo4j::Types::Relationship/"start_id">.
+Return a numeric ID for the node where this relationship starts.
+
+Neo4j 5 has B<deprecated> numeric IDs. They will likely become
+unavailable in future Neo4j versions. This method will try to
+auto-generate a S<numeric ID> from the new S<element ID> value
+(or return C<undef> if that fails). A deprecation warning will
+be issued by this method in a future version of this driver.
+
+=head2 end_element_id
+
+ $string = $relationship->end_element_id;
+
+Return an element ID for the node where this relationship ends.
+
+For relationships retrieved from S<Neo4j 5>, this method
+provides the new element ID string. For older Neo4j versions,
+this method provides the legacy numeric ID instead.
 
 =head2 end_id
 
- $id = $relationship->end_id;
+ $number = $relationship->end_id;
 
-See L<Neo4j::Types::Relationship/"end_id">.
+Return a numeric ID for the node where this relationship ends.
+
+Neo4j 5 has B<deprecated> numeric IDs. They will likely become
+unavailable in future Neo4j versions. This method will try to
+auto-generate a S<numeric ID> from the new S<element ID> value
+(or return C<undef> if that fails). A deprecation warning will
+be issued by this method in a future version of this driver.
 
 =head2 type
 

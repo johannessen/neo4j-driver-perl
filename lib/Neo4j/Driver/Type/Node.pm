@@ -37,11 +37,30 @@ sub properties {
 }
 
 
+sub element_id {
+	my ($self) = @_;
+	
+	return $$self->{_meta}->{element_id} if defined $$self->{_meta}->{element_id};
+	return $$self->{_meta}->{id};
+}
+
+
 sub id {
 	my ($self) = @_;
 	
-	return $$self->{_meta}->{id};
+	return $$self->{_meta}->{id} if defined $$self->{_meta}->{id};
+	my ($id) = $$self->{_meta}->{element_id} =~ m/^4:[^:]*:([0-9]+)/;
+	$id = 0 + $id if defined $id;
+	return $id;
 }
+# Unlike Bolt v5, the Jolt v2 format regrettably removes the legacy
+# numeric ID from the response entirely. Therefore we generate it
+# here using the algorithm from Neo4j's DefaultElementIdMapperV1;
+# the final part of the element ID is identical to the legacy ID
+# according to CypherFunctions in Neo4j 5.3. This may break with
+# future Neo4j versions.
+# https://github.com/neo4j/neo4j/blob/0c092b70cc/community/kernel/src/main/java/org/neo4j/kernel/api/DefaultElementIdMapperV1.java#L62-L68
+# https://github.com/neo4j/neo4j/blob/0c092b70cc/community/cypher/runtime-util/src/main/java/org/neo4j/cypher/operations/CypherFunctions.java#L771-L802
 
 
 sub deleted {
@@ -78,7 +97,7 @@ __END__
  $query = 'MATCH (m:Movie) RETURN m LIMIT 1';
  $node = $driver->session->run($query)->single->get('m');
  
- say 'Movie # ', $node->id(), ' :';
+ say 'Movie id ', $node->element_id(), ' :';
  say '   ', $node->get('name'), ' / ', $node->get('year');
  say '   Labels: ', join ', ', $node->labels;
 
@@ -97,12 +116,27 @@ distinct L<Neo4j::Driver::Type::Node> objects will be
 created by the driver. If your intention is to verify that two
 L<Neo4j::Driver::Type::Node> objects in Perl describe the
 same node in the Neo4j database, you need to compare their
-IDs.
+element IDs.
 
 =head1 METHODS
 
 L<Neo4j::Driver::Type::Node> inherits all methods from
 L<Neo4j::Types::Node>.
+
+=head2 element_id
+
+ $string = $node->element_id;
+
+Return an ID for this node that is unique within
+a particular context, for example the current transaction.
+
+For nodes retrieved from S<Neo4j 5>, this method
+provides the new element ID string. For older Neo4j versions,
+this method provides the legacy numeric ID instead.
+
+Neo4j element IDs are not designed to be persistent. As such,
+if you want a public identity to use for your nodes,
+attaching an explicit 'id' property is a better choice.
 
 =head2 get
 
@@ -112,9 +146,24 @@ See L<Neo4j::Types::Node/"get">.
 
 =head2 id
 
- $id = $node->id;
+ $number = $node->id;
 
-See L<Neo4j::Types::Node/"id">.
+Return a legacy numeric ID for this node that is unique
+within a particular context, for example the current transaction.
+
+Neo4j 5 has B<deprecated> numeric IDs. They will likely become
+unavailable in future Neo4j versions. This method will try to
+auto-generate a S<numeric ID> from the new S<element ID> value
+(or return C<undef> if that fails). A deprecation warning will
+be issued by this method in a future version of this driver.
+
+Neo4j node IDs are not designed to be persistent. As such,
+if you want a public identity to use for your nodes,
+attaching an explicit 'id' property is a better choice.
+
+Legacy IDs are always integer numbers.
+A node with the ID C<0> may exist.
+Nodes and relationships do not share the same ID space.
 
 =head2 labels
 

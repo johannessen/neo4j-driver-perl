@@ -1,7 +1,9 @@
 Revision history for Neo4j::Driver
 
-0.3151  2022-07-05
+0.32  2022-12-29
 
+ - Introduce Neo4j 5 non-numeric element ID for nodes and relationships
+ - Fix test suite for Neo4j 5
  - Improve IPv6 support
  - Add possible strategies to resolve HTTP connection problems when using
    dual-stack host names (e. g. localhost) to driver documentation

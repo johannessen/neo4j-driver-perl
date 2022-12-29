@@ -248,7 +248,7 @@ This extends the uniformity across languages, which is a
 stated goal of the Neo4j Driver API, to Perl.
 
 This driver targets the Neo4j community edition,
-version 2.3, 3.x and 4.x. The Neo4j enterprise edition
+version 2.x, 3.x, 4.x, and 5.x. The Neo4j enterprise edition
 and AuraDB are only supported as far as practical,
 but patches will be accepted.
 

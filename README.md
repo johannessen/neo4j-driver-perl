@@ -9,7 +9,7 @@ This driver extends the uniformity across languages, which is a stated goal of
 the Neo4j Driver API, to Perl. The downside is that this driver doesn't offer
 fully-fledged object bindings like the [REST::Neo4p][] module does.
 Nor does it offer any DBI integration. However, it avoids the legacy `cypher`
-endpoint, assuring compatibility with Neo4j versions 2.3, 3.x and 4.x.
+endpoint, assuring compatibility with Neo4j versions 2.x, 3.x, 4.x, and 5.x.
 
 See the [TODO][] document and Github for known issues and planned
 improvements. Please report new issues and other feedback on Github.

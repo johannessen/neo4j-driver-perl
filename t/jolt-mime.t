@@ -15,7 +15,7 @@ use Neo4j_Test::MockHTTP qw(response_for);
 
 use Neo4j::Driver;
 
-plan tests => 4 + 1;
+plan tests => 5 + 1;
 
 
 my %empty_json = ( json => {
@@ -35,20 +35,24 @@ response_for 'json params' => {
 	content_type => 'application/json;foo=bar',
 	%empty_json,
 };
+response_for 'jolt v1 explicit' => {
+	content_type => 'application/vnd.neo4j.jolt-v1+json-seq',
+	%empty_jolt,
+};
 response_for 'jolt v1 ndjson' => {
 	content_type => 'application/vnd.neo4j.jolt',
 	%empty_jolt,
 };
-response_for 'jolt v1 sparse' => {
-	content_type => 'application/vnd.neo4j.jolt+json-seq;strict=false',
+response_for 'jolt v2 sparse' => {
+	content_type => 'application/vnd.neo4j.jolt-v2+json-seq;strict=false',
 	%empty_jolt,
 };
-response_for 'jolt v1 strict' => {
-	content_type => 'application/vnd.neo4j.jolt+json-seq;strict=true',
+response_for 'jolt v2 strict' => {
+	content_type => 'application/vnd.neo4j.jolt-v2+json-seq;strict=true',
 	%empty_jolt,
 };
-response_for 'jolt v1' => {
-	content_type => 'application/vnd.neo4j.jolt+json-seq',
+response_for 'jolt v2' => {
+	content_type => 'application/vnd.neo4j.jolt-v2+json-seq',
 	%empty_jolt,
 };
 response_for 'text' => {
@@ -105,19 +109,35 @@ subtest 'accept json' => sub {
 
 
 subtest 'accept json + jolt v1' => sub {
-	plan tests => 2 * 2;
+	plan tests => 2 * 3;
 	my @accept;
 	@accept = driver_accept( neo4j_version => '4.2.0' );
 	in_or_diag 'application/json', \@accept, 'accept json 4.2';
 	in_or_diag 'application/vnd.neo4j.jolt+json-seq', \@accept, 'accept jolt v1 4.2';
+	not_or_diag 'application/vnd.neo4j.jolt-v2+json-seq', \@accept, 'no accept jolt v2 4.2';
 	@accept = driver_accept( neo4j_version => '4.4.15' );
 	in_or_diag 'application/json', \@accept, 'accept json 4.4';
 	in_or_diag 'application/vnd.neo4j.jolt+json-seq', \@accept, 'accept jolt v1 4.4';
+	not_or_diag 'application/vnd.neo4j.jolt-v2+json-seq', \@accept, 'no accept jolt v2 4.4';
+};
+
+
+subtest 'accept json + jolt v2' => sub {
+	plan tests => 2 * 3;
+	my @accept;
+	@accept = driver_accept( neo4j_version => '5.1.0' );
+	in_or_diag 'application/json', \@accept, 'accept json 5.1';
+	in_or_diag 'application/vnd.neo4j.jolt-v2+json-seq', \@accept, 'accept jolt v2 5.1';
+	not_or_diag 'application/vnd.neo4j.jolt+json-seq', \@accept, 'no accept jolt v1 5.1';
+	@accept = driver_accept( neo4j_version => '5.3.0' );
+	in_or_diag 'application/json', \@accept, 'accept json 5.3';
+	in_or_diag 'application/vnd.neo4j.jolt-v2+json-seq', \@accept, 'accept jolt v2 5.3';
+	not_or_diag 'application/vnd.neo4j.jolt+json-seq', \@accept, 'no accept jolt v1 5.3';
 };
 
 
 subtest 'deprecated/internal jolt option' => sub {
-	plan tests => 5 * 2;
+	plan tests => 6 * 2;
 	my @accept;
 	@accept = driver_accept( jolt => 0 );
 	not_or_diag qr{application/vnd\.neo4j\.jolt\b}, \@accept, 'jolt=0 no accept jolt';
@@ -134,19 +154,23 @@ subtest 'deprecated/internal jolt option' => sub {
 	@accept = driver_accept( jolt => 'ndjson' );
 	in_or_diag 'application/vnd.neo4j.jolt', \@accept, 'jolt=ndjson accept ndjson';
 	not_or_diag 'application/json', \@accept, 'jolt=ndjson no accept json';
+	@accept = driver_accept( jolt => 'v1', neo4j_version => '4.2.4' );
+	in_or_diag 'application/vnd.neo4j.jolt+json-seq', \@accept, 'jolt=v1 accept jolt v1 4.2';
+	not_or_diag 'application/vnd.neo4j.jolt-v2+json-seq', \@accept, 'jolt=v1 no accept jolt v2 4.2';
 };
 
 
 subtest 'acceptable' => sub {
-	plan tests => 6 + 5;
+	plan tests => 7 + 5;
 	my $mock_plugin = Neo4j_Test::MockHTTP->new;
 	my $s = Neo4j::Driver->new('http:')->plugin($mock_plugin)->session(database => 'dummy');
 	lives_and { isa_ok $s->run('json'), 'Neo4j::Driver::Result::JSON' } 'json';
 	lives_and { isa_ok $s->run('json params'), 'Neo4j::Driver::Result::JSON' } 'json params';
+	lives_and { isa_ok $s->run('jolt v1 explicit'), 'Neo4j::Driver::Result::Jolt' } 'jolt v1 explicit';
 	lives_and { isa_ok $s->run('jolt v1 ndjson'), 'Neo4j::Driver::Result::Jolt' } 'jolt v1 ndjson';
-	lives_and { isa_ok $s->run('jolt v1 sparse'), 'Neo4j::Driver::Result::Jolt' } 'jolt v1 sparse';
-	lives_and { isa_ok $s->run('jolt v1 strict'), 'Neo4j::Driver::Result::Jolt' } 'jolt v1 strict';
-	lives_and { isa_ok $s->run('jolt v1'), 'Neo4j::Driver::Result::Jolt' } 'jolt';
+	lives_and { isa_ok $s->run('jolt v2 sparse'), 'Neo4j::Driver::Result::Jolt' } 'jolt v2 sparse';
+	lives_and { isa_ok $s->run('jolt v2 strict'), 'Neo4j::Driver::Result::Jolt' } 'jolt v2 strict';
+	lives_and { isa_ok $s->run('jolt v2'), 'Neo4j::Driver::Result::Jolt' } 'jolt';
 	dies_ok { $s->run('text') } 'text dies';
 	ok $@ !~ m/\bskipping result parsing\b/i, 'text parsed';
 	throws_ok { $s->run('html') } qr/\bskipping result parsing\b/i, 'html';

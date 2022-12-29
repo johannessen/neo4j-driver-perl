@@ -241,8 +241,9 @@ sub _deep_bless {
 sub _accept_header {
 	my (undef, $want_jolt, $method) = @_;
 	
+	# 'v1' is used as an internal marker for Neo4j 4
 	# Note: Neo4j < 4.2 doesn't fail gracefully if Jolt is the only acceptable response type.
-	return if $want_jolt;
+	return if $want_jolt && $want_jolt ne 'v1';
 	
 	return ($ACCEPT_HEADER_POST) if $method eq 'POST';
 	return ($ACCEPT_HEADER);

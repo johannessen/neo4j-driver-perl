@@ -131,6 +131,9 @@ sub _run {
 sub _accept_for {
 	my ($self, $method) = @_;
 	
+	$self->{want_jolt} = 'v1' if ! defined $self->{want_jolt}
+		&& $self->{server_info} && $self->{server_info}->{version} =~ m{^Neo4j/4\.[234]\.};
+	
 	# GET requests may fail if Neo4j sees clients that support Jolt, see neo4j #12644
 	my @modules = @RESULT_MODULES;
 	unshift @modules, $self->{http_agent}->result_handlers if $self->{http_agent}->can('result_handlers');
