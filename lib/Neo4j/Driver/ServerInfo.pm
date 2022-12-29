@@ -134,9 +134,9 @@ This method may be deprecated and removed in future.
 L<Neo4j::Driver::B<ResultSummary>>
 
 =item * Equivalent documentation for the official Neo4j drivers:
-L<ServerInfo (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/summary/ServerInfo.html>,
-L<IServerInfo (.NET)|https://neo4j.com/docs/api/dotnet-driver/4.0/html/24780fbc-1b81-92a8-97f6-a484475e18dc.htm>,
-L<ServerInfo (Python)|https://neo4j.com/docs/api/python-driver/current/api.html#serverinfo>
+L<ServerInfo (Java)|https://neo4j.com/docs/api/java-driver/5.2/org.neo4j.driver/org/neo4j/driver/summary/ServerInfo.html>,
+L<IServerInfo (.NET)|https://neo4j.com/docs/api/dotnet-driver/5.2/html/24780fbc-1b81-92a8-97f6-a484475e18dc.htm>,
+L<ServerInfo (Python)|https://neo4j.com/docs/api/python-driver/5.2/api.html#serverinfo>
 
 =back
 

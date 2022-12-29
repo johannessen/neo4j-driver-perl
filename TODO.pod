@@ -212,6 +212,12 @@ possibly confusing C<< $record->get->get >> pattern. The official drivers
 only offer C<get()>, and C<field()> might be too similar to C<fields()> in
 the official Java driver, so this alias should perhaps be experimental.
 
+See also L<https://www.nntp.perl.org/group/perl.perl5.porters/2022/06/msg264165.html>,
+which makes the point that Perl is about explicitly typed operations. In this
+spirit, it may make sense to offer C<field()> (only accepting field names)
+I<and> C<index()> (only accepting indices). Then C<get()> would continue to
+exist independently and DWIM.
+
 =item * For the query C<RETURN 1, 0, 2 AS NaN> (in F<record.t>), C<get("2")>
 should succeed. This is because in Perl, there is supposed to be no difference
 between numbers and strings; there is no field with the name C<"2">, so the

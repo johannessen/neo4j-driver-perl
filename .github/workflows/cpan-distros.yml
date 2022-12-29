@@ -34,7 +34,7 @@ jobs:
           NEO4J_DISTS: "https://dist.neo4j.org"
 
       - name: git checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install Neo4j::Driver dependencies
         run: |
           dzil authordeps --missing | cpanm -nq

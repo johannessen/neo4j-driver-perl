@@ -475,12 +475,12 @@ L<Neo4j::Driver::Plugin/"USE OF INTERNAL APIS">.
 =item * L<Neo4j::Driver::B<Result>>
 
 =item * Equivalent documentation for the official Neo4j drivers:
-L<Transaction (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/Transaction.html>,
-L<Transaction (JavaScript)|https://neo4j.com/docs/api/javascript-driver/4.4/class/lib6/transaction.js~Transaction.html>,
-L<ITransaction (.NET)|https://neo4j.com/docs/api/dotnet-driver/4.4/html/b64c7dfe-87e9-8b85-5a02-8ff03800b67b.htm>,
-L<Sessions & Transactions (Python)|https://neo4j.com/docs/api/python-driver/current/api.html#transaction>
+L<Transaction (Java)|https://neo4j.com/docs/api/java-driver/5.2/org.neo4j.driver/org/neo4j/driver/Transaction.html>,
+L<Transaction (JavaScript)|https://neo4j.com/docs/api/javascript-driver/5.2/class/lib6/transaction.js~Transaction.html>,
+L<ITransaction (.NET)|https://neo4j.com/docs/api/dotnet-driver/5.2/html/b64c7dfe-87e9-8b85-5a02-8ff03800b67b.htm>,
+L<Sessions & Transactions (Python)|https://neo4j.com/docs/api/python-driver/5.2/api.html#transaction>
 
-=item * Neo4j L<Transactional Cypher HTTP API|https://neo4j.com/docs/http-api/4.4/actions/>
+=item * Neo4j L<Transactional Cypher HTTP API|https://neo4j.com/docs/http-api/5/actions/>
 
 =item * L<Feature::Compat::Try>
 

@@ -36,7 +36,7 @@ which L<Neo4j::Bolt> depends on internally. Use HTTP instead.
 
 =item * L<Neo4j::Driver>
 
-=item * L<"Temporal values" in Neo4j Cypher Manual|https://neo4j.com/docs/cypher-manual/current/syntax/temporal/>
+=item * L<"Temporal values" in Neo4j Cypher Manual|https://neo4j.com/docs/cypher-manual/5/syntax/temporal/>
 
 =back
 

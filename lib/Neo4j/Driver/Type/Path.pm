@@ -141,7 +141,7 @@ their labels and types. This is due to an issue in the Neo4j server.
 =item * L<Neo4j::Types::Path>
 
 =item * Equivalent documentation for the official Neo4j drivers:
-L<Path (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/types/Path.html>
+L<Path (Java)|https://neo4j.com/docs/api/java-driver/5.2/org.neo4j.driver/org/neo4j/driver/types/Path.html>
 
 =back
 

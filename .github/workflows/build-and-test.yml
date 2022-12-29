@@ -19,7 +19,7 @@ jobs:
       image: perldocker/perl-tester:5.36
     steps:
       - name: git checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install dependencies
         run: |
           dzil authordeps --missing | cpanm -nq
@@ -35,7 +35,7 @@ jobs:
           NO_NETWORK_TESTING: 1
       - name: Build
         run: dzil build --no-tgz --in build_dir
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: build_dir
           path: build_dir
@@ -71,7 +71,7 @@ jobs:
         if: ${{ startsWith( matrix.neo4j , '5.') }}
         run: |
           curl -sLO https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.5%2B8/OpenJDK17U-jre_x64_linux_hotspot_17.0.5_8.tar.gz
-          tar -xzf ibm-semeru-open-jre_x64_linux_17.0.5_8_openj9-0.35.0.tar.gz
+          tar -xzf OpenJDK17U-jre_x64_linux_hotspot_17.0.5_8.tar.gz
           export JAVA_HOME=jdk-17.0.5+8-jre
           eval "${JAVA_HOME:-/usr}/bin/java -version"
           curl -sLO $NEO4J_DISTS/neo4j-community-$NEO4J-unix.tar.gz
@@ -120,7 +120,7 @@ jobs:
         with:
           perl-version: ${{ matrix.perl }}
       - name: Get distribution
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: build_dir
           path: .

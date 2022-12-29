@@ -213,8 +213,8 @@ is returned instead.
 =item * L<Neo4j::Types::Node>
 
 =item * Equivalent documentation for the official Neo4j drivers:
-L<Node (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/types/Node.html>,
-L<Node (Python)|https://neo4j.com/docs/api/python-driver/current/api.html#node>
+L<Node (Java)|https://neo4j.com/docs/api/java-driver/5.2/org.neo4j.driver/org/neo4j/driver/types/Node.html>,
+L<Node (Python)|https://neo4j.com/docs/api/python-driver/5.2/api.html#node>
 
 =back
 

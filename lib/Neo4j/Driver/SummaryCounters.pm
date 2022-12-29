@@ -115,7 +115,7 @@ probably make more sense to run a MATCH query, tedious or not.
 =item * L<Neo4j::Driver>
 
 =item * Equivalent documentation for the official Neo4j drivers:
-L<SummaryCounters (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/summary/SummaryCounters.html>
+L<SummaryCounters (Java)|https://neo4j.com/docs/api/java-driver/5.2/org.neo4j.driver/org/neo4j/driver/summary/SummaryCounters.html>
 
 =back
 

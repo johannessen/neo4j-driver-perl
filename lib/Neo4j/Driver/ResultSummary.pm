@@ -187,9 +187,9 @@ or C<undef> if there were no notifications.
 L<Neo4j::Driver::B<SummaryCounters>>
 
 =item * Equivalent documentation for the official Neo4j drivers:
-L<ResultSummary (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/summary/ResultSummary.html>,
-L<ResultSummary (JavaScript)|https://neo4j.com/docs/api/javascript-driver/4.4/class/lib6/result-summary.js~ResultSummary.html>,
-L<IResultSummary (.NET)|https://neo4j.com/docs/api/dotnet-driver/4.4/html/17958e2b-d923-ab62-bb96-697556493c2e.htm>
+L<ResultSummary (Java)|https://neo4j.com/docs/api/java-driver/5.2/org.neo4j.driver/org/neo4j/driver/summary/ResultSummary.html>,
+L<ResultSummary (JavaScript)|https://neo4j.com/docs/api/javascript-driver/5.2/class/lib6/result-summary.js~ResultSummary.html>,
+L<IResultSummary (.NET)|https://neo4j.com/docs/api/dotnet-driver/5.2/html/17958e2b-d923-ab62-bb96-697556493c2e.htm>
 
 =back
 

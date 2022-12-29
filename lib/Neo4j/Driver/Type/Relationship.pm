@@ -267,8 +267,8 @@ is returned instead.
 =item * L<Neo4j::Types::Relationship>
 
 =item * Equivalent documentation for the official Neo4j drivers:
-L<Relationship (Java)|https://neo4j.com/docs/api/java-driver/current/index.html?org/neo4j/driver/types/Relationship.html>,
-L<Relationship (Python)|https://neo4j.com/docs/api/python-driver/current/api.html#relationship>
+L<Relationship (Java)|https://neo4j.com/docs/api/java-driver/5.2/org.neo4j.driver/org/neo4j/driver/types/Relationship.html>,
+L<Relationship (Python)|https://neo4j.com/docs/api/python-driver/5.2/api.html#relationship>
 
 =back
 

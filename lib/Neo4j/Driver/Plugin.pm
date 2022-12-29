@@ -166,7 +166,7 @@ The plug-in manager implements the following methods.
 Registers the given handler for the named event. When that event
 is triggered, the handler will be invoked (unless another plug-in's
 handler for the same event prevents this). Handlers will be invoked
-the order they are added (but the order may be subject to change).
+in the order they are added (but the order may be subject to change).
 
 Certain events provide handlers with a code reference for
 continuing with the next handler registered for that event. This
@@ -198,7 +198,7 @@ Most plug-ins won't need to call this method. But plug-ins may
 choose to trigger and handle custom events. These must have names
 that begin with C<x_>. Plug-ins should not trigger events with
 other names, as these are reserved for internal use by the driver
-itself.
+itself and for first-party plug-ins.
 
 You should avoid using custom event names that start with
 C<x_after_> and C<x_before_>, because a future version of the

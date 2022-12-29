@@ -278,7 +278,7 @@ available. HTTP is still fast enough for many use cases and
 works even in a "Pure Perl" environment. It may also be
 quicker than Bolt to add support for future changes in Neo4j.
 
-HTTP connections will use B<Jolt> (JSON Bolt) when available.
+HTTP connections will use B<Jolt> (JSON Bolt) when offered by the server.
 For older Neo4j servers (before S<version 4.2>), the driver
 will automatically fall back to slower REST-style JSON.
 
@@ -454,7 +454,7 @@ L<Neo4j::Driver> implements the following configuration options.
 
  $driver->config(auth => {
    scheme      => 'basic',
-   principal   => 'neo4j',   # user id
+   principal   => $user_id,   # 'neo4j' by default
    credentials => $password,
  });
 
@@ -616,9 +616,9 @@ there is a compelling reason for a different approach in Perl.
 =item * L<Neo4j::Driver::B<Session>>
 
 =item * Official API documentation:
-L<Neo4j Driver API Specification|https://7687.org/driver_api/driver-api-specification.html>,
-L<Neo4j Drivers Manual|https://neo4j.com/docs/driver-manual/4.1/>,
-L<Neo4j HTTP API Docs|https://neo4j.com/docs/http-api/4.4/>
+L<Neo4j Driver API Specification|https://github.com/neo4j/docs-bolt/blob/main/modules/ROOT/pages/driver-api/index.adoc>,
+L<Neo4j Drivers Manual|https://neo4j.com/docs/java-manual/5/>,
+L<Neo4j HTTP API Docs|https://neo4j.com/docs/http-api/5/>
 
 =item * Other modules for working with Neo4j:
 L<DBD::Neo4p>,
