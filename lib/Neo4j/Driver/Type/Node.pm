@@ -130,9 +130,12 @@ L<Neo4j::Types::Node>.
 Return an ID for this node that is unique within
 a particular context, for example the current transaction.
 
-For nodes retrieved from S<Neo4j 5>, this method
-provides the new element ID string. For older Neo4j versions,
-this method provides the legacy numeric ID instead.
+This method provides the new element ID string introduced by
+S<Neo4j 5>. If the element ID is unavailable, for example with
+older Neo4j versions or with a L<Neo4j::Bolt> version that
+hasn't yet been updated for S<Neo4j 5>, this method provides
+the legacy numeric ID instead. Note that a numeric ID cannot
+successfully be used with C<elementId()> in Cypher expressions.
 
 Neo4j element IDs are not designed to be persistent. As such,
 if you want a public identity to use for your nodes,
