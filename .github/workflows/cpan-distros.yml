@@ -45,6 +45,24 @@ jobs:
       - name: Install Neo4j::Driver dependants
         run: |
           cpanm REST::Neo4p
+      - name: Setup database for testing
+        run: |
+          perl -MNeo4j::Driver -e 'Neo4j::Driver->new->basic_auth(neo4j=>$ENV{TEST_NEO4J_PASSWORD})->session->run($ENV{TEST_DATA_CREATE});'
+        env:
+          TEST_DATA_CREATE: "CREATE (neo4j :Server { name: 'Neo4j' })
+          CREATE (lib  :Library { name: 'libneo4j-client' })
+          CREATE (alien   :Dist { name: 'Neo4j::Client' })
+          CREATE (bolt    :Dist { name: 'Neo4j::Bolt' })
+          CREATE (driver  :Dist { name: 'Neo4j::Driver' })
+          CREATE (neo4p   :Dist { name: 'REST::Neo4p' })
+          CREATE (dbd     :Dist { name: 'DBD::Neo4p' })
+          CREATE (dbd)-[:USES]->(neo4p)-[:USES]->(driver)
+          CREATE (driver)-[pp:USES]->(neo4j)
+          CREATE (driver)-[xs:USES]->(bolt)
+          CREATE (bolt)-[:USES]->(alien)-[:USES]->(lib)-[:USES]->(neo4j)
+          SET pp.protocols = ['HTTP Jolt', 'HTTP JSON']
+          SET bolt.XS = true
+          SET driver.XS = false"
       - name: Test
         run: |
           dzil run 'prove -v xt/author/cpan-distros.t'
