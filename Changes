@@ -1,5 +1,9 @@
 Revision history for Neo4j::Driver
 
+0.3351  2023-01-02
+
+ - Fix support for transaction begin on Bolt v1/v2
+
 0.33  2022-12-30
 
  - Fix documentation to indicate that the Neo4j 5 non-numeric element ID for

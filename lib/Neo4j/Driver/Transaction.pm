@@ -113,7 +113,12 @@ sub _begin {
 	
 	croak "Concurrent transactions are unsupported in Bolt (there is already an open transaction in this session)" if $self->{net}->{active_tx};
 	
-	$self->{bolt_txn} = $self->{net}->_new_tx;
+	try {
+		$self->{bolt_txn} = $self->{net}->_new_tx;
+	}
+	catch {
+		die $_ if $_ !~ m/\bprotocol version\b/i;  # Bolt v1/v2
+	};
 	$self->{net}->{active_tx} = 1;
 	$self->run('BEGIN') unless $self->{bolt_txn};
 	return $self;
