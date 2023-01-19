@@ -16,7 +16,7 @@ use Neo4j_Test::MockHTTP;
 
 my ($d, $r, $w);
 
-plan tests => 17 + 1;
+plan tests => 16 + 1;
 
 
 subtest 'config read/write' => sub {
@@ -42,27 +42,12 @@ subtest 'config read/write' => sub {
 };
 
 
-subtest 'direct hash access' => sub {
-	# Direct hash access is known to be used in code in the wild, even
-	# though it was not officially supported at the time. We currently
-	# do support it, but only for the timeout (using the old name) and
-	# without any guarantees of future support.
-	plan tests => 4;
-	lives_ok { $d = 0; $d = Neo4j::Driver->new(); } 'new driver';
-	my $timeout = sqrt(2);
-	$d->{http_timeout} = $timeout;
-	lives_and { is $d->config('timeout'), $timeout; } 'get timeout';
-	lives_ok { $d->config(timeout => $timeout * 2); } 'set timeout lives';
-	is $d->{http_timeout}, $timeout * 2, 'timeout set';
-};
-
-
 subtest 'constructor config' => sub {
 	plan tests => 10;
 	lives_ok { $d = 0; $d = Neo4j::Driver->new(); } 'new driver default lives';
 	lives_and { is $d->{http_timeout}, undef; } 'new driver default';
 	lives_ok { $d = 0; $d = Neo4j::Driver->new({timeout => 1}); } 'new driver hashref lives';
-	lives_and { is $d->{http_timeout}, 1; } 'new driver hashref';
+	lives_and { is $d->{timeout}, 1; } 'new driver hashref';
 	lives_and { like $d->{uri}, qr/\blocalhost\b/; } 'new driver default uri';
 	lives_ok { $d = 0; $d = Neo4j::Driver->new('http://test:10047'); } 'new driver uri lives';
 	lives_and { is $d->{uri}, 'http://test:10047'; } 'new driver uri';

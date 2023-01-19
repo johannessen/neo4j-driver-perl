@@ -150,6 +150,20 @@ because you use driver internals to access the raw server response,
 you can use a plug-in to manipulate the HTTP
 C<Accept> header according to your needs. See L<Neo4j::Driver::Net>.
 
+=head2 HTTP timeout setting by direct hash access
+
+I<Deprecated in version 0.34 and to be removed in 1.00.
+Originally added in 0.05 as an experimental feature.>
+
+ $driver->{http_timeout} = 10;  # seconds
+
+A timeout for making HTTP connections to the Neo4j server.
+The equivalent config option "timeout" was introduced in
+S<version 0.14>. Using the internal setting "http_timeout"
+has been discouraged since that time.
+
+ $driver->config(timeout => 10);  # seconds
+
 =head2 Mutable auth credentials
 
 I<Deprecated in version 0.15 and to be removed in 1.00.

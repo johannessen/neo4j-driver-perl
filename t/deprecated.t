@@ -18,7 +18,7 @@ my $s = $driver->session;
 # functionality. If the behaviour of such functionality changes, we
 # want it to be a conscious decision, hence we test for it.
 
-use Test::More 0.96 tests => 18 + 3;
+use Test::More 0.94;
 use Test::Exception;
 use Test::Warnings qw(warning warnings);
 use Neo4j_Test::MockHTTP qw(response_for);
@@ -26,8 +26,9 @@ use Neo4j_Test::Sim;
 my $transaction = $driver->session->begin_transaction;
 $transaction->{return_stats} = 0;  # optimise sim
 
-
 my ($d, $w, @w, $r);
+
+plan tests => 19 + 3;
 
 
 # query from types.t
@@ -106,6 +107,19 @@ subtest 'close()' => sub {
 	$w = '';
 	lives_ok { $w = warning { $s->close; }; } 'Session close()';
 	(like $w, qr/\bdeprecate/, 'Session close deprecated') or diag 'got warning(s): ', explain($w);
+};
+
+
+subtest 'direct Neo4j::Driver hash access' => sub {
+	# Direct hash access is known to have been used in the wild,
+	# even though it was not officially supported at the time.
+	plan tests => 3;
+	$d = Neo4j::Driver->new()->plugin('Neo4j_Test::MockHTTP');
+	$d->{http_timeout} = 0;
+	lives_ok { $w = ''; $w = warning { $d->session(database => 'dummy') }; } 'session';
+	is $d->config('timeout'), 0, 'http_timeout set';
+	like $w, qr/\bhttp_timeout\b.* deprecated\b/i, 'http_timeout deprecated'
+		or diag 'got warning(s): ', explain $w;
 };
 
 

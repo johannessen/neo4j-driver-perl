@@ -36,7 +36,7 @@ my %OPTIONS = (
 	jolt => 'jolt',
 	concurrent_tx => 'concurrent_tx',
 	net_module => 'net_module',
-	timeout => 'http_timeout',
+	timeout => 'timeout',
 	tls => 'tls',
 	tls_ca => 'tls_ca',
 	trust_ca => 'tls_ca',
@@ -150,6 +150,8 @@ sub session {
 	my ($self, @options) = @_;
 	
 	warnings::warnif deprecated => __PACKAGE__ . "->{die_on_error} is deprecated" unless $self->{die_on_error};
+	warnings::warnif deprecated => __PACKAGE__ . "->{http_timeout} is deprecated; use config()" if defined $self->{http_timeout};
+	$self->{timeout} //= $self->{http_timeout};
 	
 	@options = %{$options[0]} if @options == 1 && ref $options[0] eq 'HASH';
 	my %options = $self->_parse_options('session', ['database'], @options);
@@ -525,10 +527,6 @@ not defined here and is subject to change.
 
 For details, see L<LWP::UserAgent/"timeout"> when using HTTP or
 L<select(2)> when using Bolt.
-
-The old C<< $driver->{http_timeout} >> syntax remains supported
-for the time being in order to ensure backwards compatibility,
-but its use is discouraged and it may be deprecated in future.
 
 =head2 trust_ca
 
