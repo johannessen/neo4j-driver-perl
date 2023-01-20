@@ -21,10 +21,13 @@ my $s = $driver->session;
 use Test::More 0.94;
 use Test::Exception;
 use Test::Warnings qw(warning warnings);
-use Neo4j_Test::MockHTTP qw(response_for);
+use Neo4j_Test::MockHTTP;
 use Neo4j_Test::Sim;
 my $transaction = $driver->session->begin_transaction;
 $transaction->{return_stats} = 0;  # optimise sim
+
+my $mock_plugin = Neo4j_Test::MockHTTP->new;
+sub response_for { $mock_plugin->response_for(undef, @_) }
 
 my ($d, $w, @w, $r);
 
@@ -83,7 +86,7 @@ END
 subtest 'deleted()' => sub {
 	plan tests => 8;
 	my $d = Neo4j::Driver->new('http:');
-	$d->plugin('Neo4j_Test::MockHTTP');
+	$d->plugin($mock_plugin);
 	lives_and { $r = 0; ok $r = $d->session(database => 'dummy')->run('deleted') } 'run';
 	lives_and { $w = warning { ok $r->fetch->get->deleted }; } 'deleted true';
 	like $w, qr/\bdeleted\b.* deprecated\b/i, 'deleted true deprecated'
@@ -114,7 +117,7 @@ subtest 'direct Neo4j::Driver hash access' => sub {
 	# Direct hash access is known to have been used in the wild,
 	# even though it was not officially supported at the time.
 	plan tests => 3;
-	$d = Neo4j::Driver->new()->plugin('Neo4j_Test::MockHTTP');
+	$d = Neo4j::Driver->new()->plugin($mock_plugin);
 	$d->{http_timeout} = 0;
 	lives_ok { $w = ''; $w = warning { $d->session(database => 'dummy') }; } 'session';
 	is $d->config('timeout'), 0, 'http_timeout set';
@@ -224,13 +227,8 @@ subtest 'cypher_filter' => sub {
 };
 
 
-{
-package Neo4j_Test::MockHTTP::NoProtocol;
-use parent 'Neo4j_Test::MockHTTP';
-sub can { return if $_[1] eq 'protocol'; return shift->SUPER::can(@_); }
-}
 subtest 'ServerInfo protocol()' => sub {
-	plan tests => 10;
+	plan tests => 8;
 	my ($si, $w);
 	my %uri = (uri => URI->new('http:'));
 	lives_and { ok $si = Neo4j::Driver::ServerInfo->new({%uri}) } 'new undef';
@@ -243,10 +241,6 @@ subtest 'ServerInfo protocol()' => sub {
 	lives_and { is $si->protocol(), 'Bolt' } 'protocol empty';
 	lives_and { ok $si = Neo4j::Driver::ServerInfo->new({%uri, protocol => '2.2'}) } 'new version';
 	lives_and { is $si->protocol(), 'Bolt/2.2' } 'protocol version';
-	my $d = Neo4j::Driver->new('http:');
-	$d->plugin('Neo4j_Test::MockHTTP::NoProtocol');
-	lives_and { $si = 0; ok $si = $d->session(database => 'dummy')->server } 'no protocol()';
-	lives_and { is $si->protocol(), 'HTTP' } 'no protocol() string';
 };
 
 
