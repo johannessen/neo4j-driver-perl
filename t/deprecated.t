@@ -31,7 +31,7 @@ sub response_for { $mock_plugin->response_for(undef, @_) }
 
 my ($d, $w, @w, $r);
 
-plan tests => 19 + 3;
+plan tests => 20 + 3;
 
 
 # query from types.t
@@ -197,6 +197,24 @@ subtest 'net_module config option' => sub {
 	like $w, qr/\bnet_module\b.*\bdeprecated\b/i, 'net_module 2 deprecated'
 		or diag 'got warning(s): ', explain $w;
 	dies_ok { warnings { $d->session }; } 'session 2 dies';
+};
+
+
+subtest 'plug-in manager' => sub {
+	plan tests => 6;
+	my $m;
+	lives_and { ok $m = Neo4j::Driver::Events->new } 'new';
+	lives_ok {
+		$w = ''; $w = warning { $m->add_event_handler(x_test => sub {'foo'}); };
+	} 'add_event_handler';
+	like $w, qr/\badd_event_handler\b.*\bdeprecated\b/i, 'add_event_handler deprecated'
+		or diag 'got warning(s): ', explain $w;
+	lives_ok {
+		$w = ''; $w = warning { $r = $m->trigger_event('x_test'); };
+	} 'trigger_event lives';
+	is $r, 'foo', 'trigger_event';
+	like $w, qr/\btrigger_event\b.*\bdeprecated\b/i, 'trigger_event deprecated'
+		or diag 'got warning(s): ', explain $w;
 };
 
 

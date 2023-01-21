@@ -99,7 +99,7 @@ Insert the following code into your module:
  
  sub register {
    my ($self, $manager) = @_;
-   $manager->add_event_handler(
+   $manager->add_handler(
      http_adapter_factory => sub {
        my ($continue, $driver) = @_;
        __PACKAGE__->_net_module_new($driver);
@@ -333,6 +333,25 @@ in 1.00. Originally added in 0.21 as an experimental feature.>
 Returns the HTTP version of the last response (typically
 C<"HTTP/1.1">). Since version 0.26, this method was no longer
 required for a net module and using it was discouraged.
+
+=head1 Neo4j::Driver::Plugin
+
+=head2 Plug-in manager
+
+I<Deprecated in version 0.34 and to be removed in 1.00.
+Originally added in 0.31 as an experimental feature.>
+
+ $plugin_mgr->add_event_handler( event_name => sub {...} );
+ $plugin_mgr->trigger_event( event_name => @parameters );
+
+The plug-in manager has been replaced by the 
+L<event manager|Neo4j::Driver::Plugin/"THE EVENT MANAGER">.
+This is a name change only. Calls to methods of the plug-in
+manager should simply be replaced by equivalent calls to those
+of the event manager.
+
+ $event_mgr->add_handler( event_name => sub {...} );
+ $event_mgr->trigger( event_name => @parameters );
 
 =head1 Neo4j::Driver::Record
 

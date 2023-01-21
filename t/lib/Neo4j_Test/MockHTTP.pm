@@ -28,7 +28,7 @@ sub new {
 sub register {
 	my ($self, $manager) = @_;
 	
-	$manager->add_event_handler(
+	$manager->add_handler(
 		http_adapter_factory => sub {
 			my ($continue, $driver) = @_;
 			$self->{base} = $driver->{uri};

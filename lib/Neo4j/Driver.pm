@@ -10,7 +10,7 @@ package Neo4j::Driver;
 use Carp qw(croak);
 
 use URI 1.25;
-use Neo4j::Driver::PluginManager;
+use Neo4j::Driver::Events;
 use Neo4j::Driver::Session;
 
 use Neo4j::Driver::Type::Node;
@@ -59,7 +59,7 @@ sub new {
 	my ($class, $config, @extra) = @_;
 	
 	my $self = bless { %DEFAULTS }, $class;
-	$self->{plugins} = Neo4j::Driver::PluginManager->new;
+	$self->{plugins} = Neo4j::Driver::Events->new;
 	
 	croak __PACKAGE__ . "->new() with multiple arguments unsupported" if @extra;
 	$config = { uri => $config } if ref $config ne 'HASH';

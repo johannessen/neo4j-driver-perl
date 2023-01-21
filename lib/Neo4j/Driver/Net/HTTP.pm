@@ -40,7 +40,7 @@ sub new {
 		my $net_module = $driver->{net_module} || 'Neo4j::Driver::Net::HTTP::LWP';
 		return $net_module->new($driver);
 	};
-	my $http_adapter = $driver->{plugins}->trigger_event('http_adapter_factory', $driver);
+	my $http_adapter = $driver->{plugins}->trigger('http_adapter_factory', $driver);
 	
 	my $self = bless {
 		die_on_error => $driver->{die_on_error},

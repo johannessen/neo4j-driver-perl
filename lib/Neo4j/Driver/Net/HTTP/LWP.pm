@@ -148,7 +148,7 @@ __END__
  
  sub register {
    my ($self, $manager) = @_;
-   $manager->add_event_handler(
+   $manager->add_handler(
      http_adapter_factory => sub {
        my ($continue, $driver) = @_;
        my $adapter = Neo4j::Driver::Net::HTTP::LWP->new($driver);

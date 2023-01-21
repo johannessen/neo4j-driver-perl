@@ -1,7 +1,9 @@
 Revision history for Neo4j::Driver
 
-0.3352  2023-01-19
+0.3353  2023-01-21
 
+ - Refactor experimental plug-in API: Rename PluginManager to Events,
+   add_event_handler() to add_handler(), trigger_event() to trigger().
  - Deprecate experimental internal http_timeout setting; use config() instead.
  - Fix support for transaction begin on Bolt v1/v2
 

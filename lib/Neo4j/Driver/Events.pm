@@ -3,8 +3,8 @@ use strict;
 use warnings;
 use utf8;
 
-package Neo4j::Driver::PluginManager;
-# ABSTRACT: Plug-in manager for Neo4j::Driver
+package Neo4j::Driver::Events;
+# ABSTRACT: Event manager for Neo4j::Driver plug-ins
 
 
 # This package is not part of the public Neo4j::Driver API.
@@ -24,10 +24,17 @@ sub new {
 
 
 sub add_event_handler {
+	# uncoverable pod (see Deprecations.pod)
+	warnings::warnif deprecated => __PACKAGE__ . "->add_event_handler() is deprecated";
+	shift->add_handler(@_);
+}
+
+
+sub add_handler {
 	# uncoverable pod (see Plugin.pm)
 	my ($self, $event, $handler, @extra) = @_;
 	
-	croak "add_event_handler() with more than one handler unsupported" if @extra;
+	croak "Too many arguments for method 'add_handler'" if @extra;
 	croak "Event handler must be a subroutine reference" unless ref $handler eq 'CODE';
 	croak "Event name must be defined" unless defined $event;
 	
@@ -36,6 +43,13 @@ sub add_event_handler {
 
 
 sub trigger_event {
+	# uncoverable pod (see Deprecations.pod)
+	warnings::warnif deprecated => __PACKAGE__ . "->trigger_event() is deprecated";
+	shift->trigger(@_);
+}
+
+
+sub trigger {
 	# uncoverable pod (see Plugin.pm)
 	my ($self, $event, @params) = @_;
 	
