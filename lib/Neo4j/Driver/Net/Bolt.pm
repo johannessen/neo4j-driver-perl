@@ -174,9 +174,10 @@ sub _run {
 sub _new_tx {
 	my ($self) = @_;
 	
+	my $params = {};
 	my $transaction = "$self->{net_module}::Txn";
 	return unless $transaction->can('new');
-	return $transaction->new( $self->{connection} );
+	return $transaction->new( $self->{connection}, $params, $self->{database} );
 }
 
 
