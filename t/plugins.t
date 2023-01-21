@@ -27,10 +27,6 @@ subtest 'new' => sub {
 
 
 {
-	package Neo4j_Test::Plugin::NoNew;
-	use parent 'Neo4j::Driver::Plugin';
-	sub register { die }
-	
 	package Neo4j_Test::Plugin::NoRegister;
 	use parent 'Neo4j::Driver::Plugin';
 	sub new { bless [], shift }
@@ -47,13 +43,11 @@ subtest 'new' => sub {
 
 
 subtest 'register' => sub {
-	plan tests => 8;
+	plan tests => 7;
 	lives_and { ok $m = Neo4j::Driver::Events->new() } 'new';
-	throws_ok { $m->_register_plugin( Neo4j_Test::Plugin::NoNew:: ) }
-		qr/\bCan't locate\b.*\bmethod new\b.*\bNeo4j_Test::Plugin::NoNew\b/i, 'no new';
-	throws_ok { $m->_register_plugin( Neo4j_Test::Plugin::NoRegister:: ) }
+	throws_ok { $m->_register_plugin( Neo4j_Test::Plugin::NoRegister->new ) }
 		qr/\bMethod register\b.*\bnot implemented\b.*\bNeo4j_Test::Plugin::NoRegister\b/i, 'no register';
-	lives_ok { $m->_register_plugin( Neo4j_Test::Plugin::RegisterFoo:: ) } 'register foo';
+	lives_ok { $m->_register_plugin( Neo4j_Test::Plugin::RegisterFoo->new ) } 'register foo';
 	is $m->{_foo}, 'foo', 'register set _foo';
 	lives_and { ok $m = Neo4j::Driver::Events->new() } 'new 2';
 	lives_ok { $m->_register_plugin( Neo4j_Test::Plugin::RegisterFoo->new ) } 'register foo 2';
@@ -84,7 +78,7 @@ subtest 'register' => sub {
 subtest 'simple returns' => sub {
 	plan tests => 14;
 	lives_and { ok $m = Neo4j::Driver::Events->new() } 'new';
-	lives_ok { $m->_register_plugin( Neo4j_Test::Plugin::SimpleReturns:: ) } 'register';
+	lives_ok { $m->_register_plugin( Neo4j_Test::Plugin::SimpleReturns->new ) } 'register';
 	lives_and { is $m->trigger('x_foo'), 'bar' } 'x_foo';
 	lives_and { like $m->trigger('foo'), qr/^foofoo$|^foobar$/ } 'foo';
 	lives_and { is $m->trigger('empty'), undef } 'empty';
@@ -119,7 +113,7 @@ subtest 'simple returns' => sub {
 subtest 'custom event recursive countdown' => sub {
 	plan tests => 3;
 	lives_and { ok $m = Neo4j::Driver::Events->new() } 'new';
-	lives_ok { $m->_register_plugin( Neo4j_Test::Plugin::Countdown:: ) } 'register';
+	lives_ok { $m->_register_plugin( Neo4j_Test::Plugin::Countdown->new ) } 'register';
 	lives_and { is_deeply $m->trigger('x_countdown', 10), [reverse 0..10] } 'countdown 10';
 };
 
@@ -144,7 +138,7 @@ subtest 'custom event recursive countdown' => sub {
 subtest 'multiple handlers for an event' => sub {
 	plan tests => 8;
 	lives_and { ok $m = Neo4j::Driver::Events->new() } 'new';
-	lives_ok { $m->_register_plugin( Neo4j_Test::Plugin::MultiHandler:: ) } 'register';
+	lives_ok { $m->_register_plugin( Neo4j_Test::Plugin::MultiHandler->new ) } 'register';
 	lives_and { ok $p = $m->trigger('plugin_ref') } 'plugin_ref';
 	lives_and { is $m->trigger('once'), undef } 'fallthrough once undef';
 	lives_and { is $m->trigger('thrice'), undef } 'fallthrough thrice undef';
@@ -174,7 +168,7 @@ subtest 'default handlers' => sub {
 	lives_ok { $m->{default_handlers}->{0} = sub { 'nada' } } 'add default handler zero';
 	lives_ok { $m->{default_handlers}->{1} = sub { 'una' } } 'add default handler one';
 	lives_ok { $m->{default_handlers}->{2} = sub { 'bisso' } } 'add default handler two';
-	lives_ok { $m->_register_plugin( Neo4j_Test::Plugin::DefaultHandler:: ) } 'register';
+	lives_ok { $m->_register_plugin( Neo4j_Test::Plugin::DefaultHandler->new ) } 'register';
 	lives_ok { $m->{default_handlers}->{8} = sub { 'okto' } } 'add default handler eight';
 	lives_and { is $m->trigger(0), 'nada' } 'zero default handler';
 	lives_and { is $m->trigger(1), 'unaone' } 'one';
@@ -224,14 +218,11 @@ subtest 'errors' => sub {
 subtest 'register via driver' => sub {
 	my $d;
 	plan skip_all => '(driver constructor failed)' unless eval { $d = Neo4j::Driver->new };
-	plan tests => 5;
-	lives_ok { $d->plugin( 'Neo4j_Test::Plugin::RegisterFoo' ) } 'plugin with package';
-	is $d->{plugins}->{_foo}, 'foo', 'package set _foo';
-	throws_ok { $d->plugin( 'Neo4j_Test::Plugin::RegisterFoo', 1 ) }
-		qr/\bplugin\b.*\bmore than one argument\b.*\bunsupported\b/i, 'extra';
-	$d->{plugins}->{_foo} = '';
+	plan tests => 3;
 	lives_ok { $d->plugin( Neo4j_Test::Plugin::RegisterFoo->new ) } 'plugin with instance';
-	is $d->{plugins}->{_foo}, 'foo', 'instance set _foo';
+	is $d->{plugins}->{_foo}, 'foo', 'package set _foo';
+	throws_ok { $d->plugin( Neo4j_Test::Plugin::RegisterFoo->new, 1 ) }
+		qr/\bplugin\b.*\bmore than one argument\b.*\bunsupported\b/i, 'extra';
 };
 
 

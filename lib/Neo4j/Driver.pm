@@ -395,15 +395,12 @@ features.
 
 =head2 Plug-in modules
 
- $driver->plugin( 'Local::MyPlugin' );
  $driver->plugin(  Local::MyPlugin->new );
 
 The driver offers a simple plug-in interface. Plug-ins are modules
 providing handlers for events that may be triggered by the driver.
 Plug-ins are loaded by calling the C<plugin()> method with the
-module name as parameter. Your code must C<use> or C<require> the
-module it specifies here. Alternatively, the blessed instance of
-a plug-in may be given.
+the blessed instance of a plug-in as parameter.
 
 Details on the implementation of plug-ins including descriptions of
 individual events are provided in L<Neo4j::Driver::Plugin>.

@@ -113,20 +113,10 @@ are reserved for use by the driver itself.
 
 =head1 METHODS
 
-All plug-ins must implement the following methods, which are
+All plug-ins must implement the following method, which is
 required for the L<Neo4j::Driver::Plugin> role.
 
 =over
-
-=item new
-
- sub new {
-   my ($class) = @_;
-   bless {}, $class;
- }
-
-Plug-in constructor. Returns a blessed reference. Parameters
-given are the plug-in package name.
 
 =item register
 

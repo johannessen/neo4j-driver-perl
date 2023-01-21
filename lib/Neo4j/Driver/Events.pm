@@ -76,6 +76,7 @@ sub _register_plugin {
 	croak "Can't locate object method new() via package $plugin (perhaps you forgot to load \"$plugin\"?)" unless $plugin->can('new');
 	croak "Package $plugin is not a Neo4j::Driver::Plugin" unless $plugin->DOES('Neo4j::Driver::Plugin');
 	croak "Method register() not implemented by package $plugin (is this a Neo4j::Driver plug-in?)" unless $plugin->can('register');
+	warnings::warnif deprecated => "Neo4j::Driver->plugin() with module name is deprecated" if ref $plugin eq '';
 	
 	$plugin = $plugin->new if ref $plugin eq '';
 	$plugin->register($self);

@@ -86,7 +86,7 @@ subtest 'config illegal args' => sub {
 
 subtest 'config/session sequence' => sub {
 	plan tests => 8;
-	lives_ok { $d = 0; $d = Neo4j::Driver->new->plugin('Neo4j_Test::MockHTTP') } 'new mock driver';
+	lives_ok { $d = 0; $d = Neo4j::Driver->new->plugin(Neo4j_Test::MockHTTP->new) } 'new mock driver';
 	lives_ok { $d->basic_auth(user => 'pw') } 'basic_auth before session';
 	lives_ok { $d->config(auth => undef) } 'config before session';
 	lives_ok { $d->session(database => 'dummy') } 'first session';

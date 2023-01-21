@@ -201,6 +201,21 @@ be used.
 
  $driver->config( cypher_params => v2 );
 
+=head2 Plug-in modules by name
+
+I<Deprecated in version 0.34 and to be removed in 1.00.
+Originally added in 0.31 as an experimental feature.>
+
+ $driver->plugin( 'Local::MyPlugin' );
+
+As an alternative to the blessed instance of a plug-in,
+the module name may be given as parameter. However, because
+your code must still C<use> or C<require> the module it
+specifies here, this style offers no significant advantage.
+Just pass a new plug-in instance instead.
+
+ $driver->plugin( Local::MyPlugin->new );
+
 =head2 Suppress exceptions
 
 I<Deprecated in version 0.14 and to be removed in 1.00.

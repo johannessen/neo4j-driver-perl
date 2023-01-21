@@ -200,10 +200,26 @@ subtest 'net_module config option' => sub {
 };
 
 
+{
+	package Neo4j_Test::Plugin::NoNew;
+	use parent 'Neo4j::Driver::Plugin';
+	sub register { die }
+}
+
+
 subtest 'plug-in manager' => sub {
-	plan tests => 6;
+	plan tests => 9;
 	my $m;
 	lives_and { ok $m = Neo4j::Driver::Events->new } 'new';
+	lives_ok { $w = ''; $w = warning {
+		$m->_register_plugin( Neo4j_Test::MockHTTP:: );
+	}} 'plugin by name';
+	like $w, qr/\bplugin\b.*\bname\b.*\bdeprecated\b/i, 'plugin by name deprecated 1'
+		or diag 'got warning(s): ', explain $w;
+	throws_ok { warning {
+		$m->_register_plugin( Neo4j_Test::Plugin::NoNew:: );
+	}} qr/\bCan't locate\b.*\bmethod new\b.*\bNeo4j_Test::Plugin::NoNew\b/i, 'no new';
+	
 	lives_ok {
 		$w = ''; $w = warning { $m->add_event_handler(x_test => sub {'foo'}); };
 	} 'add_event_handler';
