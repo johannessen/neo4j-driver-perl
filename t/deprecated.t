@@ -118,9 +118,9 @@ subtest 'direct Neo4j::Driver hash access' => sub {
 	# even though it was not officially supported at the time.
 	plan tests => 3;
 	$d = Neo4j::Driver->new()->plugin($mock_plugin);
-	$d->{http_timeout} = 0;
+	$d->{http_timeout} = 0.5;
 	lives_ok { $w = ''; $w = warning { $d->session(database => 'dummy') }; } 'session';
-	is $d->config('timeout'), 0, 'http_timeout set';
+	is $d->config('timeout'), 0.5, 'http_timeout set';
 	like $w, qr/\bhttp_timeout\b.* deprecated\b/i, 'http_timeout deprecated'
 		or diag 'got warning(s): ', explain $w;
 };

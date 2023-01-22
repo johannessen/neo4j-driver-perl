@@ -309,7 +309,7 @@ Instead of the C<cypher_types> option, users should consider a
 custom networking module that provides a custom result handler.
 This approach offers even more flexibility (albeit at the cost
 of some degree of convenience).
-See L<Neo4j::Driver::Net/"Custom result handlers"> for details.
+See L<Neo4j::Driver::Plugin/"Result handler API"> for details.
 
 =head1 Neo4j::Driver::Net::HTTP::LWP
 

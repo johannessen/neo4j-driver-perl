@@ -7,6 +7,9 @@ package Neo4j::Driver::Result::Text;
 # ABSTRACT: Fallback handler for result errors
 
 
+# This package is not part of the public Neo4j::Driver API.
+
+
 use parent 'Neo4j::Driver::Result';
 
 use Carp qw(carp croak);

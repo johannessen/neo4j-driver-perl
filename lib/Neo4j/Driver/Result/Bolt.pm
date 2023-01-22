@@ -7,6 +7,9 @@ package Neo4j::Driver::Result::Bolt;
 # ABSTRACT: Bolt result handler
 
 
+# This package is not part of the public Neo4j::Driver API.
+
+
 use parent 'Neo4j::Driver::Result';
 
 use Carp qw(croak);
