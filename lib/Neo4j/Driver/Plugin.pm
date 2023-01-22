@@ -363,6 +363,14 @@ All of these entries must exist and be defined scalars.
 Unavailable values must use the empty string.
 Blocks until the response headers have been fully received.
 
+For error responses generated internally by the networking
+library, for example because the connection failed, C<status>
+and C<content_type> should both be the empty string, with
+the C<http_reason()> method providing the error message.
+Optionally, additional information may be made available in
+a plain text response content; in this case, the C<status>
+should preferably be C<"599">.
+
 =item http_reason
 
  sub http_reason {

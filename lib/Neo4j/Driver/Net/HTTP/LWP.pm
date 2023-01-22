@@ -92,12 +92,17 @@ sub date_header { scalar shift->{response}->header('Date') // '' }
 
 sub http_header {
 	my $response = shift->{response};
-	return {
+	my $header = {
 		content_type => scalar $response->header('Content-Type') // '',
 		location     => scalar $response->header('Location') // '',
 		status       => $response->code // '',
 		success      => $response->is_success,
 	};
+	if ( ! $header->{success} && $response->header('Client-Warning') // '' eq 'Internal response' ) {
+		$header->{content_type} = '';
+		$header->{status}       = '';
+	}
+	return $header;
 }
 
 
