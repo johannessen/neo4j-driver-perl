@@ -119,6 +119,8 @@ jobs:
         uses: shogo82148/actions-setup-perl@v1
         with:
           perl-version: ${{ matrix.perl }}
+          install-modules: ExtUtils::MakeMaker~6.78
+          enable-modules-cache: false
       - name: Get distribution
         uses: actions/download-artifact@v3
         with:
