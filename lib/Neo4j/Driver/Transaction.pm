@@ -23,6 +23,7 @@ sub new {
 	# uncoverable pod (private method)
 	my ($class, $session) = @_;
 	
+	my $events = $session->{driver}->{plugins};
 	my $transaction = {
 		cypher_params_v2 => $session->{cypher_params_v2},
 		net => $session->{net},
@@ -30,6 +31,7 @@ sub new {
 		closed => 0,
 		return_graph => 0,
 		return_stats => 1,
+		error_handler => sub { $events->trigger(error => shift) },
 	};
 	
 	return bless $transaction, $class;
@@ -412,17 +414,19 @@ converted to strings before they are sent to the Neo4j server.
 
 This driver always reports all errors using C<die()>. Error messages
 received from the Neo4j server are passed on as-is.
+See L<Neo4j::Driver::Plugin/"error"> for accessing error details.
 
 Statement errors occur when the statement is executed on the server.
 This may not necessarily have happened by the time C<run()> returns.
-If you use C<try> to handle errors, make sure you use the
-L<Result|Neo4j::Driver::Result> within the C<try> block, for example
-by calling one of the methods C<fetch()>, C<list()> or C<summary()>.
+If you use L<C<try>|perlsyn/"Try"> to handle errors, make sure
+you actually I<use> the L<Result|Neo4j::Driver::Result> within
+the C<try> block, for example by retrieving a record or calling
+the method C<has_next()>.
 
 Transactions are rolled back and closed automatically if the Neo4j
 server encounters an error when running a query. However, if an
 I<internal> error occurs in the driver or in one of its supporting
-modules, explicit transactions remain open.
+modules, explicit transactions may remain open.
 
 Typically, no particular handling of error conditions is required.
 But if you wrap your transaction in a C<try> (or C<eval>) block,

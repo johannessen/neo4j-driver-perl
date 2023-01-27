@@ -240,7 +240,7 @@ is open. The next request would then fail anyway, but with a
 misleading error message.
 
 Additionally, I<client> errors (such as trying to call C<single()> on
-a result with multiple result records) have always caused the driver
+a result with multiple result records) may cause the driver
 to die in spite of C<die_on_error = 0>.
 
 Such inconsistent behaviour makes bugs harder to find and has no

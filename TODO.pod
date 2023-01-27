@@ -19,24 +19,6 @@ See L<https://github.com/johannessen/neo4j-driver-perl/issues>.
 Method names should be C<result_available_after> and C<result_consumed_after>,
 both returning milliseconds with a default of C<-1> when unavailable (HTTP).
 
-=item * C<croak()> error objects (e. g. L<Exception::Class>) instead of strings.
-(However, this may be difficult to do, see L<Carp/"BUGS">.
-Also, p5p has plans to add real error objects to a future version of Perl.)
-It seems there are about four types that would need to be distinguished: illegal
-usage errors, internal driver errors, Network errors, and Neo4j server errors.
-See also L<#7|https://github.com/johannessen/neo4j-driver-perl/issues/7>.
-
-L<perlmodstyle/"Error handling and messages"> doesn't help us much. The only
-other relevant option (aside from error objects and C<croak()>) on that list
-is a global var, which would not be thread-safe.
-
-Perhaps a reasonable solution would be like an C<error> config option that
-accepts an error handler sub. That sub should then be expected to never return
-(i.e. it should C<croak()> or C<die()>; not dying should be a usage error
-that causes the driver to croak with a special message in order to force the
-user to really consider error handling for themselves, and keep options for
-later expansion).
-
 =back
 
 =head2 Experimental features
@@ -145,13 +127,26 @@ and the conditions under which Bolt is chosen may also change in future).
 
 =item * Change the default URI scheme from C<http> to C<neo4j>. Because
 a C<use Neo4j::Bolt;> statement has so far never been necessary for the
-driver and the driver's behaviour won't change it it is not present, and
+driver and the driver's behaviour won't change if it is not present, and
 also because HTTP-only features have so far been experimental features
 only, this should not be a breaking change.
 
 =item * Convert the "unsupported option" check from C<grep> to
-<List::Util/"none"> (in C<config()> and C<_parse_options()>;
+L<List::Util/"none"> (in C<config()> and C<_parse_options()>;
 slightly improves both performance and clarity).
+
+=back
+
+=head2 Neo4j::Driver::Events
+
+=over
+
+=item * The default implementation of the "error" event currently tries to
+more or less recreate the old error message strings. Looking forward, having
+L<Neo4j::Error> overload stringification and just throwing an object exception
+might be an interesting option. However, we likely would have to roll C<croak>
+ourselves (see L<Carp/"BUGS">). See <https://perldoc.perl.org/functions/die>
+for the special meaning of C<\n>.
 
 =back
 
@@ -317,12 +312,17 @@ be able to handle them correctly anyway.
 (See also L<neo4j#12651|https://github.com/neo4j/neo4j/issues/12651>.)
 
 =item * C<new()> shouldn't swallow the exception if loading
-L<Neo4j::Bolt>> fails; see
+L<Neo4j::Bolt> fails; see
 L<https://www.nntp.perl.org/group/perl.perl5.porters/2021/07/msg260971.html>
 
 =item * The next major version should require a suitably new version
 of L<Neo4j::Bolt> (using C<< ->VERSION(...) >>; see
 L<https://github.com/libwww-perl/libwww-perl/pull/253#issuecomment-295838118>)
+
+=item * In the case of L<perlbolt#51|https://github.com/majensen/perlbolt/issues/51>,
+it might be possible to try and reconnect (once) if the connection is in fact
+closed by the lib. But that shouldn't happen any more now, so I'm not sure if
+this idea is worth the effort.
 
 =back
 
@@ -337,6 +337,15 @@ i. e. the resource has been created at the default transaction endpoint.
 That should never happen; in fact, it should only ever happen for a PUT
 request, but we don't use those here. So ignoring this is probably the right
 choice. But it may still be useful to revisit this logic later on.
+
+=item * A small memory leak exists in C<new()>. Probably no big deal.
+The config rework will eventually address this.
+
+=item * Perl HTTP libraries like L<LWP> don't report OS L<errno|Errno> codes.
+(BSD: C<man 2 intro>) C<$!> is unreliable. It might be possible to recreate
+errno codes by parsing error string messages.
+L<mentalisttraceur/errnoname|https://github.com/mentalisttraceur/errnoname>
+might be of some use there. But this idea is very likely not worth the effort.
 
 =back
 

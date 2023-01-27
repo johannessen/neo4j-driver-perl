@@ -149,6 +149,7 @@ sub config {
 sub session {
 	my ($self, @options) = @_;
 	
+	$self->{plugins}->{die_on_error} = $self->{die_on_error};
 	warnings::warnif deprecated => __PACKAGE__ . "->{die_on_error} is deprecated" unless $self->{die_on_error};
 	warnings::warnif deprecated => __PACKAGE__ . "->{http_timeout} is deprecated; use config()" if defined $self->{http_timeout};
 	$self->{timeout} //= $self->{http_timeout};
@@ -584,8 +585,11 @@ using Perl 5.26 or newer if you can.
 
 =head1 DIAGNOSTICS
 
-Neo4j::Driver currently dies as soon as an error condition is
-discovered. Use L<C<try>|perlsyn/"Try"> or C<eval> to catch this.
+Neo4j::Driver triggers an "error" event as soon as an error
+condition is discovered. If unhandled, this event will cause
+the driver to die with an error string.
+See L<Neo4j::Driver::Transaction/"ERROR HANDLING"> for
+further information.
 
 Warnings are given when deprecated or ambiguous method calls are used.
 These warnings may be disabled if desired.
