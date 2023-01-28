@@ -9,7 +9,7 @@ use Test::Warnings qw(warning);
 
 
 package Local::Bolt;
-sub new { bless \(my $b = undef), shift }
+sub new { bless [\(my $b = undef), @_], shift }
 sub connect { &new }
 sub connect_tls { &new }
 
@@ -19,7 +19,7 @@ sub errnum { 0 }
 sub errmsg { undef }
 sub reset_cxn {}
 sub server_id { __PACKAGE__ }
-sub run_query { my $b = shift; $$b = 0; $b }
+sub run_query { my $b = shift; ${$b->[0]} = 0; $b }
 
 # ResultStream
 use JSON::PP;
@@ -36,7 +36,7 @@ my @row = (
 	( bless { properties => {} }, 'Neo4j::Bolt::Relationship' ),
 );
 sub field_names { 0..9 }
-sub fetch_next { my $b = shift; return if $$b; $$b = 1; @row }
+sub fetch_next { my $b = shift; return if ${$b->[0]}; ${$b->[0]} = 1; @row }
 sub update_counts { {} }
 sub success { 1 }
 sub failure { 0 }
@@ -140,18 +140,30 @@ subtest 'deep_bless' => sub {
 
 
 subtest 'txn' => sub {
-	plan tests => 9;
+	plan tests => 15;
 	lives_and { ok $t = $s->begin_transaction } 'begin 1';
 	lives_and { ok $r = $t->run('dummy') } 'run';
 	lives_and { is $r->size(), 1 } 'size';
 	lives_and { is $r->list->[0]->get(7), 42 } 'get';
-	lives_and { $t->rollback } 'rollback';
+	lives_ok { $t->rollback } 'rollback';
 	dies_ok { $t->commit; } 'closed 1';
 	lives_and { ok $t = $s->begin_transaction } 'begin 2';
 	dies_ok { $s->begin_transaction } 'nested explicit';
 	dies_ok { $s->run('') } 'nested auto';
-	lives_and { $t->commit } 'commit';
+	lives_ok { $t->commit } 'commit';
 	dies_ok { $t->rollback; } 'closed 2';
+	lives_and {
+		is $s->execute_write( sub { shift->{bolt_txn}[3]{mode} } ), 'w';
+	} 'managed write mode';
+	lives_and {
+		is $s->execute_read(  sub { shift->{bolt_txn}[3]{mode} } ), 'r';
+	} 'managed read mode';
+	throws_ok {
+		$s->execute_write( sub { shift->commit } );
+	} qr/\bcommit\b.*\bmanaged transaction\b/i, 'managed explicit commit dies';
+	throws_ok {
+		$s->execute_read( sub { shift->rollback } );
+	} qr/\brollback\b.*\bmanaged transaction\b/i, 'managed explicit rollback dies';
 };
 
 

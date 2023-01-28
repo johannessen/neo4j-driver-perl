@@ -145,7 +145,7 @@ slightly improves both performance and clarity).
 more or less recreate the old error message strings. Looking forward, having
 L<Neo4j::Error> overload stringification and just throwing an object exception
 might be an interesting option. However, we likely would have to roll C<croak>
-ourselves (see L<Carp/"BUGS">). See <https://perldoc.perl.org/functions/die>
+ourselves (see L<Carp/"BUGS">). See L<https://perldoc.perl.org/functions/die>
 for the special meaning of C<\n>.
 
 =back
@@ -154,11 +154,11 @@ for the special meaning of C<\n>.
 
 =over
 
-=item * Add
-L<transaction functions|https://neo4j.com/docs/driver-manual/4.1/session-api/simple/#driver-simple-transaction-fn>.
-These should probably consist of subrefs passed to methods called
-C<execute_write> and C<execute_read>
-(see L<https://github.com/neo4j/neo4j-java-driver/pull/1196>).
+=item * For the transaction functions, there is technically no guarantee
+that C<$_> will contain the exception we need it to contain; see
+L<Try::Tiny/"CAVEATS">. This should I<perhaps> be changed to something
+like L<Feature::Compat::Try> eventually (which is, however, effectively
+an XS module on older Perls without C<feature 'try'>).
 
 =item * Add transaction configuration; see:
 L<https://neo4j.com/docs/http-api/4.4/actions/transaction-configuration/>
@@ -298,18 +298,6 @@ the underlying hash may be reused by the net adapter.
 =head2 L<Neo4j::Driver::Net::Bolt>
 
 =over
-
-=item * Rollback behaviour on errors needs further study.
-L<Neo4j Status Codes|https://neo4j.com/docs/status-codes/4.2/>
-says that all errors have a rollback effect, but in at least some
-cases, the effect seems to be merely to mark the tx as failed and
-uncommittable, which isn't quite the same thing. This may or may not
-vary across error types, Neo4j versions, or Bolt versions. OTOH, some
-errors are internal client errors that shouldn't rollback the tx
-(L<majensen/libneo4j-client#7|https://github.com/majensen/libneo4j-client/issues/7#issuecomment-752914015>).
-Not sure if these occur in practice, but we should probably
-be able to handle them correctly anyway.
-(See also L<neo4j#12651|https://github.com/neo4j/neo4j/issues/12651>.)
 
 =item * C<new()> shouldn't swallow the exception if loading
 L<Neo4j::Bolt> fails; see

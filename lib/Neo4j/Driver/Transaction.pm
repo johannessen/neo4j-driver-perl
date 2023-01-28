@@ -21,12 +21,13 @@ use Neo4j::Driver::Result;
 
 sub new {
 	# uncoverable pod (private method)
-	my ($class, $session) = @_;
+	my ($class, $session, $mode) = @_;
 	
 	my $events = $session->{driver}->{plugins};
 	my $transaction = {
 		cypher_params_v2 => $session->{cypher_params_v2},
 		net => $session->{net},
+		mode => $mode,
 		unused => 1,  # for HTTP only
 		closed => 0,
 		return_graph => 0,
@@ -116,7 +117,7 @@ sub _begin {
 	croak "Concurrent transactions are unsupported in Bolt (there is already an open transaction in this session)" if $self->{net}->{active_tx};
 	
 	try {
-		$self->{bolt_txn} = $self->{net}->_new_tx;
+		$self->{bolt_txn} = $self->{net}->_new_tx($self);
 	}
 	catch {
 		die $_ if $_ !~ m/\bprotocol version\b/i;  # Bolt v1/v2
@@ -154,6 +155,7 @@ sub commit {
 	my ($self) = @_;
 	
 	croak 'Transaction already closed' unless $self->is_open;
+	croak 'Use `return` to commit a managed transaction' if $self->{managed};
 	
 	if ($self->{bolt_txn}) {
 		$self->{bolt_txn}->commit;
@@ -170,6 +172,7 @@ sub rollback {
 	my ($self) = @_;
 	
 	croak 'Transaction already closed' unless $self->is_open;
+	croak 'Explicit rollback of a managed transaction' if $self->{managed};
 	
 	if ($self->{bolt_txn}) {
 		$self->{bolt_txn}->rollback;
@@ -253,6 +256,8 @@ sub _run_autocommit {
 sub commit {
 	my ($self) = @_;
 	
+	croak 'Use `return` to commit a managed transaction' if $self->{managed};
+	
 	$self->_run_autocommit;
 }
 
@@ -261,6 +266,7 @@ sub rollback {
 	my ($self) = @_;
 	
 	croak 'Transaction already closed' unless $self->is_open;
+	croak 'Explicit rollback of a managed transaction' if $self->{managed};
 	
 	$self->{net}->_request($self, 'DELETE') if $self->{transaction_endpoint};
 	$self->{closed} = 1;
@@ -314,8 +320,8 @@ execution of a statement to have completed, you need to use the
 L<Result|Neo4j::Driver::Result>, for example by calling
 one of the methods C<fetch()>, C<list()> or C<summary()>.
 
-To create a new (unmanaged) transaction, call
-L<Neo4j::Driver::Session/"begin_transaction">.
+Neo4j drivers allow the creation of different kinds of transactions.
+See L<Neo4j::Driver::Session> for details.
 
 =head1 METHODS
 
@@ -325,7 +331,7 @@ L<Neo4j::Driver::Transaction> implements the following methods.
 
  $transaction->commit;
 
-Commits the transaction and returns the result.
+Commits an unmanaged transaction.
 
 After committing the transaction is closed and can no longer be used.
 
@@ -344,7 +350,7 @@ S<60 seconds.>
 
  $transaction->rollback;
 
-Rollbacks the transaction.
+Rolls back a transaction.
 
 After rolling back the transaction is closed and can no longer be
 used.

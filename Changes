@@ -1,7 +1,8 @@
 Revision history for Neo4j::Driver
 
-0.3551  2023-01-27
+0.3552  2023-01-28
 
+ - Add support for managed transaction functions.
  - Add "error" event, which makes details of server and network errors
    available to plug-ins as a Neo4j::Error object. (GH #7)
 

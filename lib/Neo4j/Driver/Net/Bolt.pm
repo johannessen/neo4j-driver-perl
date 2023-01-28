@@ -199,9 +199,11 @@ sub _run {
 
 
 sub _new_tx {
-	my ($self) = @_;
+	my ($self, $driver_tx) = @_;
 	
 	my $params = {};
+	$params->{mode} = lc substr $driver_tx->{mode}, 0, 1 if $driver_tx->{mode};
+	
 	my $transaction = "$self->{net_module}::Txn";
 	return unless $transaction->can('new');
 	return $transaction->new( $self->{connection}, $params, $self->{database} );

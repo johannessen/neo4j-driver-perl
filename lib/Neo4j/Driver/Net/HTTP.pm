@@ -174,7 +174,7 @@ sub _request {
 	my $accept = $self->{accept_for}->{$method}
 	             // $self->_accept_for($method);
 	
-	$self->{http_agent}->request($method, $tx_endpoint, $json, $accept);
+	$self->{http_agent}->request($method, $tx_endpoint, $json, $accept, $tx->{mode});
 	
 	my $header = $self->{http_agent}->http_header;
 	$tx->{closed} = $header->{success};  # see _parse_tx_status() and neo4j #12651

@@ -120,7 +120,7 @@ sub fetch_all {
 
 
 sub request {
-	my ($self, $method, $url, $json, $accept) = @_;
+	my ($self, $method, $url, $json, $accept, $mode) = @_;
 	
 	$self->{buffer} = undef;
 	
@@ -132,6 +132,7 @@ sub request {
 			'Accept' => $accept,
 			'Content' => $self->{json_coder}->encode($json),
 			'Content-Type' => $CONTENT_TYPE,
+			$mode ? ('Access-Mode' => $mode) : ()
 		);
 	}
 	else {

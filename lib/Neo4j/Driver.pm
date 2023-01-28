@@ -35,6 +35,7 @@ my %OPTIONS = (
 	encrypted => 'tls',
 	jolt => 'jolt',
 	concurrent_tx => 'concurrent_tx',
+	max_transaction_retry_time => 'max_transaction_retry_time',
 	net_module => 'net_module',
 	timeout => 'timeout',
 	tls => 'tls',
@@ -296,25 +297,22 @@ See L</"uri"> for details.
 
 B<This driver's development is not yet considered finalised.>
 
-As of version 0.31, the major open items are:
+As of version 0.36, the one major open item is:
 
 =over
 
 =item *
 
 Support for the C<neo4j:> URI scheme in some fashion.
-(No implementation of Bolt routing is currently planned.)
-
-=item *
-
-Managed transactions through transaction functions.
+(No first-party implementation of client-side routing is
+currently planned, but plug-ins might get a hook for it.)
 
 =back
 
 Once the above items are implemented, this driver will
 move to S<version 1.00,> removing L<deprecated
 functionality|Neo4j::Driver::Deprecations>.
-There is an ongoing effort to work on these and other
+There is an ongoing effort to work on this and other
 items, but there is no schedule for their completion.
 
 =head1 METHODS
@@ -514,6 +512,13 @@ URI scheme (C<http> / C<https>).
 
 Before version 0.27, this option was named C<tls>. Use of the
 former name is now discouraged.
+
+=head2 max_transaction_retry_time
+
+ $driver->config(max_transaction_retry_time => 6);  # seconds
+
+Specifies the maximum amount of time that a managed transaction
+will retry before failing. The default value is S<30 seconds>.
 
 =head2 timeout
 
