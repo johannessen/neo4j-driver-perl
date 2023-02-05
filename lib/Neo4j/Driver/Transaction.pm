@@ -432,7 +432,7 @@ the method C<has_next()>.
 Transactions are rolled back and closed automatically if the Neo4j
 server encounters an error when running a query. However, if an
 I<internal> error occurs in the driver or in one of its supporting
-modules, explicit transactions may remain open.
+modules, unmanaged transactions may remain open.
 
 Typically, no particular handling of error conditions is required.
 But if you wrap your transaction in a C<try> (or C<eval>) block,

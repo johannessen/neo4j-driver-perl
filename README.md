@@ -40,8 +40,7 @@ To install a development version from this repository, run the following steps:
 ```sh
 git clone https://github.com/johannessen/neo4j-driver-perl && cd neo4j-driver-perl
 cpanm Dist::Zilla::PluginBundle::Author::AJNN
-dzil build
-cpanm Neo4j-Driver.tar.gz
+dzil install
 
 dzil release   # upload a new version to CPAN
 ```

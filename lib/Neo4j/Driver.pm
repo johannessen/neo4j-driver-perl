@@ -311,7 +311,7 @@ currently planned, but plug-ins might get a hook for it.)
 
 =back
 
-Once the above items are implemented, this driver will
+Once the above item is implemented, this driver will
 move to S<version 1.00,> removing L<deprecated
 functionality|Neo4j::Driver::Deprecations>.
 There is an ongoing effort to work on this and other

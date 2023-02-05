@@ -72,6 +72,11 @@ methods might be a quick way to bring up the B<pod> coverage stats a bit.
 =back
 
 =item * Write new unit tests for all modules.
+Tests should probably live in files with names that are a good match for module
+names, so that it's easy to find test for a specific module (Simulator and live
+tests should perhaps be in separate files and directories.) The article
+L<Perl Testing in 2023|https://toby.ink/blog/2023/01/24/perl-testing-in-2023/>
+has some insight into how L<Test2> can simplify unit tests.
 
 =item * Optimise the simulator for C<$hash = 0>.
 Use of C<<< << >>> causes statements to end with C<\n>, which the simulator
@@ -134,6 +139,11 @@ only, this should not be a breaking change.
 =item * Convert the "unsupported option" check from C<grep> to
 L<List::Util/"none"> (in C<config()> and C<_parse_options()>;
 slightly improves both performance and clarity).
+
+=item * A reliable C<connection_timeout> config option might be good.
+Not exactly sure how to achieve that across Bolt, LWP etc. Googling yields
+L<IO::Socket::Timeout> and C<SocketConnectTimeout>, but I haven't really
+researched further.
 
 =back
 
