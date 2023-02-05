@@ -230,11 +230,13 @@ __END__
  $uri = 'http://localhost';
  $driver = Neo4j::Driver->new($uri)->basic_auth('neo4j', 'password');
  
- sub say_friends_of {
+ sub say_friends_of ($person) {
    $query = 'MATCH (a:Person)-[:KNOWS]->(f) '
-             . 'WHERE a.name = {name} RETURN f.name';
-   $records = $driver->session->run($query, name => shift)->list;
-   foreach $record ( @$records ) {
+             . 'WHERE a.name = $name RETURN f.name';
+   @records = $driver->session->execute_read( sub ($tx) {
+     $tx->run($query, { name => $person })->list;
+   });
+   foreach $record ( @records ) {
      say $record->get('f.name');
    }
  }

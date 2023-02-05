@@ -197,7 +197,12 @@ __END__
  use Neo4j::Driver;
  $session = Neo4j::Driver->new->basic_auth(...)->session;
  
- # explicit transaction
+ # managed transaction function
+ @records = $session->execute_read( sub ($transaction) {
+   $transaction->run('MATCH (m:Movie) RETURN m')->list;
+ });
+ 
+ # unmanaged explicit transaction
  $transaction = $session->begin_transaction;
  
  # autocommit transaction
