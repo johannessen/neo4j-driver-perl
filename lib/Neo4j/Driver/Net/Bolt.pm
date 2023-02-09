@@ -80,10 +80,11 @@ sub new {
 
 # Trigger an error using the given event handler.
 # Meant to only be called after a failure has occurred.
+# May also be called as class method.
 # $ref may be a Neo4j::Bolt ResultStream, Cxn, Txn.
 # $error_handler may be a coderef or the event manager.
 sub _trigger_bolt_error {
-	my ($self, $ref, $error_handler) = @_;
+	my ($self, $ref, $error_handler, $connection) = @_;
 	my $error = 'Neo4j::Error';
 	
 	$error = $error->append_new( Server => {
@@ -105,7 +106,7 @@ sub _trigger_bolt_error {
 	}) if try { $ref->errnum || $ref->errmsg };
 	
 	try {
-		my $cxn = $self->{connection};
+		my $cxn = $connection // $self->{connection};
 		$error = $error->append_new( Network => {
 			code => scalar $cxn->errnum,
 			message => scalar $cxn->errmsg // $BOLT_ERROR{$cxn->errnum},
@@ -190,6 +191,7 @@ sub _run {
 			statement => $statement_json,
 			cypher_types => $self->{cypher_types},
 			server_info => $self->{server_info},
+			error_handler => $tx->{error_handler},
 		});
 	}
 	

@@ -62,6 +62,13 @@ sub connected { 0 }
 sub client_errnum { -13 }
 sub client_errmsg { "all wrong" }
 
+package Local::Bolt::StreamFailure;
+use parent -norequire => 'Local::Bolt';
+sub success { ${shift->[0]} ? 0 : 1 }
+sub failure { ${shift->[0]} ? 1 : 0 }
+sub client_errnum { ${shift->[0]} ? -666 : 0 }
+sub client_errmsg { "" }
+
 package Local::Bolt::FailureRef;
 sub new { bless $_[1], shift }
 sub server_errcode { shift->{server_errcode} }
@@ -93,7 +100,7 @@ sub new_session {
 
 my ($s, $f, $t, $r, $v);
 
-plan tests => 1 + 9 + 1;
+plan tests => 1 + 10 + 1;
 
 
 lives_and { ok $s = new_session('Local::Bolt') } 'driver';
@@ -192,6 +199,15 @@ subtest 'bolt error' => sub {
 		$f->run([['A'],['B']]);
 	} qr/\bmultiple statements\b/i, 'no multiple';
 	throws_ok { new_session('Local::Bolt::CxnFailure') } qr/Bolt error -13: all wrong/i, 'new cxn failure';
+};
+
+
+subtest 'bolt stream error' => sub {
+	plan skip_all => "stream not lazy" if $Neo4j::Driver::Result::Bolt::gather_results;
+	plan tests => 3;
+	lives_and { ok $f = new_session('Local::Bolt::StreamFailure') } 'new stream failure';
+	lives_and { ok $r = $f->run('dummy') } 'result stream';
+	throws_ok { $r->has_next } qr/\bBolt error -666\b/i, 'fetch failure';
 };
 
 

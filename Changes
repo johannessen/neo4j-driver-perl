@@ -1,7 +1,9 @@
 Revision history for Neo4j::Driver
 
-0.3602  2023-02-09
+0.3603  2023-02-09
 
+ - Fix a bug introduced in 0.36 which prevented some Bolt server/network errors
+   from being reported correctly.
  - Mitigate test failures on slow machines and on Perl v5.10
 
 0.36  2023-02-05
