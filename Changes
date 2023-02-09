@@ -1,8 +1,8 @@
 Revision history for Neo4j::Driver
 
-0.3601  2023-02-09
+0.3602  2023-02-09
 
- - Mitigate test failures on Perl v5.10/v5.12
+ - Mitigate test failures on slow machines and on Perl v5.10
 
 0.36  2023-02-05
 

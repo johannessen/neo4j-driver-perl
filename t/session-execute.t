@@ -12,6 +12,7 @@ use Test::Warnings;
 # that can perform retries automatically for certain kinds of errors.
 
 use Scalar::Util qw(weaken);
+use Time::HiRes ();
 
 use Neo4j::Driver;
 use Neo4j::Error;
@@ -71,16 +72,29 @@ subtest 'server error no retry' => sub {
 
 
 subtest 'server error with retry' => sub {
-	plan tests => 2 + 3;
 	$mock = Neo4j_Test::MockQuery->new;
 	$mock->query_result('foo' => 'bar');
 	$mock->query_result('error' => Neo4j::Error->new( Server => {
 		code => 'Neo.TransientError.Database.DatabaseUnavailable',
 	}));
+	
+	# Establish baseline timing
 	$d = Neo4j::Driver->new->plugin($mock);
-	$s = $d->config(max_transaction_retry_time => 0.03)->session;
-	$s->{retry_sleep} = 0.001;
-	# 1/1000 of default sleep/timeout, to speed up testing
+	$s = $d->config(max_transaction_retry_time => 0)->session;
+	my $sleep = - Time::HiRes::time;
+	eval { $s->execute_read(sub { shift->run('error') }) };
+	Time::HiRes::sleep 0.001;  # 1/1000 of default
+	$sleep += Time::HiRes::time;
+	my $timeout = $sleep * 15;  # 1/2 of default
+	
+	# limit: retry speed 10 ms
+	diag sprintf "retry speed %.1f ms", $sleep * 1000 if $ENV{AUTOMATED_TESTING};
+	plan skip_all => "(test too slow)" unless $ENV{EXTENDED_TESTING} || $timeout < 0.15;
+	plan tests => 2 + 3;
+	
+	$d = Neo4j::Driver->new->plugin($mock);
+	$s = $d->config(max_transaction_retry_time => $timeout)->session;
+	$s->{retry_sleep} = $sleep;
 	
 	# Temporary error, retry keeps failing
 	my $try = 0;
