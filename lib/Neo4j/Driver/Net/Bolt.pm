@@ -13,6 +13,7 @@ package Neo4j::Driver::Net::Bolt;
 use Carp qw(croak);
 our @CARP_NOT = qw(Neo4j::Driver::Transaction Neo4j::Driver::Transaction::Bolt);
 
+use Try::Tiny;
 use URI 1.25;
 
 use Neo4j::Driver::Result::Bolt;
@@ -83,41 +84,39 @@ sub new {
 # $error_handler may be a coderef or the event manager.
 sub _trigger_bolt_error {
 	my ($self, $ref, $error_handler) = @_;
-	
-	local $@;
 	my $error = 'Neo4j::Error';
 	
 	$error = $error->append_new( Server => {
 		code => scalar $ref->server_errcode,
 		message => scalar $ref->server_errmsg,
-		raw => scalar eval { $ref->get_failure_details },  # Neo4j::Bolt >= 0.41
-	}) if eval { $ref->server_errcode || $ref->server_errmsg };
+		raw => scalar try { $ref->get_failure_details },  # Neo4j::Bolt >= 0.41
+	}) if try { $ref->server_errcode || $ref->server_errmsg };
 	
 	$error = $error->append_new( Network => {
 		code => scalar $ref->client_errnum,
 		message => scalar $ref->client_errmsg // $BOLT_ERROR{$ref->client_errnum},
 		as_string => $self->_bolt_error($ref),
-	}) if eval { $ref->client_errnum || $ref->client_errmsg };
+	}) if try { $ref->client_errnum || $ref->client_errmsg };
 	
 	$error = $error->append_new( Network => {
 		code => scalar $ref->errnum,
 		message => scalar $ref->errmsg // $BOLT_ERROR{$ref->errnum},
 		as_string => $self->_bolt_error($ref),
-	}) if eval { $ref->errnum || $ref->errmsg };
+	}) if try { $ref->errnum || $ref->errmsg };
 	
-	eval {
+	try {
 		my $cxn = $self->{connection};
 		$error = $error->append_new( Network => {
 			code => scalar $cxn->errnum,
 			message => scalar $cxn->errmsg // $BOLT_ERROR{$cxn->errnum},
 			as_string => $self->_bolt_error($cxn),
-		}) if eval { $cxn->errnum || $cxn->errmsg } && $cxn != $ref;
+		}) if try { $cxn->errnum || $cxn->errmsg } && $cxn != $ref;
 		$cxn->reset_cxn;
 		$error = $error->append_new( Internal => {  # perlbolt#51
 			code => scalar $cxn->errnum,
 			message => scalar $cxn->errmsg // $BOLT_ERROR{$cxn->errnum},
 			as_string => $self->_bolt_error($cxn),
-		}) if eval { $cxn->errnum || $cxn->errmsg };
+		}) if try { $cxn->errnum || $cxn->errmsg };
 	};
 	
 	return $error_handler->($error) if ref $error_handler eq 'CODE';

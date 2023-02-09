@@ -253,6 +253,7 @@ subtest 'gather_results' => sub {
 
 
 subtest 'bolt live' => sub {
+	plan skip_all => "Perl version too old for Neo4j::Bolt" if $] < 5.012;
 	plan tests => 1;
 	throws_ok {
 		Neo4j::Driver->new('bolt://localhost:14')->session();
