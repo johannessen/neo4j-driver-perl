@@ -3,9 +3,9 @@ use strict;
 use warnings;
 use lib qw(./lib t/lib);
 
-use Test::More 0.88;
+use Test::More 0.94;
 use Test::Exception;
-use Test::Warnings;
+use Test::Warnings qw(warning);
 
 
 # The purpose of these tests is to help prevent any change to the
@@ -60,7 +60,7 @@ subtest 'REST::Neo4p' => sub {
 	lives_ok {
 		my $q = REST::Neo4p::Query->new('MATCH (n) RETURN n LIMIT 1');
 		$q->execute;
-		my $row = $q->fetch;
+		my $row; warning { $row = $q->fetch };  # Ignore possible deprecation warning on Neo4j 5
 		$node = $row->[0] if $row;
 	} 'query match node';
 	SKIP: {
@@ -72,7 +72,7 @@ subtest 'REST::Neo4p' => sub {
 	lives_ok {
 		my $q = REST::Neo4p::Query->new('MATCH p=()--() RETURN p LIMIT 1');
 		$q->execute;
-		my $row = $q->fetch;
+		my $row; warning { $row = $q->fetch };  # Ignore possible deprecation warning on Neo4j 5
 		$path = $row->[0] if $row;
 	} 'query match path';
 	SKIP: {

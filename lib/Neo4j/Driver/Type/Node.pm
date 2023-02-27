@@ -49,6 +49,8 @@ sub id {
 	my ($self) = @_;
 	
 	return $$self->{_meta}->{id} if defined $$self->{_meta}->{id};
+	
+	warnings::warnif deprecated => "Node->id() is deprecated since Neo4j 5; use element_id()";
 	my ($id) = $$self->{_meta}->{element_id} =~ m/^4:[^:]*:([0-9]+)/;
 	$id = 0 + $id if defined $id;
 	return $id;
@@ -157,8 +159,8 @@ within a particular context, for example the current transaction.
 Neo4j 5 has B<deprecated> numeric IDs. They will likely become
 unavailable in future Neo4j versions. This method will try to
 auto-generate a S<numeric ID> from the new S<element ID> value
-(or return C<undef> if that fails). A deprecation warning will
-be issued by this method in a future version of this driver.
+(or return C<undef> if that fails). A deprecation warning is
+issued by this method if the S<element ID> is available.
 
 Neo4j node IDs are not designed to be persistent. As such,
 if you want a public identity to use for your nodes,
