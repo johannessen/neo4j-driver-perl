@@ -3,9 +3,11 @@ use strict;
 use warnings;
 use lib qw(./lib t/lib);
 
-use Test::More 0.88;
+use Test::More 0.94;
 use Test::Exception;
-use Test::Warnings qw(warning);
+use Test::Warnings 0.010 qw(warning :no_end_test);
+my $no_warnings;
+use if $no_warnings = $ENV{AUTHOR_TESTING} ? 1 : 0, 'Test::Warnings';
 
 
 # The Neo4j::Driver package itself mostly deals with configuration
@@ -16,7 +18,7 @@ use Neo4j_Test::MockHTTP;
 
 my ($d, $r, $w);
 
-plan tests => 16 + 1;
+plan tests => 16 + $no_warnings;
 
 
 subtest 'config read/write' => sub {

@@ -3,9 +3,11 @@ use strict;
 use warnings;
 use lib qw(./lib t/lib);
 
-use Test::More 0.88;
+use Test::More 0.94;
 use Test::Exception;
-use Test::Warnings;
+use Test::Warnings 0.010 qw(:no_end_test);
+my $no_warnings;
+use if $no_warnings = $ENV{AUTHOR_TESTING} ? 1 : 0, 'Test::Warnings';
 
 use Neo4j_Test::MockHTTP;
 
@@ -113,7 +115,7 @@ use Neo4j::Driver;
 
 my ($s, $r, $v, $e);
 
-plan tests => 1 + 9 + 1;
+plan tests => 1 + 9 + $no_warnings;
 
 
 lives_and { ok $s = Neo4j::Driver->new('http:')

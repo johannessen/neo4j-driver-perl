@@ -5,7 +5,9 @@ use lib qw(./lib t/lib);
 
 use Test::More 0.94;
 use Test::Exception;
-use Test::Warnings qw(warning);
+use Test::Warnings 0.010 qw(warning :no_end_test);
+my $no_warnings;
+use if $no_warnings = $ENV{AUTHOR_TESTING} ? 1 : 0, 'Test::Warnings';
 
 
 # The purpose of these tests is to help prevent any change to the
@@ -27,7 +29,7 @@ my $neo4j_ver = $driver && $driver->session->server->version;
 plan skip_all => "no connection to Neo4j server" unless $driver && ! $Neo4j_Test::sim;
 plan skip_all => "Neo4j server version too old" if $neo4j_ver =~ m{^Neo4j/[12]\.};
 
-plan tests => 1 + 1;
+plan tests => 1 + $no_warnings;
 
 
 subtest 'REST::Neo4p' => sub {

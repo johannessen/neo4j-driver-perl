@@ -5,7 +5,9 @@ use lib qw(./lib t/lib);
 
 use Test::More 0.94;
 use Test::Exception;
-use Test::Warnings;
+use Test::Warnings 0.010 qw(:no_end_test);
+my $no_warnings;
+use if $no_warnings = $ENV{AUTHOR_TESTING} ? 1 : 0, 'Test::Warnings';
 
 use Neo4j_Test::EchoHTTP;
 use Neo4j_Test::MockHTTP;
@@ -15,7 +17,7 @@ use Neo4j_Test::MockHTTP;
 
 use Neo4j::Driver;
 
-plan tests => 5 + 1;
+plan tests => 5 + $no_warnings;
 
 
 my $mock_plugin = Neo4j_Test::MockHTTP->new;

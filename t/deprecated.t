@@ -20,7 +20,10 @@ my $s = $driver->session;
 
 use Test::More 0.94;
 use Test::Exception;
-use Test::Warnings qw(warning warnings);
+use Test::Warnings 0.010 qw(warning warnings :no_end_test);
+my $no_warnings;
+use if $no_warnings = $ENV{AUTHOR_TESTING} ? 1 : 0, 'Test::Warnings';
+
 use Neo4j_Test::MockHTTP;
 use Neo4j_Test::Sim;
 my $transaction = $driver->session->begin_transaction;
@@ -31,7 +34,7 @@ sub response_for { $mock_plugin->response_for(undef, @_) }
 
 my ($d, $w, @w, $r);
 
-plan tests => 1 + 20 + 1;
+plan tests => 1 + 20 + $no_warnings;
 
 
 # query from types.t

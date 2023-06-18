@@ -18,11 +18,14 @@ my $s = $driver->session;  # only for autocommit transactions
 
 use Test::More 0.94;
 use Test::Exception;
-use Test::Warnings;
+use Test::Warnings 0.010 qw(:no_end_test);
+my $no_warnings;
+use if $no_warnings = $ENV{AUTHOR_TESTING} ? 1 : 0, 'Test::Warnings';
+
 use URI;
 my $undo_id;
 
-plan tests => 6 + 4;
+plan tests => 6 + 3 + $no_warnings;
 
 
 my ($q, $r);

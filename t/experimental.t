@@ -22,7 +22,9 @@ my $s = $driver->session;
 
 use Test::More 0.94;
 use Test::Exception;
-use Test::Warnings qw(warnings);
+use Test::Warnings 0.010 qw(warnings :no_end_test);
+my $no_warnings;
+use if $no_warnings = $ENV{AUTHOR_TESTING} ? 1 : 0, 'Test::Warnings';
 
 use Neo4j::Driver;
 use Neo4j_Test::MockHTTP;
@@ -33,7 +35,7 @@ sub response_for { $mock_plugin->response_for(undef, @_) }
 
 my ($q, $r, @a, $a);
 
-plan tests => 9 + 1;
+plan tests => 9 + $no_warnings;
 
 
 {

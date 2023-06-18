@@ -5,7 +5,9 @@ use lib qw(./lib t/lib);
 
 use Test::More 0.94;
 use Test::Exception;
-use Test::Warnings qw(warning);
+use Test::Warnings 0.010 qw(warning :no_end_test);
+my $no_warnings;
+use if $no_warnings = $ENV{AUTHOR_TESTING} ? 1 : 0, 'Test::Warnings';
 
 
 package Local::Bolt;
@@ -100,7 +102,7 @@ sub new_session {
 
 my ($s, $f, $t, $r, $v);
 
-plan tests => 1 + 10 + 1;
+plan tests => 1 + 10 + $no_warnings;
 
 
 lives_and { ok $s = new_session('Local::Bolt') } 'driver';

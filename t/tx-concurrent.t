@@ -5,7 +5,9 @@ use lib qw(./lib t/lib);
 
 use Test::More 0.94;
 use Test::Exception;
-use Test::Warnings qw(warning);
+use Test::Warnings 0.010 qw(warning :no_end_test);
+my $no_warnings;
+use if $no_warnings = $ENV{AUTHOR_TESTING} ? 1 : 0, 'Test::Warnings';
 
 
 # Concurrent transactions within the same session (in the context of Bolt
@@ -18,7 +20,7 @@ use Test::Warnings qw(warning);
 use Neo4j_Test;
 use Neo4j_Test::MockHTTP;
 
-plan tests => 14 + 1;
+plan tests => 14 + $no_warnings;
 
 
 my ($w, $d, $s, $t, $r);
