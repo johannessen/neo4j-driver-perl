@@ -85,9 +85,9 @@ subtest 'server error with retry' => sub {
 	eval { $s->execute_read(sub { shift->run('error') }) };
 	Time::HiRes::sleep 0.001;  # 1/1000 of default
 	$sleep += Time::HiRes::time;
-	my $timeout = $sleep * 15;  # 1/2 of default
+	my $timeout = $sleep * 30;
 	
-	# limit: retry speed 10 ms
+	# limit: retry speed 5 ms
 	diag sprintf "retry speed %.1f ms", $sleep * 1000 if $ENV{AUTOMATED_TESTING};
 	plan skip_all => "(test too slow)" unless $ENV{EXTENDED_TESTING} || $timeout < 0.15;
 	plan tests => 2 + 3;
@@ -97,11 +97,13 @@ subtest 'server error with retry' => sub {
 	$s->{retry_sleep} = $sleep;
 	
 	# Temporary error, retry keeps failing
+	my $start = Time::HiRes::time;
 	my $try = 0;
 	throws_ok {
 		$s->execute_read(sub { $try++; shift->run('error'); });
 	} qr/\.DatabaseUnavailable\b/, 'retry dies';
-	ok $try > 2, 'yes retry';
+	ok $try > 2, 'yes retry'
+		or diag sprintf "on try %i after %.1f ms, timeout %.1f ms", $try, Time::HiRes::time - $start, $timeout * 1000;
 	
 	# Temporary error, retry eventually succeeds
 	$try = 0;

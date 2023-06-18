@@ -120,6 +120,8 @@ lives_and { ok $s = Neo4j::Driver->new('http:')
                     ->plugin($mock_plugin)
                     ->session(database => 'dummy') } 'session';
 
+my $warned;
+
 sub id5 {
 	my $entity = shift;
 	my $name = shift // 'id';
@@ -128,7 +130,7 @@ sub id5 {
 	my $w = Test::Warnings::warning { $id = $entity->$name };
 	if ($w !~ qr/\b\Q$name\E\b.+\bdeprecated\b.+\bNeo4j 5\b/i) {
 		diag "got warning(s) at line $line: ", explain($w);
-		warn 'Got unexpected warning(s)' unless CORE::state $warned++;  # fail tests
+		warn 'Got unexpected warning(s)' unless $warned++;  # fail tests (but only warn once)
 	}
 	return $id;
 }

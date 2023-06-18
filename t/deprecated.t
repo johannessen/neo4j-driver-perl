@@ -31,7 +31,7 @@ sub response_for { $mock_plugin->response_for(undef, @_) }
 
 my ($d, $w, @w, $r);
 
-plan tests => 20 + 3;
+plan tests => 1 + 20 + 1;
 
 
 # query from types.t
@@ -489,7 +489,7 @@ END
 
 
 CLEANUP: {
-	lives_ok { $transaction->rollback } 'rollback';
+	eval { $transaction->rollback };
 }
 
 

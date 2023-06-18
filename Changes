@@ -1,5 +1,9 @@
 Revision history for Neo4j::Driver
 
+0.38  2023-06-18
+
+ - Mitigate more test failures on slow machines and on Perl v5.14 and older.
+
 0.37  2023-02-27  (TRIAL RELEASE)
 
  - Add deprecation warning to node and relationship id() methods on Neo4j 5
