@@ -28,7 +28,7 @@ sub new {
 	# uncoverable pod (private method)
 	my ($class, $driver) = @_;
 	
-	return Neo4j::Driver::Session::Bolt->new($driver) if $driver->{uri}->scheme eq 'bolt';
+	return Neo4j::Driver::Session::Bolt->new($driver) if $driver->config('uri')->scheme eq 'bolt';
 	return Neo4j::Driver::Session::HTTP->new($driver);
 }
 
@@ -70,7 +70,7 @@ sub _execute {
 	my (@r, $r);
 	my $wantarray = wantarray;
 	my $time_stop = Time::HiRes::time
-		+ ($self->{driver}->{max_transaction_retry_time} // 30);  # seconds
+		+ ($self->{driver}->config('max_transaction_retry_time') // 30);  # seconds
 	my $tries = 0;
 	my $success = 0;
 	do {
@@ -153,7 +153,7 @@ sub new {
 	my ($class, $driver) = @_;
 	
 	return bless {
-		cypher_params_v2 => $driver->{cypher_params_v2},
+		cypher_params_v2 => $driver->config('cypher_params'),
 		driver => $driver,
 		net => Neo4j::Driver::Net::Bolt->new($driver),
 	}, $class;
@@ -176,7 +176,7 @@ sub new {
 	my ($class, $driver) = @_;
 	
 	return bless {
-		cypher_params_v2 => $driver->{cypher_params_v2},
+		cypher_params_v2 => $driver->config('cypher_params'),
 		driver => $driver,
 		net => Neo4j::Driver::Net::HTTP->new($driver),
 	}, $class;

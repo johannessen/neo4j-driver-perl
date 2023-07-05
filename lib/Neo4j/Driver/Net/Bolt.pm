@@ -38,16 +38,16 @@ sub new {
 	# uncoverable pod
 	my ($class, $driver) = @_;
 	
-	croak "Concurrent transactions are unsupported in Bolt; use multiple sessions" if $driver->{concurrent_tx};
+	croak "Concurrent transactions are unsupported in Bolt; use multiple sessions" if $driver->config('concurrent_tx');
 	
-	my $uri = $driver->{uri};
-	if ($driver->{auth}) {
-		croak "Only Basic Authentication is supported" if $driver->{auth}->{scheme} ne 'basic';
+	my $uri = $driver->config('uri');
+	if (my $auth = $driver->config('auth')) {
+		croak "Only Basic Authentication is supported" if $auth->{scheme} ne 'basic';
 		$uri = $uri->clone;
-		$uri->userinfo( $driver->{auth}->{principal} . ':' . $driver->{auth}->{credentials} );
+		$uri->userinfo( $auth->{principal} . ':' . $auth->{credentials} );
 	}
 	
-	my $net_module = $driver->{net_module} || 'Neo4j::Bolt';
+	my $net_module = $driver->config('net_module') || 'Neo4j::Bolt';
 	if ($net_module eq 'Neo4j::Bolt') {
 		croak "Protocol scheme 'bolt' is not supported (Neo4j::Bolt not installed)\n"
 			. "Neo4j::Driver will support 'bolt' URLs if the Neo4j::Bolt module is installed.\n"
@@ -55,14 +55,14 @@ sub new {
 	}
 	
 	my $cxn;
-	if ($driver->{tls}) {
+	if ($driver->config('encrypted')) {
 		$cxn = $net_module->connect_tls("$uri", {
-			timeout => $driver->{http_timeout},
-			ca_file => $driver->{tls_ca},
+			timeout => $driver->config('timeout'),
+			ca_file => $driver->config('trust_ca'),
 		});
 	}
 	else {
-		$cxn = $net_module->connect( "$uri", $driver->{http_timeout} );
+		$cxn = $net_module->connect( "$uri", $driver->config('timeout') );
 	}
 	$class->_trigger_bolt_error( $cxn, $driver->{plugins} ) unless $cxn->connected;
 	
@@ -72,7 +72,7 @@ sub new {
 		uri => $uri,
 		result_module => $net_module->can('result_handlers') ? ($net_module->result_handlers)[0] : $RESULT_MODULE,
 		server_info => $driver->{server_info},
-		cypher_types => $driver->{cypher_types},
+		cypher_types => $driver->config('cypher_types'),
 		active_tx => 0,
 	}, $class;
 }

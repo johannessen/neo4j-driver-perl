@@ -37,18 +37,18 @@ sub new {
 	my ($class, $driver) = @_;
 	
 	$driver->{plugins}->{default_handlers}->{http_adapter_factory} //= sub {
-		my $net_module = $driver->{net_module} || 'Neo4j::Driver::Net::HTTP::LWP';
+		my $net_module = $driver->config('net_module') || 'Neo4j::Driver::Net::HTTP::LWP';
 		return $net_module->new($driver);
 	};
 	my $http_adapter = $driver->{plugins}->trigger('http_adapter_factory', $driver);
 	
 	my $self = bless {
 		events => $driver->{plugins},
-		cypher_types => $driver->{cypher_types},
+		cypher_types => $driver->config('cypher_types'),
 		server_info => $driver->{server_info},
 		http_agent => $http_adapter,
-		want_jolt => $driver->{jolt},
-		want_concurrent => $driver->{concurrent_tx} // 1,
+		want_jolt => $driver->config('jolt'),
+		want_concurrent => $driver->config('concurrent_tx') // 1,
 		active_tx => {},
 	}, $class;
 	

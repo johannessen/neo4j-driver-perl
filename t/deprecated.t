@@ -167,7 +167,7 @@ subtest 'driver mutability (config/auth)' => sub {
 	my @credentials = ('unlikely user/password combo', '');
 	lives_ok { $w = warning { $d->basic_auth(@credentials) }; } 'auth mutable lives';
 	(like $w, qr/\bDeprecate.*\bbasic_auth\b.*\bsession\b/i, 'auth mutable deprecated') or diag 'got warning(s): ', explain($w);
-	is $d->{auth}->{principal}, $credentials[0], 'auth mutable';
+	is $d->config('auth')->{principal}, $credentials[0], 'auth mutable';
 };
 
 
@@ -177,19 +177,19 @@ subtest 'jolt config option' => sub {
 	lives_ok { $w = ''; $w = warning { $d->config(jolt => 1); }; } 'jolt 1 lives';
 	like $w, qr/\bjolt\b.*\bdeprecated\b/i, 'jolt 1 deprecated'
 		or diag 'got warning(s): ', explain $w;
-	is $d->{jolt}, 1, 'jolt 1';
+	is $d->config('jolt'), 1, 'jolt 1';
 	lives_ok { $w = ''; $w = warning { $d->config(jolt => 0); }; } 'jolt 0 lives';
 	like $w, qr/\bjolt\b.*\bdeprecated\b/i, 'jolt 0 deprecated'
 		or diag 'got warning(s): ', explain $w;
-	is $d->{jolt}, 0, 'jolt 0';
+	is $d->config('jolt'), 0, 'jolt 0';
 	lives_ok { $w = ''; $w = warning { $d->config(jolt => undef); }; } 'jolt undef lives';
 	is_deeply $w, [], 'jolt undef not deprecated'
 		or diag 'got warning(s): ', explain $w;
-	is $d->{jolt}, undef, 'jolt undef';
+	is $d->config('jolt'), undef, 'jolt undef';
 	lives_ok { $w = ''; $w = warning { $d->config(jolt => 'foo'); }; } 'jolt mode lives';
 	like $w, qr/\bjolt\b.*\bdeprecated\b/i, 'jolt mode deprecated'
 		or diag 'got warning(s): ', explain $w;
-	is $d->{jolt}, 'foo', 'jolt mode';
+	is $d->config('jolt'), 'foo', 'jolt mode';
 };
 
 
@@ -266,7 +266,7 @@ subtest 'cypher_filter' => sub {
 	} qr/\bUnimplemented cypher filter\b/i, 'unprepared filter unkown name';
 	lives_and {
 		$d = Neo4j::Driver->new()->config( cypher_filter => 'water', cypher_params => v2 );
-		is $d->{cypher_params_v2}, v2;
+		is $d->config('cypher_params'), v2;
 	} 'set both params ignores old syntax';
 };
 
