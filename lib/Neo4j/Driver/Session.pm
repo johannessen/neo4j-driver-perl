@@ -301,7 +301,7 @@ The driver will automatically commit the transaction when the
 provided subroutine finishes execution. Any error raised during
 execution will result in a rollback attempt. For certain kinds
 of errors, the given subroutine will be retried with exponential
-backoff until L<Neo4j::Driver/"max_transaction_retry_time">
+backoff until L<Neo4j::Driver::Config/"max_transaction_retry_time">
 (see L<Neo4j::Error/"is_retryable"> for the complete list).
 Because of this, the given subroutine needs to be B<idempotent>
 (S<i. e.>, have the same effect regardless of how many times
