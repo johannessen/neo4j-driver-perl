@@ -86,7 +86,7 @@ sub driver_accept {
 	my (%params) = @_;
 	my $echo_plugin = Neo4j_Test::EchoHTTP->new(neo4j_version => $params{neo4j_version});
 	my $d = Neo4j::Driver->new('http:')->plugin($echo_plugin);
-	$d->{jolt} = $params{jolt};  # deprecated/internal option
+	$d->{config}->{jolt} = $params{jolt};  # deprecated/internal option
 	my $r = $d->session->run('echo')->single;
 	my @accept = split m/\s*,\s*/, $r->get('accept');
 }

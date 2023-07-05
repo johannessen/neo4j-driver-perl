@@ -52,14 +52,13 @@ my %DEFAULTS = (
 		point => 'Neo4j::Driver::Type::Point',
 		temporal => 'Neo4j::Driver::Type::Temporal',
 	},
-	die_on_error => 1,
 );
 
 
 sub new {
 	my ($class, $config, @extra) = @_;
 	
-	my $self = bless { %DEFAULTS }, $class;
+	my $self = bless { config => { %DEFAULTS }, die_on_error => 1 }, $class;
 	$self->{plugins} = Neo4j::Driver::Events->new;
 	
 	croak __PACKAGE__ . "->new() with multiple arguments unsupported" if @extra;
@@ -72,7 +71,7 @@ sub new {
 sub _check_uri {
 	my ($self) = @_;
 	
-	my $uri = $self->{uri};
+	my $uri = $self->{config}->{uri};
 	
 	if ($uri) {
 		$uri = "[$uri]" if $uri =~ m{^[0-9a-f:]*::|^(?:[0-9a-f]+:){6}}i;
@@ -102,7 +101,7 @@ sub _check_uri {
 	}
 	$uri->port( $NEO4J_DEFAULT_PORT{ $uri->scheme } ) if ! $uri->_port;
 	
-	$self->{uri} = $uri;
+	$self->{config}->{uri} = $uri;
 }
 
 
@@ -111,7 +110,7 @@ sub basic_auth {
 	
 	warnings::warnif deprecated => "Deprecated sequence: call basic_auth() before session()" if $self->{server_info};
 	
-	$self->{auth} = {
+	$self->{config}->{auth} = {
 		scheme => 'basic',
 		principal => $username,
 		credentials => $password,
@@ -131,7 +130,7 @@ sub config {
 		# get config option
 		my $key = $options[0];
 		croak "Unsupported config option: $key" unless grep m/^$key$/, keys %OPTIONS;
-		return $self->{$OPTIONS{$key}};
+		return $self->{$OPTIONS{$key}} // $self->{config}->{$OPTIONS{$key}};
 	}
 	
 	croak "Unsupported sequence: call config() before session()" if $self->{server_info};
@@ -140,7 +139,7 @@ sub config {
 	# set config option
 	my @keys = reverse sort keys %options;  # auth should take precedence over uri
 	foreach my $key (@keys) {
-		$self->{$OPTIONS{$key}} = $options{$key};
+		$self->{config}->{$OPTIONS{$key}} = $options{$key};
 		$self->_check_uri if $OPTIONS{$key} eq 'uri';
 	}
 	return $self;
@@ -150,10 +149,14 @@ sub config {
 sub session {
 	my ($self, @options) = @_;
 	
+	if (! $self->{server_info}) {
+		warnings::warnif deprecated => sprintf "Internal API %s->{%s} may be unavailable in Neo4j::Driver 1.00", __PACKAGE__, $_ for grep { $self->{$_} } @OPTIONS{ sort keys %OPTIONS };
+	}
+	
 	$self->{plugins}->{die_on_error} = $self->{die_on_error};
 	warnings::warnif deprecated => __PACKAGE__ . "->{die_on_error} is deprecated" unless $self->{die_on_error};
 	warnings::warnif deprecated => __PACKAGE__ . "->{http_timeout} is deprecated; use config()" if defined $self->{http_timeout};
-	$self->{timeout} //= $self->{http_timeout};
+	$self->{config}->{timeout} //= $self->{http_timeout};
 	
 	@options = %{$options[0]} if @options == 1 && ref $options[0] eq 'HASH';
 	my %options = $self->_parse_options('session', ['database'], @options);

@@ -223,7 +223,7 @@ subtest 'live server' => sub {
 	plan skip_all => "(no session)" unless $session;
 	plan skip_all => '(not implemented in simulator)' if $Neo4j_Test::sim;
 	plan tests => 7;
-	$session->{driver}->{max_transaction_retry_time} = 0;  # speed up testing
+	$session->{driver}->{config}->{max_transaction_retry_time} = 0;  # speed up testing
 	my $count = $r = $session->run('MATCH (a:Test) WHERE a.test IS NOT NULL RETURN a')->size;
 	
 	throws_ok {

@@ -93,10 +93,10 @@ use Neo4j::Driver;
 
 sub new_session {
 	my $d = Neo4j::Driver->new('bolt:');
-	$d->{net_module} = shift;
+	$d->{config}->{net_module} = shift;
 	$d->basic_auth(username => 'password');
-	$d->{tls} = shift if scalar @_;
-	$d->{auth} = shift if scalar @_;
+	$d->{config}->{tls} = shift if scalar @_;
+	$d->{config}->{auth} = shift if scalar @_;
 	return ( $d, $d->session(database => 'dummy') );
 }
 

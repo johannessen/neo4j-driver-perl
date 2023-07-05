@@ -76,19 +76,19 @@ subtest 'config for bolt: uri' => sub {
 	plan tests => 6;
 	# config 1
 	$d = Neo4j::Driver->new;
-	$d->{net_module} = 'Local::Bolt';
+	$d->{config}->{net_module} = 'Local::Bolt';
 	lives_ok { $d->config( uri => 'bolt:', concurrent_tx => 1 ); } 'config on lives';
 	throws_ok {
 		$d->session(database => 'dummy');
 	} qr/\bConcurrent transactions\b.*\bunsupported\b.*\bBolt\b/i, 'bolt session on dies';
 	# config 0
 	$d = Neo4j::Driver->new;
-	$d->{net_module} = 'Local::Bolt';
+	$d->{config}->{net_module} = 'Local::Bolt';
 	lives_ok { $d->config( uri => 'bolt:', concurrent_tx => 0 ); } 'config off lives';
 	lives_ok { $d->session(database => 'dummy'); } 'bolt session off lives';
 	# config undef
 	$d = Neo4j::Driver->new;
-	$d->{net_module} = 'Local::Bolt';
+	$d->{config}->{net_module} = 'Local::Bolt';
 	lives_ok { $d->config( uri => 'bolt:' ); } 'config undef lives';
 	lives_ok { $d->session(database => 'dummy'); } 'bolt session undef lives';
 };
@@ -137,7 +137,7 @@ subtest 'config for https: uri' => sub {
 subtest 'bolt explicit' => sub {
 	plan tests => 8;
 	$d = Neo4j::Driver->new({ uri => 'bolt:' });
-	$d->{net_module} = 'Local::Bolt';
+	$d->{config}->{net_module} = 'Local::Bolt';
 	lives_ok { $s = 0; $s = $d->session(database => 'dummy'); } 'session';
 	lives_and { ok $t = $s->begin_transaction } 'begin 1';
 	throws_ok {
@@ -160,7 +160,7 @@ subtest 'bolt explicit' => sub {
 subtest 'bolt autocommit' => sub {
 	plan tests => 6;
 	$d = Neo4j::Driver->new({ uri => 'bolt:' });
-	$d->{net_module} = 'Local::Bolt';
+	$d->{config}->{net_module} = 'Local::Bolt';
 	lives_ok { $s = 0; $s = $d->session(database => 'dummy'); } 'session';
 	lives_and { ok $t = $s->begin_transaction } 'begin 1';
 	throws_ok {

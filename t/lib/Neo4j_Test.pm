@@ -82,7 +82,7 @@ sub driver_no_auth {
 		delete $driver->{plugins}->{handlers}->{http_adapter_factory};
 		$driver->plugin(Neo4j_Test::NetModulePlugin->new( Neo4j_Test::Sim->new({auth => 0}) ));
 	}
-	$driver->{auth} = { scheme => 'basic', principal => "no\tuser", credentials => "no\tpass" };
+	$driver->{config}->{auth} = { scheme => 'basic', principal => "no\tuser", credentials => "no\tpass" };
 	return $driver;
 }
 

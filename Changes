@@ -1,5 +1,9 @@
 Revision history for Neo4j::Driver
 
+0.3851  2023-07-05  (UNRELEASED)
+
+ - Internal change: Store driver config options in a hash of their own.
+
 0.38  2023-06-18
 
  - Mitigate more test failures on slow machines and on Perl v5.14 and older.
