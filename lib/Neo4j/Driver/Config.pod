@@ -57,7 +57,7 @@ scheme declared in the hash entry C<scheme>.
 The Neo4j server uses the auth scheme C<'basic'> by default,
 which must be configured with a user id in the hash entry
 C<principal> and a password in the entry C<credentials>,
-as shown above. Alternatively, the method L</"basic_auth">
+as shown above. Alternatively, the method L<Neo4j::Driver/"basic_auth">
 can be used as a shortcut, or the basic auth details can be
 specified as userinfo in the URI.
 

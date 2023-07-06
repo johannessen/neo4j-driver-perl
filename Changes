@@ -1,6 +1,6 @@
 Revision history for Neo4j::Driver
 
-0.3853  2023-07-06  (UNRELEASED)
+0.39  2023-07-06
 
  - The concurrent_tx option is no longer experimental (now defaults to off).
  - Fix erroneous warnings for disabled concurrent transactions on HTTP.

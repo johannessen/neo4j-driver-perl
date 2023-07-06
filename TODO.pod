@@ -187,6 +187,8 @@ feature that is almost never used. Since the server is often run on localhost
 anyway where latency is very close to zero, this item should not have high
 priority.
 
+=item * Support for bookmarks was added to HTTP in Neo4j 5.6.
+
 =back
 
 =head2 L<Neo4j::Driver::Record>
