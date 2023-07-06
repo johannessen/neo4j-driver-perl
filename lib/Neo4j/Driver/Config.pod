@@ -13,6 +13,9 @@
    auth => { scheme => 'basic', principal => $user,
              credentials => $password },
    
+   # Concurrent transactions in HTTP sessions
+   concurrent_tx => 1,
+   
    # Enable both {param} and $param as Cypher parameter syntax
    cypher_params => v2,
    
@@ -60,6 +63,31 @@ specified as userinfo in the URI.
 
 The C<auth> config option defaults to the value C<undef>,
 which disables authentication.
+
+=head2 concurrent_tx
+
+ $session = Neo4j::Driver->new({
+   concurrent_tx => 1,
+   uri => 'http://...',
+ })->session;
+ $tx1 = $session->begin_transaction;
+ $tx2 = $session->begin_transaction;
+ $tx3 = $session->run(...);
+
+The Neo4j Driver API officially doesn't allow multiple concurrent
+transactions (sometimes called "nested transactions") to be open
+within the same session. The standard way to work with multiple
+concurrent transactions is to simply use multiple sessions.
+However, since HTTP is a stateless protocol, concurrent
+transactions are technically possible on connections which use
+the C<http:> or C<https:> protocol scheme.
+
+This driver allows concurrent transactions on HTTP when the
+C<concurrent_tx> config option is enabled. Trying to enable this
+option on a Bolt connection is a fatal error.
+The driver will currently give warnings when using concurrent
+transactions on HTTP I<without> enabling this option, but these
+warnings will become fatal errors in driver S<version 1.xx>.
 
 =head2 cypher_params
 

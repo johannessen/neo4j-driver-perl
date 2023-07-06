@@ -412,43 +412,6 @@ individual events are provided in L<Neo4j::Driver::Plugin>.
 This feature is experimental because some parts of the plug-in
 API are still evolving.
 
-=head2 Concurrent transactions in HTTP sessions
-
- $session = Neo4j::Driver->new({
-   concurrent_tx => 1,
-   uri => 'http://...',
- })->session;
- $tx1 = $session->begin_transaction;
- $tx2 = $session->begin_transaction;
- $tx3 = $session->run(...);
-
-The Neo4j Driver API officially doesn't allow multiple concurrent
-transactions (sometimes called "nested transactions") to be open
-within the same session. The standard way to work with multiple
-concurrent transactions is to simply use multiple sessions. However,
-since HTTP is a stateless protocol, concurrent transactions are
-still possible on connections which use the C<http:> or C<https:>
-protocol scheme.
-
-This driver allows concurrent transactions on HTTP when the
-C<concurrent_tx> config option is enabled. Trying to enable this
-option on a Bolt connection is a fatal error.
-
-The default for HTTP connections is currently to enable concurrent
-transactions, but this will likely change in a future version.
-The driver will currently give warnings on a best-effort basis
-when using concurrent transactions on HTTP I<without> enabling this
-option, but these warnings may become fatal errors in future.
-
-When using HTTP, you should consider making a conscious choice
-regarding whether or not to use concurrent transactions, and
-configuring your driver accordingly. This can help to avoid
-surprising behaviour in case you switch to Bolt at a later point
-in time.
-
-This config option is experimental because its name and semantics
-are still evolving.
-
 =head1 ENVIRONMENT
 
 This software requires at least Perl 5.10, though you should consider

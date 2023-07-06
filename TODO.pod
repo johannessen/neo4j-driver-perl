@@ -28,15 +28,6 @@ both returning milliseconds with a default of C<-1> when unavailable (HTTP).
 =item * L<Neo4j::Driver::Result/"Look ahead in the result stream">:
 make C<peek()> stable once C<fetch()> reliably buffers two records
 
-=item * L<Neo4j::Driver::Session/"Concurrent transactions">: make illegal
-for both nested explicit and nested autocommit transactions (for
-consistency with Bolt), but provide a driver config option (e. g.
-C<< nested_transactions => 1 >>) that lifts this restriction for HTTP
-
-Note that L<Neo4j 4.4|https://neo4j.com/release-notes/database/neo4j-4-4-0/>
-added what looks like nested tx for Bolt using C<CALL {…} TRANSACTIONS>.
-Needs investigation.
-
 =item * Calling list methods in scalar context
 (L<in Node|Neo4j::Driver::Type::Node/"Calling in scalar context">,
 L<in Path|Neo4j::Driver::Type::Path/"Calling in scalar context">,

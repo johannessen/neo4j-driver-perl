@@ -192,17 +192,19 @@ subtest 'multiple statements' => sub {
 		['RETURN {n}', n => 19],
 		['RETURN {n}', {n => 53}],
 	);
-	lives_ok { @a = $s->begin_transaction->_run_multiple(@q) } 'run three statements at once';
+	my $tx = $s->begin_transaction;
+	lives_ok { @a = $tx->_run_multiple(@q) } 'run three statements at once';
 	lives_and { is $a[0]->single->get, 17 } 'retrieve 1st value';
 	lives_and { is $a[1]->single->get, 19 } 'retrieve 2nd value';
 	lives_and { is $a[2]->single->get, 53 } 'retrieve 3rd value';
 	throws_ok {
-		 $r = $s->begin_transaction->_run_multiple('RETURN 42');
+		 $r = $tx->_run_multiple('RETURN 42');
 	} qr/\blist of array references\b/i, 'non-arrayref individual statement';
 	@q = ( [''], ['RETURN 23'] );
 	throws_ok {
-		@a = $s->begin_transaction->_run_multiple([''], ['RETURN 23']);
+		@a = $tx->_run_multiple([''], ['RETURN 23']);
 	} qr/\bempty statements not allowed\b/i, 'include empty statement';
+	$tx->rollback;
 	# TODO: also check statement order in summary
 };
 

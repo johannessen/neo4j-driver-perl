@@ -48,7 +48,7 @@ sub new {
 		server_info => $driver->{server_info},
 		http_agent => $http_adapter,
 		want_jolt => $driver->config('jolt'),
-		want_concurrent => $driver->config('concurrent_tx') // 1,
+		want_concurrent => $driver->config('concurrent_tx') // 0,
 		active_tx => {},
 	}, $class;
 	
@@ -119,10 +119,9 @@ sub _set_database {
 sub _run {
 	my ($self, $tx, @statements) = @_;
 	
-	if ( ! $self->{want_concurrent} ) {
-		my $is_concurrent = %{$self->{active_tx}} && ! defined $tx->{commit_endpoint};
-		$is_concurrent ||= keys %{$self->{active_tx}} > 1;
-		$is_concurrent and carp "Concurrent transactions for HTTP are disabled; use multiple sessions or enable the concurrent_tx config option (this warning may become fatal in a future Neo4j::Driver version)";
+	if ( %{$self->{active_tx}} && ! $self->{want_concurrent} ) {
+		my $is_concurrent = ! defined $tx->{commit_endpoint} || keys %{$self->{active_tx}} > 1;
+		$is_concurrent and carp "Concurrent transactions for HTTP are disabled; use multiple sessions or enable the concurrent_tx config option (this warning will be fatal in Neo4j::Driver 1.xx)";
 	}
 	
 	my $json = { statements => \@statements };
