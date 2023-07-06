@@ -111,7 +111,7 @@ sub _parse_json {
 		});
 	}
 	
-	$params->{error_handler}->($error) if ref $error;
+	$json->{_error} = $error if ref $error;
 	
 	return $json;
 }

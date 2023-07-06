@@ -177,7 +177,6 @@ sub _request {
 	$self->{http_agent}->request($method, $tx_endpoint, $json, $accept, $tx->{mode});
 	
 	my $header = $self->{http_agent}->http_header;
-	$tx->{closed} = $header->{success};  # see _parse_tx_status() and neo4j #12651
 	my $result_module = $self->{result_module_for}->{ $header->{content_type} }
 	                    // $self->_result_module_for( $header->{content_type} );
 	
@@ -186,13 +185,14 @@ sub _request {
 		http_method => $method,
 		http_path => $tx_endpoint,
 		http_header => $header,
-		error_handler => $tx->{error_handler},
 		cypher_types => $self->{cypher_types},
 		server_info => $self->{server_info},
 		statements => $json ? $json->{statements} : [],
 	});
 	
-	$self->_parse_tx_status($tx, $header, $result->_info);
+	my $info = $result->_info;
+	$self->_parse_tx_status($tx, $header, $info);
+	$tx->{error_handler}->($info->{_error}) if $info->{_error};
 	return $result;
 }
 
@@ -200,6 +200,13 @@ sub _request {
 # Update list of active transactions and update transaction endpoints.
 sub _parse_tx_status {
 	my ($self, $tx, $header, $info) = @_;
+	
+	# In case of errors, HTTP transaction status info is only reliable for
+	# server errors that aren't reported as network errors. (neo4j #12651)
+	if (my $error = $info->{_error}) {
+		return if $error->source ne 'Server';
+		do { return if $error->source eq 'Network' } while $error = $error->related;
+	}
 	
 	$tx->{unused} = 0;
 	$tx->{closed} = ! $info->{commit} || ! $info->{transaction};

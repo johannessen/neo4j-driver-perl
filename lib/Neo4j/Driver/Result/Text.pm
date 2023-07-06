@@ -59,13 +59,11 @@ sub new {
 		});
 	}
 	
-	$params->{error_handler}->($error);
-	
-	return bless {}, $class;
+	return bless { _error => $error }, $class;
 }
 
 
-sub _info { {} }  # no transaction status info => treat as closed
+sub _info { shift }
 
 
 sub _results { () }  # no actual results provided here

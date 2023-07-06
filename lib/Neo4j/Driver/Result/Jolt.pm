@@ -122,7 +122,7 @@ sub _gather_results {
 		});
 	}
 	
-	$params->{error_handler}->($error) if ref $error;
+	$self->{info}->{_error} = $error if ref $error;
 	$self->{http_agent} = undef;
 	
 	if (@results == 1) {
