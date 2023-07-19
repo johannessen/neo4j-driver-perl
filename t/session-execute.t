@@ -105,7 +105,7 @@ subtest 'server error with retry' => sub {
 		$s->execute_read(sub { $try++; shift->run('error'); });
 	} qr/\.DatabaseUnavailable\b/, 'retry dies';
 	ok $try > 2, 'yes retry'
-		or diag sprintf "on try %i after %.1f ms, timeout %.1f ms", $try, Time::HiRes::time - $start, $timeout * 1000;
+		or diag sprintf "on try %i after %.1f ms, timeout %.1f ms", $try, map {$_ * 1000} Time::HiRes::time - $start, $timeout;
 	
 	# Temporary error, retry eventually succeeds
 	$try = 0;
