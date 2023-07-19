@@ -1,5 +1,10 @@
 Revision history for Neo4j::Driver
 
+0.40  2023-07-19
+
+ - Add documentation that calling element_id() on nodes and relationships
+   from Neo4j version 4 and earlier might change to become a fatal error.
+
 0.39  2023-07-06
 
  - The concurrent_tx option is no longer experimental (now defaults to off).

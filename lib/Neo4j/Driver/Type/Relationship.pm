@@ -169,6 +169,13 @@ hasn't yet been updated for S<Neo4j 5>, this method provides
 the legacy numeric ID instead. Note that a numeric ID cannot
 successfully be used with C<elementId()> in Cypher expressions.
 
+The behaviour of this method when the element ID is unavailable
+is subject to change in a future version of the driver.
+In particular, making this a fatal error is being considered.
+This would help users to discover such issues early. See
+L<Neo4j-Types PR#3|https://github.com/johannessen/neo4j-types/pull/3>
+for further details.
+
 Neo4j element IDs are not designed to be persistent. As such,
 if you want a public identity to use for your relationships,
 attaching an explicit 'id' property is a better choice.
