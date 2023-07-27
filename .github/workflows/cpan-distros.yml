@@ -12,27 +12,15 @@ jobs:
   cpan-distros:
     runs-on: ubuntu-latest
     container:
-      image: perldocker/perl-tester:5.34
+      image: perldocker/perl-tester:5.36
     env:
       TEST_NEO4J_PASSWORD: xkcd_792
     steps:
       - name: Install Neo4j 4
-        run: |
-          curl -sLO https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.11%2B9/OpenJDK11U-jre_x64_linux_hotspot_11.0.11_9.tar.gz
-          tar -xzf OpenJDK11U-jre_x64_linux_hotspot_11.0.11_9.tar.gz
-          export JAVA_HOME=jdk-11.0.11+9-jre
-          eval "${JAVA_HOME:-/usr}/bin/java -version"
-          curl -sLO $NEO4J_DISTS/neo4j-community-$NEO4J-unix.tar.gz
-          tar -xzf neo4j-community-$NEO4J-unix.tar.gz
-          neo4j-community-$NEO4J/bin/neo4j-admin set-initial-password "$TEST_NEO4J_PASSWORD" || echo "Password change using neo4j-admin failed."
-          neo4j-community-$NEO4J/bin/neo4j start
-          perl -E "print'Waiting for server to be ready ...';for(0..60){last if 0+\`grep Started neo4j-community-$NEO4J/logs/neo4j.log > /dev/null 2>&1 && echo 1 || echo 0\`;print'.';sleep 1}say' OK.'"
-          cat neo4j-community-$NEO4J/logs/neo4j.log
-          neo4j-community-$NEO4J/bin/neo4j status
-        env:
-          NEO4J: "4.3.10"
-          NEO4J_DISTS: "https://dist.neo4j.org"
-
+        uses: johannessen/actions-install-neo4j@v1
+        with:
+          neo4j-version: "4.3.10"
+          password: ${{ env.TEST_NEO4J_PASSWORD }}
       - name: git checkout
         uses: actions/checkout@v3
       - name: Install Neo4j::Driver dependencies
