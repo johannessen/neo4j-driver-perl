@@ -448,6 +448,8 @@ there is a compelling reason for a different approach in Perl.
 
 =item * L<Neo4j::Driver::B<Session>>
 
+=item * L<Neo4j::Driver::Types>
+
 =item * Official API documentation:
 L<Neo4j Driver API Specification|https://github.com/neo4j/docs-bolt/blob/main/modules/ROOT/pages/driver-api/index.adoc>,
 L<Neo4j Drivers Manual|https://neo4j.com/docs/java-manual/5/>,

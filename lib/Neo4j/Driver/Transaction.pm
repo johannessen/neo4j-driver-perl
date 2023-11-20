@@ -400,6 +400,9 @@ of strings using regular expressions. If necessary, you can force
 conversion of such values into the correct type using unary coercions
 as shown in the example above.
 
+I<B<Note:> The type mapping documentation above will soon be replaced
+by L<Neo4j::Driver::Types>.>
+
 Running empty queries is supported. They yield an empty result
 (having zero records). With HTTP connections, the empty result is
 retrieved from the server, which resets the transaction timeout.
@@ -488,6 +491,8 @@ L<Neo4j::Driver::Plugin/"USE OF INTERNAL APIS">.
 =item * L<Neo4j::Driver>
 
 =item * L<Neo4j::Driver::B<Result>>
+
+=item * L<Neo4j::Driver::Types>
 
 =item * Equivalent documentation for the official Neo4j drivers:
 L<Transaction (Java)|https://neo4j.com/docs/api/java-driver/5.2/org.neo4j.driver/org/neo4j/driver/Transaction.html>,

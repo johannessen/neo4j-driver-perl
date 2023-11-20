@@ -160,6 +160,9 @@ L<Neo4j::Driver::Type::Relationship> objects in Perl describe the
 same node in the Neo4j database, you need to compare their
 element IDs.
 
+I<B<Note:> This module documentation will soon be replaced entirely
+by L<Neo4j::Driver::Types> and L<Neo4j::Types::Relationship>.>
+
 =head1 METHODS
 
 L<Neo4j::Driver::Type::Relationship> inherits all methods from
@@ -288,7 +291,7 @@ is returned instead.
 
 =over
 
-=item * L<Neo4j::Driver>
+=item * L<Neo4j::Driver::Types>
 
 =item * L<Neo4j::Types::Relationship>
 

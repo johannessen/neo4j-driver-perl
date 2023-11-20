@@ -189,6 +189,9 @@ In a future version of this driver, these types will
 be implemented by other packages, but they will
 continue to inherit from L<Neo4j::Types> and have that interface.
 
+I<B<Note:> The type mapping documentation above will soon be replaced
+by L<Neo4j::Driver::Types>.>
+
 =head2 data
 
  $hashref = $record->data;
@@ -201,6 +204,8 @@ Return the keys and values of this record as a hash reference.
 =over
 
 =item * L<Neo4j::Driver>
+
+=item * L<Neo4j::Driver::Types>
 
 =item * L<Neo4j::Driver::Type::B<Node>>,
 L<Neo4j::Driver::Type::B<Relationship>>,

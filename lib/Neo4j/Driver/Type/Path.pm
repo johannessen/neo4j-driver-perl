@@ -85,6 +85,9 @@ It is allowed to be of length 0, meaning there are no relationships
 in it. In this case, it contains only a single node which is both the
 start and the end of the path.
 
+I<B<Note:> This module documentation will soon be replaced entirely
+by L<Neo4j::Driver::Types> and L<Neo4j::Types::Path>.>
+
 =head1 METHODS
 
 L<Neo4j::Driver::Type::Path> inherits all methods from
@@ -136,7 +139,7 @@ their labels and types. This is due to an issue in the Neo4j server.
 
 =over
 
-=item * L<Neo4j::Driver>
+=item * L<Neo4j::Driver::Types>
 
 =item * L<Neo4j::Types::Path>
 
