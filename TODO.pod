@@ -13,8 +13,6 @@ See L<https://github.com/johannessen/neo4j-driver-perl/issues>.
 
 =over
 
-=item * Implement spatial and temporal types.
-
 =item * Add timers to L<Neo4j::Driver::ResultSummary> (see C<Neo4j::Bolt>).
 Method names should be C<result_available_after> and C<result_consumed_after>,
 both returning milliseconds with a default of C<-1> when unavailable (HTTP).

@@ -291,13 +291,21 @@ sub _deep_bless {
 		return $path;
 	}
 	if ($sigil eq '@') {  # Spatial
-		# TODO
 		bless $data, $cypher_types->{point};
 		return $data;
 	}
 	if ($sigil eq 'T') {  # Temporal
-		# TODO
-		bless $data, $cypher_types->{temporal};
+		if ($cypher_types->{temporal} ne 'Neo4j::Driver::Type::Temporal') {
+			return bless $data, $cypher_types->{temporal};
+		}
+		if ($value =~ m/^-?P/) {
+			require Neo4j::Driver::Type::Duration;
+			bless $data, 'Neo4j::Driver::Type::Duration';
+		}
+		else {
+			require Neo4j::Driver::Type::DateTime;
+			bless $data, 'Neo4j::Driver::Type::DateTime';
+		}
 		return $data;
 	}
 	if ($sigil eq '#') {  # Bytes
