@@ -258,9 +258,8 @@ work with multiple concurrent transactions, simply use more than
 one session.
 On C<http:> and C<https:> connections, you can
 alternatively enable concurrent transactions within the same
-session through a config option (currently experimental);
-see L<Neo4j::Driver/"Concurrent transactions in HTTP sessions">
-for details.
+session through a config option; see
+L<Neo4j::Driver::Config/"concurrent_tx"> for details.
 
 To create a new session, call L<Neo4j::Driver/"session">.
 
