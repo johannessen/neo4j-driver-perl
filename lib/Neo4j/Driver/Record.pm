@@ -64,6 +64,8 @@ sub get_bool {
 	warnings::warnif deprecated => __PACKAGE__ . "->get_bool is deprecated";
 	
 	my $value = $self->get($field);
+	no if $^V ge v5.36, 'warnings', 'experimental::builtin';
+	return undef if ! $value && $^V ge v5.36 && builtin::is_bool $value;
 	return $value if ! is_bool $value;
 	return $value if !! $value;
 	return undef;  ##no critic (ProhibitExplicitReturnUndef)
