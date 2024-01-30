@@ -22,7 +22,7 @@ plan tests => 16 + $no_warnings;
 
 
 my $default_scheme = 'http';
-my $default_host = 'localhost';
+my $default_host = '127.0.0.1';
 my $default_port = ':7474';
 
 

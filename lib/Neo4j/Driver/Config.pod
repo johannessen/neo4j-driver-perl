@@ -180,15 +180,15 @@ of C<https> URIs requires L<LWP::Protocol::https> to be installed.
 
 If a part of the URI or even the entire URI is missing, suitable
 default values will be substituted. In particular, the host name
-C<localhost> and the protocol C<http> will be used as defaults;
+C<127.0.0.1> and the protocol C<http> will be used as defaults;
 if no port is specified, the protocol's default port will be used.
 
  # all of these are semantically equal
  $driver->config(uri =>  undef );
  $driver->config(uri => 'http:');
- $driver->config(uri => 'localhost');
- $driver->config(uri => 'http://localhost');
- $driver->config(uri => 'http://localhost:7474/');
+ $driver->config(uri => '127.0.0.1');
+ $driver->config(uri => 'http://127.0.0.1');
+ $driver->config(uri => 'http://127.0.0.1:7474/');
 
 The C<neo4j> URI scheme is not yet implemented. Once it is added
 to a future version of this driver, the default URI scheme will

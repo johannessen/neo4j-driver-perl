@@ -92,12 +92,12 @@ sub _check_uri {
 			utf8::decode $_ for @userinfo;
 			$self->basic_auth(@userinfo);
 		}
-		$uri->host('localhost') unless $uri->host;
+		$uri->host('127.0.0.1') unless $uri->host;
 		$uri->path('') if $uri->path_query eq '/';
 		$uri->fragment(undef);
 	}
 	else {
-		$uri = URI->new("http://localhost");
+		$uri = URI->new("http://127.0.0.1");
 	}
 	$uri->port( $NEO4J_DEFAULT_PORT{ $uri->scheme } ) if ! $uri->_port;
 	

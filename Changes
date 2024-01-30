@@ -1,5 +1,9 @@
 Revision history for Neo4j::Driver
 
+0.4201  2024-01-30
+
+ - Change default hostname from localhost to 127.0.0.1.
+
 0.42  2023-12-14
 
  - Add support for spatial and temporal Cypher values (Neo4j::Types v2).
