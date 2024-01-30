@@ -102,7 +102,6 @@ sub _gather_results {
 			# If a rollback caused by a failure fails as well,
 			# two failure events may appear on the Jolt stream.
 			# Otherwise, there is always one at most.
-			carp "Jolt error: unexpected error event $prev" unless $state == 0 || $state == 3 || $state == 4;
 			croak "Jolt error: expected reference to HASH, received " . (ref $event ? "reference to " . ref $event : "scalar") . " in $type event $prev" unless ref $event eq 'HASH';
 			$state = 4;
 			$error = $error->append_new(Internal => "Jolt error: Jolt $type event with 0 errors $prev") unless @{$event->{errors}};
