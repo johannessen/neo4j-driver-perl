@@ -75,15 +75,15 @@ sub _check_uri {
 	
 	if ($uri) {
 		$uri = "[$uri]" if $uri =~ m{^[0-9a-f:]*::|^(?:[0-9a-f]+:){6}}i;
-		$uri =~ s|^|http://| if $uri !~ m{:|/} || $uri =~ m{^\[.+\]$};
-		$uri =~ s|^|http:| if $uri =~ m{^//};
+		$uri =~ s|^|neo4j://| if $uri !~ m{:|/} || $uri =~ m{^\[.+\]$};
+		$uri =~ s|^|neo4j:| if $uri =~ m{^//};
 		$uri = URI->new($uri);
 		
 		if ( ! $uri->scheme ) {
 			croak sprintf "Failed to parse URI '%s'", $uri;
 		}
-		if ( $uri->scheme !~ m/^https?$|^bolt$/ ) {
-			croak sprintf "URI scheme '%s' unsupported; use 'http' or 'bolt'", $uri->scheme // "";
+		if ( $uri->scheme !~ m/^https?$|^bolt$|^neo4j$/ ) {
+			croak sprintf "URI scheme '%s' unsupported; use 'bolt', 'http', or 'neo4j'", $uri->scheme // "";
 		}
 		
 		if (my $userinfo = $uri->userinfo(undef)) {
@@ -97,11 +97,20 @@ sub _check_uri {
 		$uri->fragment(undef);
 	}
 	else {
-		$uri = URI->new("http://127.0.0.1");
+		$uri = URI->new("neo4j://127.0.0.1");
 	}
 	$uri->port( $NEO4J_DEFAULT_PORT{ $uri->scheme } ) if ! $uri->_port;
 	
 	$self->{config}->{uri} = $uri;
+}
+
+
+sub _fix_neo4j_uri {
+	my ($self) = @_;
+	
+	my $uri = $self->{config}->{uri};
+	$uri->scheme( exists $INC{'Neo4j/Bolt.pm'} ? 'bolt' : $self->{config}->{tls} ? 'https' : 'http' );
+	$uri->port( $NEO4J_DEFAULT_PORT{ $uri->scheme } ) if ! $uri->_port;
 }
 
 
@@ -160,6 +169,8 @@ sub session {
 	
 	@options = %{$options[0]} if @options == 1 && ref $options[0] eq 'HASH';
 	my %options = $self->_parse_options('session', ['database'], @options);
+	
+	$self->_fix_neo4j_uri if $self->{config}->{uri}->scheme eq 'neo4j';
 	
 	my $session = Neo4j::Driver::Session->new($self);
 	return $session->_connect($options{database});
@@ -300,25 +311,9 @@ install L<LWP::Protocol::https> separately to enable HTTPS.
 The protocol is automatically chosen based on the URI scheme.
 See L<Neo4j::Driver::Config/"uri"> for details.
 
-B<This driver's development is not yet considered finalised.>
-
-As of version 0.36, the one major open item is:
-
-=over
-
-=item *
-
-Support for the C<neo4j:> URI scheme in some fashion.
-(No first-party implementation of client-side routing is
-currently planned, but plug-ins might get a hook for it.)
-
-=back
-
-Once the above item is implemented, this driver will
+This driver will soon
 move to S<version 1.00,> removing L<deprecated
 functionality|Neo4j::Driver::Deprecations>.
-There is an ongoing effort to work on this and other
-items, but there is no schedule for their completion.
 
 =head1 METHODS
 

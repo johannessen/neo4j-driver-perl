@@ -1,8 +1,9 @@
 Revision history for Neo4j::Driver
 
-0.4201  2024-01-30
+0.43  2024-01-30  (TRIAL RELEASE)
 
- - Change default hostname from localhost to 127.0.0.1.
+ - Accept neo4j: URIs, converting them to bolt / http / https.
+ - Change default URI from http://localhost to neo4j://127.0.0.1.
 
 0.42  2023-12-14
 

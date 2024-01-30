@@ -108,22 +108,8 @@ interesting to actually try those some time.
 
 =over
 
-=item * The C<neo4j> scheme should work for a community edition server out
-of the box. For starters, C<neo4j> should check if L<Neo4j::Bolt> is loaded
-into C<%INC> and if the specified server actually supports Bolt. If so, it
-should behave identically to C<bolt>, otherwise if should behave identically
-to either C<http> or C<https>, depending on the encryption config.
-This behaviour is different than that of the official drivers; see also
-L<https://community.neo4j.com/t/different-between-neo4j-and-bolt/18498>.
-It should be sufficient to document that the behaviour is subject to
-change (clusters are enterprise-only and therefore currently out of scope,
-and the conditions under which Bolt is chosen may also change in future).
-
-=item * Change the default URI scheme from C<http> to C<neo4j>. Because
-a C<use Neo4j::Bolt;> statement has so far never been necessary for the
-driver and the driver's behaviour won't change if it is not present, and
-also because HTTP-only features have so far been experimental features
-only, this should not be a breaking change.
+=item * C<neo4j> URI scheme support: Ideally, the driver's C<config> method
+would continue to return C<'neo4j'> even after the session is created.
 
 =item * Convert the "unsupported option" check from C<grep> to
 L<List::Util/"none"> (in C<config()> and C<_parse_options()>;

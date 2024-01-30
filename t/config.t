@@ -16,14 +16,16 @@ use if $no_warnings = $ENV{AUTHOR_TESTING} ? 1 : 0, 'Test::Warnings';
 use Neo4j_Test;
 use Neo4j_Test::MockHTTP;
 
+use Try::Tiny;
+
 my ($d, $r, $w);
 
-plan tests => 16 + $no_warnings;
+plan tests => 17 + $no_warnings;
 
 
-my $default_scheme = 'http';
+my $default_scheme = 'neo4j';
 my $default_host = '127.0.0.1';
-my $default_port = ':7474';
+my $default_port = '';
 
 
 subtest 'config read/write' => sub {
@@ -203,8 +205,56 @@ subtest 'https/bolt uri schemes' => sub {
 };
 
 
+subtest 'neo4j uri scheme' => sub {
+	plan skip_all => "(requires Neo4j::Bolt not to be loaded)" if $INC{'Neo4j/Bolt.pm'};
+	plan tests => 6;
+	my $mock_plugin = Neo4j_Test::MockHTTP->new;
+	
+	lives_and {
+		$d = Neo4j::Driver->new('neo4j://hu');
+		my $s = $d->plugin($mock_plugin)->session;
+		ok $s->isa('Neo4j::Driver::Session::HTTP') && $s->{net}{http_agent}{base} eq 'http://hu:7474';
+	} 'neo4j http uri default port';
+	lives_and {
+		$d = Neo4j::Driver->new('neo4j://hup:7687');
+		my $s = $d->plugin($mock_plugin)->session;
+		ok $s->isa('Neo4j::Driver::Session::HTTP') && $s->{net}{http_agent}{base} eq 'http://hup:7687';
+	} 'neo4j http uri explicit port';
+	
+	lives_and {
+		$d = Neo4j::Driver->new({ uri => 'neo4j://hs', encrypted => 1 });
+		my $s = $d->plugin($mock_plugin)->session;
+		ok $s->isa('Neo4j::Driver::Session::HTTP') && $s->{net}{http_agent}{base} eq 'https://hs:7473';
+	} 'neo4j https uri default port';
+	lives_and {
+		$d = Neo4j::Driver->new({ uri => 'neo4j://hsp:7687', encrypted => 1 });
+		my $s = $d->plugin($mock_plugin)->session;
+		ok $s->isa('Neo4j::Driver::Session::HTTP') && $s->{net}{http_agent}{base} eq 'https://hsp:7687';
+	} 'neo4j https uri explicit port';
+	
+	lives_and {
+		local %INC = %INC;
+		$INC{'Neo4j/Bolt.pm'} = '';
+		$d = Neo4j::Driver->new('neo4j://bb');
+		my $is_bolt;
+		try { $d->session }
+		catch { $is_bolt = m/\bconnect\b.*\bpackage\b.*\bNeo4j::Bolt\b/ };
+		ok $is_bolt && $d->{config}{uri} eq 'bolt://bb:7687';
+	} 'neo4j bolt uri default port';
+	lives_and {
+		local %INC = %INC;
+		$INC{'Neo4j/Bolt.pm'} = '';
+		$d = Neo4j::Driver->new('neo4j://bbp:80');
+		my $is_bolt;
+		try { $d->session }
+		catch { $is_bolt = m/\bconnect\b.*\bpackage\b.*\bNeo4j::Bolt\b/ };
+		ok $is_bolt && $d->{config}{uri} eq 'bolt://bbp:80';
+	} 'neo4j bolt uri explicit port';
+};
+
+
 subtest 'unsupported uris' => sub {
-	plan tests => 9;
+	plan tests => 7;
 	# unimplemented scheme (Casual Clusters)
 	throws_ok {
 		Neo4j::Driver->new('bolt+routing://test12');
@@ -212,12 +262,6 @@ subtest 'unsupported uris' => sub {
 	throws_ok {
 		Neo4j::Driver->new('bolt+routing:');
 	} qr/\bscheme\b.*\bunsupported\b/i, 'bolt+routing scheme only';
-	throws_ok {
-		Neo4j::Driver->new('neo4j://test12');
-	} qr/\bscheme\b.*\bunsupported\b/i, 'neo4j full uri';
-	throws_ok {
-		Neo4j::Driver->new('neo4j:');
-	} qr/\bscheme\b.*\bunsupported\b/i, 'neo4j scheme only';
 	# unknown scheme
 	throws_ok {
 		Neo4j::Driver->new('unkown://test12');

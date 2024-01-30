@@ -273,7 +273,7 @@ END
 
 subtest 'stack trace' => sub {
 	plan tests => 1;
-	my $d = Neo4j::Driver->new->plugin( Neo4j_Test::MockHTTP->new );
+	my $d = Neo4j::Driver->new('http:')->plugin( Neo4j_Test::MockHTTP->new );
 	throws_ok {
 		$Neo4j::Driver::Events::STACK_TRACE = 1;
 		$d->session->run('trace not implemented');
