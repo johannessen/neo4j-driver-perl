@@ -1,37 +1,40 @@
 use 5.010;
 use strict;
 use warnings;
-use utf8;
 
 package Neo4j::Driver::Type::Temporal;
-# ABSTRACT: Represents a Neo4j temporal value
+# ABSTRACT: DEPRECATED (use DateTime / Duration instead)
 
-
-# may not be supported by Bolt
 
 1;
 
 __END__
 
+=head1 SYNOPSIS
+
+ package Neo4j::Driver::Type::DateTime;
+ use parent 'Neo4j::Driver::Type::Temporal';
+ 
+ package Neo4j::Driver::Type::Duration;
+ use parent 'Neo4j::Driver::Type::Temporal';
+
 =head1 DESCRIPTION
 
-Represents a date, time or duration value in Neo4j.
+The Neo4j::Driver::Type::Temporal module was created to
+mark temporal values returned from the Neo4j server.
+However, beyond that, it was never implemented, and the
+documentation has always carried the warning:
 
-Temporal types are only supported in Neo4j version 3.4 and above.
+E<nbsp> The package name C<Neo4j::Driver::Type::Temporal> may change
+in future.
 
-I<B<Note:> This module documentation will soon be replaced entirely
-by L<Neo4j::Driver::Types>.>
+Since the L<Neo4j::Types> model doesn't have a shared super-type
+for temporal instants and temporal durations, this module is
+no longer required.
 
-=head1 BUGS
+B<Any use of C<Neo4j::Driver::Type::Temporal> is deprecated.>
 
-L<Neo4j::Driver::Type::Temporal> is not yet implemented.
-
-The package name C<Neo4j::Driver::Type::Temporal> may change in future.
-
-Temporal types may not work over a Bolt connection, because they
-are not yet supported by C<libneo4j-client>
-(L<#36|https://github.com/cleishm/libneo4j-client/issues/36>),
-which L<Neo4j::Bolt> depends on internally. Use HTTP instead.
+This module will be removed in a future version of this driver.
 
 =head1 SEE ALSO
 
@@ -39,12 +42,4 @@ which L<Neo4j::Bolt> depends on internally. Use HTTP instead.
 
 =item * L<Neo4j::Driver::Types>
 
-=item * L<Neo4j::Types::DateTime>
-
-=item * L<Neo4j::Types::Duration>
-
-=item * L<"Temporal values" in Neo4j Cypher Manual|https://neo4j.com/docs/cypher-manual/5/syntax/temporal/>
-
 =back
-
-=cut

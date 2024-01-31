@@ -7,6 +7,9 @@ package Neo4j::Driver::Type::DateTime;
 # ABSTRACT: Represents a Neo4j temporal instant value
 
 
+# For documentation, see Neo4j::Driver::Types.
+
+
 use parent 'Neo4j::Types::DateTime';
 use parent 'Neo4j::Driver::Type::Temporal';
 

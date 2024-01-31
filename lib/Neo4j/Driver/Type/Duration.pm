@@ -7,6 +7,9 @@ package Neo4j::Driver::Type::Duration;
 # ABSTRACT: Represents a Neo4j temporal duration value
 
 
+# For documentation, see Neo4j::Driver::Types.
+
+
 use parent 'Neo4j::Types::Duration';
 use parent 'Neo4j::Driver::Type::Temporal';
 
