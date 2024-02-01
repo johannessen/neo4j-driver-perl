@@ -19,7 +19,7 @@ jobs:
       image: perldocker/perl-tester:5.38
     steps:
       - name: git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install dependencies
         run: |
           dzil authordeps --missing | cpanm -nq
@@ -35,7 +35,7 @@ jobs:
           NO_NETWORK_TESTING: 1
       - name: Build
         run: dzil build --no-tgz --in build_dir
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: build_dir
           path: build_dir
@@ -49,9 +49,9 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - neo4j: "5.10.0"  # Neo4j 5
+          - neo4j: "5.16.0"  # Neo4j 5
             perl: "5.38"
-          - neo4j: "4.4.23"  # Neo4j 4
+          - neo4j: "4.4.30"  # Neo4j 4
             perl: "5.36"
           #- neo4j: "4.2.4"   # Neo4j 4, old-style Jolt
           #  perl: "5.32"
@@ -77,7 +77,7 @@ jobs:
           install-modules: ExtUtils::MakeMaker~6.78
           enable-modules-cache: false
       - name: Get distribution
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build_dir
           path: .

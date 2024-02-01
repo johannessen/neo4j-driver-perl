@@ -12,17 +12,17 @@ jobs:
   cpan-distros:
     runs-on: ubuntu-latest
     container:
-      image: perldocker/perl-tester:5.36
+      image: perldocker/perl-tester:5.38
     env:
       TEST_NEO4J_PASSWORD: xkcd_792
     steps:
       - name: Install Neo4j 4
         uses: johannessen/actions-install-neo4j@v1
         with:
-          neo4j-version: "4.3.10"
+          neo4j-version: "4.3.24"
           password: ${{ env.TEST_NEO4J_PASSWORD }}
       - name: git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Neo4j::Driver dependencies
         run: |
           dzil authordeps --missing | cpanm -nq
