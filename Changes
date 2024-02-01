@@ -1,5 +1,9 @@
 Revision history for Neo4j::Driver
 
+0.4351  2024-02-01
+
+ - Drop File::Slurp testing dependency
+
 0.43  2024-01-31
 
  - Accept neo4j: URIs, converting them to bolt / http / https.
