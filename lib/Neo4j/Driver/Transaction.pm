@@ -389,19 +389,8 @@ shown in the following example:
    map    => { },
  };
 
-A Perl scalar may internally be represented as a number or a string
-(see L<perldata/Scalar values>). Perl usually auto-converts one into
-the other based on the context in which the scalar is used. However,
-Perl cannot know the context of a Neo4j query parameter, because
-queries are just opaque strings to Perl. Most often your scalars will
-already have the correct internal flavour. A typical example for a
-situation in which this is I<not> the case are numbers parsed out
-of strings using regular expressions. If necessary, you can force
-conversion of such values into the correct type using unary coercions
-as shown in the example above.
-
-I<B<Note:> The type mapping documentation above will soon be replaced
-by L<Neo4j::Driver::Types>.>
+For details and for known issues with type mapping see
+L<Neo4j::Driver::Types>.
 
 Running empty queries is supported. They yield an empty result
 (having zero records). With HTTP connections, the empty result is

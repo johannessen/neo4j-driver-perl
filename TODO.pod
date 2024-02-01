@@ -27,8 +27,8 @@ both returning milliseconds with a default of C<-1> when unavailable (HTTP).
 make C<peek()> stable once C<fetch()> reliably buffers two records
 
 =item * Calling list methods in scalar context
-(L<in Node|Neo4j::Driver::Type::Node/"Calling in scalar context">,
-L<in Path|Neo4j::Driver::Type::Path/"Calling in scalar context">,
+(in Node,
+in Path,
 L<in Result|Neo4j::Driver::Result/"Calling in scalar context">, and
 L<in ResultSummary|Neo4j::Driver::ResultSummary/"Calling in scalar context">):
 make stable
