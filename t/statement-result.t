@@ -63,11 +63,12 @@ subtest 'stream interface: zero rows' => sub {
 
 
 subtest 'stream interface: one row' => sub {
-	plan tests => 5;
+	plan tests => 6;
 	$r = $s->run('RETURN 42');
 	lives_and { ok $r->has_next } 'has next before';
 	lives_ok { $v = 0;  $v = $r->fetch } 'fetch single row';
 	isa_ok $v, 'Neo4j::Driver::Record', 'fetch: confirmed record';
+	ok ! $r->{attached}, 'detached after';
 	lives_and { ok ! $r->has_next } 'no has next after';
 	lives_and { is $r->fetch(), undef } 'fetch no second row';
 };
@@ -84,19 +85,19 @@ subtest 'stream interface: more rows' => sub {
 };
 
 
-$Neo4j::Driver::Result::fake_attached = 1;
-$Neo4j::Driver::Result::Bolt::gather_results = 1;
 subtest 'stream interface: fake attached' => sub {
-	plan tests => 5;
+	local $Neo4j::Driver::Result::fake_attached = 1;
+	local $Neo4j::Driver::Result::Bolt::gather_results = 1;
+	plan tests => 7;
 	$r = $s->run('RETURN 7 AS n UNION RETURN 11 AS n');
 	lives_and { ok $r->fetch } 'fetch first row';
+	lives_and { ok $r->{attached} } 'attached before second';
 	lives_and { ok $r->has_next } 'has next before second';
 	lives_and { ok $r->fetch } 'fetch second row';
+	lives_and { ok ! $r->{attached} } 'detached after second';
 	lives_and { ok ! $r->has_next } 'no has next after second';
 	lives_and { is $r->fetch(), undef } 'fetch no third row';
 };
-$Neo4j::Driver::Result::fake_attached = 0;
-$Neo4j::Driver::Result::Bolt::gather_results = 0;
 
 
 subtest 'list interface: zero rows' => sub {
@@ -137,9 +138,9 @@ subtest 'list interface: more rows' => sub {
 };
 
 
-$Neo4j::Driver::Result::fake_attached = 1;
-$Neo4j::Driver::Result::Bolt::gather_results = 1;
 subtest 'list interface: fake attached' => sub {
+	local $Neo4j::Driver::Result::fake_attached = 1;
+	local $Neo4j::Driver::Result::Bolt::gather_results = 1;
 	plan tests => 7;
 	$r = $s->run('RETURN 7 AS n UNION RETURN 11 AS n');
 	lives_and { is $r->size, 2 } 'size two rows';
@@ -151,8 +152,6 @@ subtest 'list interface: fake attached' => sub {
 	lives_ok { @a = ();  @a = $r->list } 'list again';
 	is_deeply [@a], [@list], 'lists match';
 };
-$Neo4j::Driver::Result::fake_attached = 0;
-$Neo4j::Driver::Result::Bolt::gather_results = 0;
 
 
 subtest 'list interface: arrayref in scalar context' => sub {

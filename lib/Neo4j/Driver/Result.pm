@@ -128,7 +128,7 @@ sub fetch {
 	my ($self) = @_;
 	
 	return if $self->{exhausted};  # fetch() mustn't destroy a list() buffer
-	$self->_fill_buffer(1);
+	$self->_fill_buffer(2);
 	my $next = shift @{$self->{buffer}};
 	$self->{exhausted} = ! $next;
 	return $next;
