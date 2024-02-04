@@ -1,7 +1,9 @@
 Revision history for Neo4j::Driver
 
-0.4353  2024-02-01
+0.4354  2024-02-04
 
+ - Result->consume() is no longer experimental.
+ - Result->summary() is discouraged in favour of consume().
  - Minor testing improvements
 
 0.43  2024-01-31

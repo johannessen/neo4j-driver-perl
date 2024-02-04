@@ -35,7 +35,7 @@ sub response_for { $mock_plugin->response_for(undef, @_) }
 
 my ($q, $r, @a, $a);
 
-plan tests => 9 + $no_warnings;
+plan tests => 8 + $no_warnings;
 
 
 {
@@ -206,20 +206,6 @@ subtest 'multiple statements' => sub {
 	} qr/\bempty statements not allowed\b/i, 'include empty statement';
 	$tx->rollback;
 	# TODO: also check statement order in summary
-};
-
-
-subtest 'result stream interface: discard result stream' => sub {
-	plan tests => 4;
-	$r = $s->run('RETURN 7 AS n UNION RETURN 11 AS n');
-	my $c;
-	lives_ok { $c = $r->consume } 'consume()';
-	isa_ok $c, 'Neo4j::Driver::ResultSummary', 'summary from consume()';
-	lives_and { ok ! $r->has_next } 'no has next';
-	TODO: {
-		local $TODO = 'records are not yet cheaply discarded';
-		lives_and { ok ! $r->size } 'no size';
-	};
 };
 
 

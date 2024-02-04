@@ -173,11 +173,9 @@ sub detach {
 
 
 sub consume {
-	# uncoverable pod (experimental feature)
 	my ($self) = @_;
 	
-	# Neo4j::Bolt doesn't offer direct access to neo4j_close_results()
-	$self->{exhausted} = 1;
+	1 while $self->fetch;  # Exhaust the result stream
 	return $self->summary;
 }
 
@@ -258,6 +256,17 @@ Until version 0.18, this module was named C<StatementResult>.
 
 L<Neo4j::Driver::Result> implements the following methods.
 
+=head2 consume
+
+ $summary = $result->consume;
+
+Return the L<Neo4j::Driver::ResultSummary>.
+
+Calling this method fully exhausts the result and invalidates the
+result stream, discarding any remaining records. If you want to
+access records I<after> retrieving the summary, you should use
+C<list()> before C<consume()> to buffer all records into memory.
+
 =head2 fetch
 
  while ($record = $result->fetch) {
@@ -330,6 +339,9 @@ for use by C<list()>.
 Return a L<Neo4j::Driver::ResultSummary> object. Calling this method
 detaches the result stream, but does I<not> exhaust it.
 
+This method is discouraged. It may be deprecated and removed in
+a future version. Please use C<consume()> instead.
+
 As a special case, L<Record|Neo4j::Driver::Record>s returned by the
 C<single> method also have a C<summary> method that works the same
 way.
@@ -352,28 +364,6 @@ The C<keys()> method returns the number of columns if called in scalar
 context.
 
 Until version 0.25, it returned an array reference instead.
-
-=head2 Discarding the result stream
-
- $result->consume;
-
-Discarding the entire result may be useful as a cheap way to signal
-to the Bolt networking layer that any resources held by the result
-may be released. The actual result records are silently discarded
-without any effort to buffer the results. Calling this method
-exhausts the result stream.
-
-As a side effect, discarding the result yields a summary of it.
-
- $result_summary = $result->consume;
-
-Using a result after this method has been called is discouraged.
-This may become a fatal error in future versions.
-
-All of the official drivers offer this method, but it doesn't appear
-to be necessary here, since L<Neo4j::Bolt::ResultStream> reliably
-calls C<neo4j_close_results()> in its C<DESTROY()> method. It may
-be removed in future versions.
 
 =head2 Look ahead in the result stream
 
