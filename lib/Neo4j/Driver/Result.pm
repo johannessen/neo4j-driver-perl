@@ -136,12 +136,10 @@ sub fetch {
 
 
 sub peek {
-	# uncoverable pod (experimental feature)
 	my ($self) = @_;
 	
-	croak "iterator is exhausted" if $self->{exhausted};
 	$self->_fill_buffer(1);
-	return $self->{buffer}->[0];
+	return scalar $self->{buffer}->[0];
 }
 
 
@@ -312,6 +310,15 @@ multiple times returns the buffered list.
 
 This method returns an array reference if called in scalar context.
 
+=head2 peek
+
+ $record = $result->peek;
+
+Obtain the next L<Record|Neo4j::Driver::Record> from this result
+without actually navigating to it and consuming it. The record
+is left in the internal stream buffer for further processing.
+If there is no next record, return C<undef>.
+
 =head2 single
 
  $name = $session->run('... LIMIT 1')->single->get('name');
@@ -364,15 +371,6 @@ The C<keys()> method returns the number of columns if called in scalar
 context.
 
 Until version 0.25, it returned an array reference instead.
-
-=head2 Look ahead in the result stream
-
- say "Next record: ", $result->peek->get(...) if $result->has_next;
-
-Using C<peek()>, it is possible to retrieve the
-same record the next call to C<fetch()> would retrieve without
-actually navigating to it. This may change the internal stream
-buffer and detach the result, but will never exhaust it.
 
 =head1 SEE ALSO
 

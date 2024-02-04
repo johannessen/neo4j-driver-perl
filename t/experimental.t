@@ -35,7 +35,7 @@ sub response_for { $mock_plugin->response_for(undef, @_) }
 
 my ($q, $r, @a, $a);
 
-plan tests => 8 + $no_warnings;
+plan tests => 7 + $no_warnings;
 
 
 {
@@ -206,23 +206,6 @@ subtest 'multiple statements' => sub {
 	} qr/\bempty statements not allowed\b/i, 'include empty statement';
 	$tx->rollback;
 	# TODO: also check statement order in summary
-};
-
-
-subtest 'result stream interface: look ahead' => sub {
-	plan tests => 10;
-	$r = $s->run('RETURN 7 AS n UNION RETURN 11 AS n');
-	my ($peek, $v);
-	lives_ok { $peek = 0;  $peek = $r->peek } 'peek 1st';
-	lives_ok { $v = 0;  $v = $r->fetch } 'fetch 1st';
-	isa_ok $peek, 'Neo4j::Driver::Record', 'peek record 1st';
-	is $peek, $v, 'peek matches fetch 1st';
-	lives_ok { $peek = 0;  $peek = $r->peek } 'peek 2nd';
-	lives_ok { $v = 0;  $v = $r->fetch } 'fetch 2nd';
-	isa_ok $peek, 'Neo4j::Driver::Record', 'peek record 2nd';
-	is $peek, $v, 'peek matches fetch 2nd';
-	lives_and { ok ! $r->fetch } 'no fetch 3rd';
-	throws_ok { $r->peek } qr/\bexhausted\b/i, 'peek dies 3rd';
 };
 
 

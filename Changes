@@ -1,7 +1,8 @@
 Revision history for Neo4j::Driver
 
-0.4355  2024-02-04
+0.44  2024-02-04  (TRIAL RELEASE)
 
+ - Result->peek() is no longer experimental.
  - Result->consume() is no longer experimental.
  - Result->summary() is discouraged in favour of consume().
  - Internal change: Result->fetch() now detects an exhausted result stream

@@ -24,7 +24,7 @@ use Test::Warnings 0.010 qw(:no_end_test);
 my $no_warnings;
 use if $no_warnings = $ENV{AUTHOR_TESTING} ? 1 : 0, 'Test::Warnings';
 
-plan tests => 13 + 1 + $no_warnings;
+plan tests => 14 + 1 + $no_warnings;
 
 my $transaction = $driver->session->begin_transaction;
 $transaction->{return_stats} = 0;  # optimise sim
@@ -97,6 +97,23 @@ subtest 'stream interface: fake attached' => sub {
 	lives_and { ok ! $r->{attached} } 'detached after second';
 	lives_and { ok ! $r->has_next } 'no has next after second';
 	lives_and { is $r->fetch(), undef } 'fetch no third row';
+};
+
+
+subtest 'stream interface: look ahead' => sub {
+	plan tests => 10;
+	$r = $s->run('RETURN 7 AS n UNION RETURN 11 AS n');
+	my ($peek, $v);
+	lives_ok { $peek = 0;  $peek = $r->peek } 'peek 1st';
+	lives_ok { $v = 0;  $v = $r->fetch } 'fetch 1st';
+	isa_ok $peek, 'Neo4j::Driver::Record', 'peek record 1st';
+	is $peek, $v, 'peek matches fetch 1st';
+	lives_ok { $peek = 0;  $peek = $r->peek } 'peek 2nd';
+	lives_ok { $v = 0;  $v = $r->fetch } 'fetch 2nd';
+	isa_ok $peek, 'Neo4j::Driver::Record', 'peek record 2nd';
+	is $peek, $v, 'peek matches fetch 2nd';
+	lives_and { ok ! $r->fetch } 'no fetch 3rd';
+	lives_and { is_deeply [$r->peek], [undef] } 'peek undef 3rd';
 };
 
 

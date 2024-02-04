@@ -23,9 +23,6 @@ both returning milliseconds with a default of C<-1> when unavailable (HTTP).
 
 =over
 
-=item * L<Neo4j::Driver::Result/"Look ahead in the result stream">:
-make C<peek()> stable once C<fetch()> reliably buffers two records
-
 =item * Calling list methods in scalar context
 (in Node,
 in Path,
