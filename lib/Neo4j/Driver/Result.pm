@@ -199,6 +199,18 @@ sub stats {
 }
 
 
+sub _bool_values {
+	no if $^V ge v5.36, 'warnings', 'experimental::builtin';
+	if ( $^V ge v5.36 && ! $ENV{NO_NEO4J_CORE_BOOLS} ) {
+		return builtin::false(), builtin::true();
+	}
+	else {
+		require JSON::PP;
+		return JSON::PP::false(), JSON::PP::true();
+	}
+}
+
+
 1;
 
 __END__

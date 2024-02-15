@@ -18,8 +18,9 @@ use List::Util ();
 
 use Neo4j::Driver::Net::Bolt;
 
+my ($FALSE, $TRUE) = Neo4j::Driver::Result->_bool_values;
+
 my @valid_bolt_neo4j_types = qw(
-	JSON::PP::Boolean
 	Neo4j::Bolt::DateTime
 	Neo4j::Bolt::Duration
 	Neo4j::Bolt::Point
@@ -194,6 +195,9 @@ sub _deep_bless {
 	
 	if (ref $data eq '') {  # scalar
 		return $data;
+	}
+	if (ref $data eq 'JSON::PP::Boolean') {
+		return $data ? $TRUE : $FALSE;
 	}
 	if ( List::Util::first { ref $data eq $_ } @valid_bolt_neo4j_types ) {
 		return $data;
