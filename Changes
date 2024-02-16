@@ -1,6 +1,6 @@
 Revision history for Neo4j::Driver
 
-0.45  2024-02-15  (TRIAL RELEASE)
+0.45  2024-02-16
 
  - The boolean values used in HTTP query results are no longer chosen
    by the JSON coder. Perl core booleans are used on v5.36 and newer;
