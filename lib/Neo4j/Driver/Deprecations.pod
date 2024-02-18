@@ -113,7 +113,7 @@ See L<Neo4j::Driver::Plugin/"http_adapter_factory"> for details.
 
 At that point, your code setting the C<net_module> config option
 can simply be replaced by calls to
-L<"plugin" in Neo4j::Driver|Neo4j::Driver/"Plug-in modules">.
+L<Neo4j::Driver/"plugin">.
 
  # Deprecated config option:
  use Local::Foo;

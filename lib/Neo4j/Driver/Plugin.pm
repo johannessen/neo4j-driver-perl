@@ -41,19 +41,18 @@ package Neo4j::Driver::Plugin;
 =head1 WARNING: EXPERIMENTAL
 
 The design of the plug-in API is not finalised.
-You should probably let me know if you already are writing
-plug-ins, so that I can try to accommodate your use case
-and give you advance notice of changes.
 
 B<The entire plug-in API is currently experimental.>
 
-The driver's C<plugin()> method is
-L<experimental|Neo4j::Driver/"Plug-in modules"> as well.
+As such, it is subject to unannounced modification or removal
+in future versions. Expect your code to break if you depend
+upon this feature.
 
-I'm grateful for any feedback you I<(yes, you!)> might have on
-this driver's plug-in API. Please open a GitHub issue or get in
-touch via email (make sure you mention Neo4j in the subject to
-beat the spam filters).
+If you feel the plug-in API is useful, please let me know
+(for example, in a GitHub issue). Your feedback will inform
+decisions on future changes to the API. I'd also be happy
+to consider declaring parts of the API stable if I knew
+somebody other than myself was using it.
 
 =head1 DESCRIPTION
 
