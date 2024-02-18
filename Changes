@@ -1,5 +1,9 @@
 Revision history for Neo4j::Driver
 
+0.4501  2024-02-18
+
+ - Calling list methods in scalar context is no longer experimental.
+
 0.45  2024-02-16
 
  - The boolean values used in HTTP query results are no longer chosen

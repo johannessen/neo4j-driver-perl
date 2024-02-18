@@ -19,19 +19,6 @@ both returning milliseconds with a default of C<-1> when unavailable (HTTP).
 
 =back
 
-=head2 Experimental features
-
-=over
-
-=item * Calling list methods in scalar context
-(in Node,
-in Path,
-L<in Result|Neo4j::Driver::Result/"Calling in scalar context">, and
-L<in ResultSummary|Neo4j::Driver::ResultSummary/"Calling in scalar context">):
-make stable
-
-=back
-
 =head2 Tests, code quality, documentation
 
 =over

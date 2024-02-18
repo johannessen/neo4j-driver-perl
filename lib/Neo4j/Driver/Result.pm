@@ -307,6 +307,7 @@ detach the result, but will never exhaust it.
  @keys = $result->keys;
 
 Retrieve the column names of the records this result contains.
+In scalar context, return the number of columns.
 
 =head2 list
 
@@ -367,22 +368,6 @@ way.
 
  $record = $transaction->run('...')->single;
  $result_summary = $record->summary;
-
-=head1 EXPERIMENTAL FEATURES
-
-L<Neo4j::Driver::Result> implements the following
-experimental features. These are subject to unannounced modification
-or removal in future versions. Expect your code to break if you
-depend upon these features.
-
-=head2 Calling in scalar context
-
- $count = $result->keys;
-
-The C<keys()> method returns the number of columns if called in scalar
-context.
-
-Until version 0.25, it returned an array reference instead.
 
 =head1 SEE ALSO
 

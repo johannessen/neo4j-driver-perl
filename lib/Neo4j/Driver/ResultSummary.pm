@@ -132,6 +132,7 @@ statement. Notifications can be warnings about problematic statements
 or other valuable information that can be presented in a client.
 Unlike failures or errors, notifications do not affect the execution
 of a statement.
+In scalar context, return the number of notifications.
 
 This driver only supports notifications over HTTP.
 
@@ -159,23 +160,6 @@ the host, port, protocol and Neo4j version.
  $params = $summary->statement->{parameters};
 
 The statement and parameters this summary is for.
-
-=head1 EXPERIMENTAL FEATURES
-
-L<Neo4j::Driver::ResultSummary> implements the following experimental
-features. These are subject to unannounced modification or removal
-in future versions. Expect your code to break if you depend upon
-these features.
-
-=head2 Calling in scalar context
-
- $count = $summary->notifications;
-
-The C<notifications()> method returns the number of notifications
-if called in scalar context.
-
-Until version 0.25, it returned an array reference instead,
-or C<undef> if there were no notifications.
 
 =head1 SEE ALSO
 
