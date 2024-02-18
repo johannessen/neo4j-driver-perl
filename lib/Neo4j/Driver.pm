@@ -108,6 +108,8 @@ sub _check_uri {
 sub _fix_neo4j_uri {
 	my ($self) = @_;
 	
+	croak "The concurrent_tx config option may only be used with http:/https: URIs" if $self->{config}->{concurrent_tx};
+	
 	my $uri = $self->{config}->{uri};
 	$uri->scheme( exists $INC{'Neo4j/Bolt.pm'} ? 'bolt' : $self->{config}->{tls} ? 'https' : 'http' );
 	$uri->port( $NEO4J_DEFAULT_PORT{ $uri->scheme } ) if ! $uri->_port;
