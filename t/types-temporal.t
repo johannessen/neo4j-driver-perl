@@ -43,6 +43,7 @@ sub mock_jolt {
 # Trigger Jolt.pm to load DateTime.pm (with require instead of use to allow for 1.00)
 $s->run(mock_jolt { 'T' => '00:00:00' });
 
+SKIP: { skip '(Time-Piece#47: strftime broken on Win32)', 1 if $^O =~ /Win32/;
 neo4j_datetime_ok 'Neo4j::Driver::Type::DateTime', sub {
 	my ($class, $params) = @_;
 	my $iso = '';
@@ -68,6 +69,7 @@ neo4j_datetime_ok 'Neo4j::Driver::Type::DateTime', sub {
 	}
 	return bless { 'T' => $iso }, $class;
 };
+}
 
 
 subtest 'LocalDateTime' => sub {

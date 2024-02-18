@@ -1,10 +1,11 @@
 Revision history for Neo4j::Driver
 
-0.4502  2024-02-18
+0.4503  2024-02-18
 
  - Add check to prevent the HTTP-only concurrent_tx feature from being used
    with neo4j: URIs.
  - Calling list methods in scalar context is no longer experimental.
+ - Avoid crash of types-temporal.t on Win32.
 
 0.45  2024-02-16
 
