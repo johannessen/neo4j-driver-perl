@@ -39,6 +39,11 @@ sub get {
 		return $self->{row}->[0];
 	}
 	
+	croak "Field '' not present in query result" if ! length $field;
+	
+	my $unambiguous_key = $self->{column_keys}->{$field};
+	return $self->{row}->[$unambiguous_key] if defined $unambiguous_key;
+	
 	if ( _looks_like_int $field ) {
 		croak "Field $field not present in query result" if $field < 0 || $field >= @{$self->{row}};
 		return $self->{row}->[$field];
