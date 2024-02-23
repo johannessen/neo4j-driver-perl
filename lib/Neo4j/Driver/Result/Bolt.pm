@@ -21,6 +21,7 @@ use Neo4j::Driver::Net::Bolt;
 my ($FALSE, $TRUE) = Neo4j::Driver::Result->_bool_values;
 
 my @valid_bolt_neo4j_types = qw(
+	Neo4j::Bolt::Bytes
 	Neo4j::Bolt::DateTime
 	Neo4j::Bolt::Duration
 	Neo4j::Bolt::Point

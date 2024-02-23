@@ -139,7 +139,7 @@ sub id5 {
 
 
 subtest 'property types' => sub {
-	plan tests => 13;
+	plan tests => 16;
 	lives_and { ok $r = $s->run('property') } 'run';
 	lives_and { is $r->fetch->get(), undef } 'null';
 	lives_ok { $v = undef; $v = $r->fetch->get() } 'Boolean true';
@@ -151,7 +151,13 @@ subtest 'property types' => sub {
 	lives_and { is $r->fetch->get(), 13 } 'Integer';
 	lives_and { is $r->fetch->get(), 0.5 } 'Float';
 	lives_and { is $r->fetch->get(), 'hello' } 'String';
-	lives_and { is $r->fetch->get(), 'Foo' } 'Bytes';
+	lives_ok { $v = undef; $v = $r->fetch->get() } 'Bytes';
+	isa_ok $v, 'Neo4j::Types::ByteArray';
+	lives_and { is $v->as_string(), 'Foo' } 'Bytes as_string';
+	lives_and {
+		no warnings 'deprecated';
+		is "$v", 'Foo';
+	} 'Bytes stringify overload';
 	lives_and { ok ! $r->has_next } 'no has_next';
 };
 

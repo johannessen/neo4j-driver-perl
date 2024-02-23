@@ -1,7 +1,8 @@
 Revision history for Neo4j::Driver
 
-0.4504  2024-02-19
+0.4505  2024-02-23
 
+ - Add support for byte array values via Bolt and Jolt (Neo4j::Types v2).
  - Add check to prevent the HTTP-only concurrent_tx feature from being used
    with neo4j: URIs.
  - Add check to prevent plugin() after session().
