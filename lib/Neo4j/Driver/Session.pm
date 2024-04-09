@@ -341,31 +341,6 @@ commit the transaction.
 Obtain the L<ServerInfo|Neo4j::Driver::ServerInfo>, consisting of
 the host, port, protocol and Neo4j version.
 
-=head1 EXPERIMENTAL FEATURES
-
-L<Neo4j::Driver::Session> implements the following experimental
-features. These are subject to unannounced modification or removal
-in future versions. Expect your code to break if you depend upon
-these features.
-
-=head2 Concurrent transactions
-
- %config = ( uri => 'http://...', concurrent_tx => 1 );
- $session = Neo4j::Driver->new(\%config)->session;
- $tx1 = $session->begin_transaction;
- $tx2 = $session->begin_transaction;
- $tx3 = $session->run(...);
-
-Since HTTP is a stateless protocol, the Neo4j HTTP API effectively
-allows multiple concurrently open transactions without special
-client-side considerations. This driver exposes this feature to the
-client and will continue to do so, but the interface is not yet
-finalised. See L<Neo4j::Driver/"Concurrent transactions in HTTP sessions">
-for further details.
-
-The Bolt protocol does not support concurrent transactions (sometimes
-known as "nested transactions") within the same session.
-
 =head1 SECURITY CONSIDERATIONS
 
 Both L<Session|Neo4j::Driver::Session> as well as
