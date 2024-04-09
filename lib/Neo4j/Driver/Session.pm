@@ -109,6 +109,11 @@ sub _execute {
 			}
 		};
 	} until ($success);
+	
+	$r = $r[0] if $wantarray;
+	if (defined $wantarray && blessed $r && $r->isa('Neo4j::Driver::Result')) {
+		warnings::warnif closure => "Result object may not be valid outside the transaction function";
+	}
 	return $wantarray ? @r : $r;
 }
 
@@ -307,10 +312,9 @@ Because of this, the given subroutine needs to be B<idempotent>
 it is executed).
 
 Note that L<Neo4j::Driver::Result> objects may not be valid
-outside of the given subroutine. While the driver currently
-doesn't prevent you from returning such an object from the
-subroutine, the effect of doing so with results retrieved over
-a Bolt connection is unspecified. A simple solution might be
+outside of the given subroutine. If the driver detects that
+you return such an object, it will issue a warning in the
+category C<closure>. A better approach would be
 to return the list of records from the subroutine instead,
 which is always safe to do.
 
