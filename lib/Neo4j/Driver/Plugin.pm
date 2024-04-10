@@ -557,8 +557,7 @@ your code is used in production.
 
 If you have difficulties achieving your goals without the use of
 driver internals or private APIs, you are most welcome to file a
-GitHub issue about that (or write to my CPAN email address with
-your concerns).
+GitHub issue about that.
 
 I can't I<promise> that I'll be able to accommodate your use case,
 but I am going to try.

@@ -108,7 +108,7 @@ used to investigate details about the result, like the Neo4j server
 version, how many and which kinds of updates have been executed, and
 query plan information if available.
 
-To obtain a result summary, call L<Neo4j::Driver::Result/"summary">.
+To obtain a result summary, call L<Neo4j::Driver::Result/"consume">.
 
 =head1 METHODS
 
