@@ -3,24 +3,6 @@
 
 =encoding utf8
 
-=head1 SYNPOSIS
-
- $helper = Neo4j::Driver::Net::HTTP->new({
-   net_module => 'Local::Neo4jUserAgentHTTP',
- });
- 
- $helper->_set_database($db_name);
- $helper->{active_tx} = ...;
- @results = $helper->_run($tx, @statements);
- 
- # Parsing a JSON result
- die unless $helper->{http_agent}->http_header->{success};
- $json_coder = $helper->{http_agent}->json_coder;
- $json_coder->decode( $helper->{http_agent}->fetch_all );
-
-B<WARNING:> Some of these calls are private APIs.
-See L<Neo4j::Driver::Plugin/"USE OF INTERNAL APIS">.
-
 =head1 OVERVIEW
 
 Each L<Neo4j::Driver::Session> has exactly one network controller
@@ -50,6 +32,24 @@ explained in this document, this is done only to help contributors
 and users of I<public> APIs better understand the driver's design.
 See L<Neo4j::Driver::Plugin/"USE OF INTERNAL APIS"> for more
 information on this topic.
+
+=head1 SYNPOSIS
+
+ $helper = Neo4j::Driver::Net::HTTP->new({
+   net_module => 'Local::Neo4jUserAgentHTTP',
+ });
+ 
+ $helper->_set_database($db_name);
+ $helper->{active_tx} = ...;
+ @results = $helper->_run($tx, @statements);
+ 
+ # Parsing a JSON result
+ die unless $helper->{http_agent}->http_header->{success};
+ $json_coder = $helper->{http_agent}->json_coder;
+ $json_coder->decode( $helper->{http_agent}->fetch_all );
+
+B<WARNING:> Some of these calls are private APIs.
+See L<Neo4j::Driver::Plugin/"USE OF INTERNAL APIS">.
 
 =head1 FEATURES
 
