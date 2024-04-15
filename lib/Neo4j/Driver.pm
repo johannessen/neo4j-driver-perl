@@ -452,12 +452,4 @@ L<REST::Neo4p>
 
 =back
 
-=head1 ACKNOWLEDGEMENT
-
-Special thanks go to Mark A. Jensen (MAJENSEN). Without the
-inspiration of his L<REST::Neo4p>, this driver project I<probably>
-would never have been even gotten started. And without Mark's
-tremendous work on L<Neo4j::Bolt> and libneo4j-client, this
-driver I<certainly> would be in much worse shape than it is today.
-
 =cut
