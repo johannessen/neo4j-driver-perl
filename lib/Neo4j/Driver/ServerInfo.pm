@@ -68,12 +68,12 @@ __END__
 
 =head1 SYNOPSIS
 
- use Neo4j::Driver;
- $session = Neo4j::Driver->new->basic_auth(...)->session;
+ $server_info = $session->server;
+ $server_info = $result_summary->server;
  
- $host_port = $session->server->address;
- $version_string = $session->server->version;
- say "Contacting $version_string at $host_port.";
+ $host_port     = $server_info->address;
+ $neo4j_version = $server_info->agent;
+ $bolt_version  = $server_info->protocol_version;
 
 =head1 DESCRIPTION
 

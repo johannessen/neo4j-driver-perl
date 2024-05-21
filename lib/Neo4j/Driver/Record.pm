@@ -111,18 +111,15 @@ __END__
 
 =head1 SYNOPSIS
 
- use Neo4j::Driver;
- $session = Neo4j::Driver->new->basic_auth(...)->session;
+ $record = $session->execute_write( sub ($transaction) {
+   return $transaction->run( ... )->fetch;
+ });
  
- $query = 'MATCH (m:Movie) RETURN m.name, m.year';
- $records = $session->run($query)->list;
- foreach $record ( @$records ) {
-   say $record->get('m.name');
- }
+ $value = $record->get('name');  # field key
+ $value = $record->get(0);       # field index
  
- $query .= ' ORDER BY m.year LIMIT 1';
- $record = $session->run($query)->single;
- say 'Year of oldest movie: ', $record->get(1);
+ # Shortcut for records with just a single key
+ $value = $record->get;
 
 =head1 DESCRIPTION
 

@@ -235,30 +235,31 @@ use parent 'URI::_server';
 # The server methods need to be available for bolt: URI instances
 # even when the Neo4j-Bolt distribution is not installed.
 
- 
+
 1;
 
 __END__
 
 =head1 SYNOPSIS
 
- use Neo4j::Driver;
  $uri = 'bolt://localhost';  # requires Neo4j::Bolt
  $uri = 'http://localhost';
- $driver = Neo4j::Driver->new($uri)->basic_auth('neo4j', 'password');
  
- sub say_friends_of ($person) {
-   $query = 'MATCH (a:Person)-[:KNOWS]->(f) '
-             . 'WHERE a.name = $name RETURN f.name';
-   @records = $driver->session->execute_read( sub ($tx) {
-     $tx->run($query, { name => $person })->list;
-   });
-   foreach $record ( @records ) {
-     say $record->get('f.name');
-   }
+ $driver = Neo4j::Driver->new({ uri => $uri, ... });
+ $driver->basic_auth( $user, $password );
+ $session = $driver->session;
+ 
+ $query = <<~ END;
+   MATCH (someone :Person)-[:KNOWS]->(friend)
+   WHERE someone.name = \$name
+   RETURN friend.name
+   END
+ @records = $session->execute_read( sub ($tx) {
+   $tx->run($query, { name => 'Alice' })->list;
+ });
+ foreach my $record ( @records ) {
+   say $record->get('friend.name');
  }
- 
- say_friends_of 'Alice';
 
 =head1 DESCRIPTION
 

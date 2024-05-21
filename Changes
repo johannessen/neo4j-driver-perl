@@ -1,5 +1,9 @@
 Revision history for Neo4j::Driver
 
+0.4901  2024-05-21
+
+ - Documentation improvements
+
 0.49  2024-04-15
 
  - Issue a Perl warning if a broken Neo4j::Client version is detected. For Bolt

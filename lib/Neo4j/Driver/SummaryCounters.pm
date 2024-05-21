@@ -57,17 +57,17 @@ __END__
 
 =head1 SYNOPSIS
 
- use Neo4j::Driver;
- $driver = Neo4j::Driver->new->basic_auth(...);
- 
- $transaction = $driver->session->begin_transaction;
- $transaction->{return_stats} = 1;
- $query = 'MATCH (n:Novel {name:"1984"}) SET n.writer = "Orwell"';
- $result = $transaction->run($query);
- 
- $counters = $result->summary->counters;
- $database_modified = $counters->contains_updates;
- die "That didn't work out." unless $database_modified;
+  # $session = Neo4j::Driver->new({ ... })->session;
+  
+  $counters = $session->execute_write( sub ($transaction) {
+    my $query = <<~'END';
+      MATCH (m:Movie) WHERE m.released > 2000
+      SET m.new = true
+      END
+    return $transaction->run($query)->consume->counters;
+  });
+  
+  say sprintf '%i nodes updated.', $counters->properties_set;
 
 =head1 DESCRIPTION
 

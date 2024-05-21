@@ -82,16 +82,14 @@ __END__
 
 =head1 SYNOPSIS
 
- use Neo4j::Driver;
- $driver = Neo4j::Driver->new->basic_auth(...);
- $result = $driver->session->run('MATCH (a)-[:KNOWS]-(b) RETURN a, b');
- 
- $summary = $result->summary;
+ $summary = $session->execute_write( sub ($transaction) {
+   return $transaction->run( ... )->consume;
+ });
  
  # SummaryCounters
  $counters = $summary->counters;
  
- # query information
+ # Query information
  $query  = $summary->statement->{text};
  $params = $summary->statement->{parameters};
  $plan   = $summary->plan;
@@ -99,7 +97,7 @@ __END__
  
  # ServerInfo
  $address = $summary->server->address;
- $version = $summary->server->version;
+ $version = $summary->server->agent;
 
 =head1 DESCRIPTION
 

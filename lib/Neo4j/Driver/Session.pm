@@ -199,19 +199,18 @@ __END__
 
 =head1 SYNOPSIS
 
- use Neo4j::Driver;
- $session = Neo4j::Driver->new->basic_auth(...)->session;
+ $session = Neo4j::Driver->new(...)->session;
  
- # managed transaction function
+ # Managed transaction function
  @records = $session->execute_read( sub ($transaction) {
-   $transaction->run('MATCH (m:Movie) RETURN m')->list;
+   $transaction->run( ... )->list;
  });
  
- # unmanaged explicit transaction
+ # Unmanaged explicit transaction
  $transaction = $session->begin_transaction;
  
- # autocommit transaction
- $result = $session->run('MATCH (m:Movie) RETURN m.name, m.year');
+ # Autocommit transaction
+ $result = $session->run( ... );
 
 =head1 DESCRIPTION
 

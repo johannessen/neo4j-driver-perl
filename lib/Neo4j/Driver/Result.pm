@@ -217,23 +217,31 @@ __END__
 
 =head1 SYNOPSIS
 
- use Neo4j::Driver;
- $session = Neo4j::Driver->new->basic_auth(...)->session;
+ $result = $session->run( ... );
  
- # stream result records
- $result = $session->run('MATCH (a:Actor) RETURN a.name, a.born');
+ # Stream result records
  while ( $record = $result->fetch ) {
    ...
  }
  
- # list result records
- $result = $session->run('MATCH (m:Movie) RETURN m.name, m.year');
- $record_count = $result->size;
+ # List result records
  @records = $result->list;
+ $records = $result->list;  # array ref
+ $record_count = $result->size;
  
- # shortcut for results with a single record only
- $query = 'MATCH (m:Movie) WHERE id(m) = {id} RETURN m.name';
- $name = $session->run($query, id => 12)->single->get('m.name');
+ # Shortcut for results with a single record only
+ $record = $result->single;
+ 
+ @field_keys = $result->keys;
+ $summary = $result->consume;
+ 
+ # For error checking, call any method on the result to ensure
+ # the statement has executed before leaving the try block
+ try {
+   $result = $transaction->run( ... );
+   $result->has_next;
+ }
+ catch ($e) { ... }
 
 =head1 DESCRIPTION
 

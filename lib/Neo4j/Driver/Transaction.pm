@@ -288,24 +288,34 @@ __END__
 
 =head1 SYNOPSIS
 
- use Neo4j::Driver;
- $session = Neo4j::Driver->new->basic_auth(...)->session;
+ # Managed transaction function
+ $session->execute_write( sub ($transaction) {
+   $transaction->run( ... );
+   # Automatic commit upon subroutine return
+   
+   if ( my $failure = ... ) {
+     die;   # any exception will cause a rollback
+     $transaction->rollback;  # explicit rollback
+   }
+ });
  
- # Commit
- $tx = $session->begin_transaction;
- $node_id = $tx->run(
-   'CREATE (p:Person) RETURN id(p)'
- )->single->get;
- $tx->run(
-   'MATCH (p) WHERE id(p) = {id} SET p.name = {name}',
-   {id => $node_id, name => 'Douglas'}
- );
- $tx->commit;
+ # Unmanaged explicit transaction
+ $transaction = $session->begin_transaction;
+ $transaction->run( ... );
+ if ( my $success = ... ) {
+   $transaction->commit;
+ } else {
+   $transaction->rollback;
+ }
  
- # Rollback
- $tx = $session->begin_transaction;
- $tx->run('CREATE (a:Universal:Answer {value:42})');
- $tx->rollback;
+ # Query parameters
+ $query = "RETURN \$param";
+ $transaction->run( $query, { param => $value, ... } );
+ $transaction->run( $query,   param => $value, ...   );
+ 
+ # Neo4j v2 syntax for query parameters
+ $driver->config( cypher_params => v2 );
+ $query = "RETURN {param}";
 
 =head1 DESCRIPTION
 
@@ -316,9 +326,9 @@ object corresponds to a server transaction.
 Statements may be run lazily. Most of the time, you will not notice
 this, because the driver automatically waits for statements to
 complete at specific points to fulfill its contracts. If you require
-execution of a statement to have completed, you need to use the
-L<Result|Neo4j::Driver::Result>, for example by calling
-one of the methods C<fetch()>, C<list()> or C<summary()>.
+execution of a statement to have completed, you need to call any
+method in the L<Result|Neo4j::Driver::Result>, for example
+C<has_next()>.
 
 Neo4j drivers allow the creation of different kinds of transactions.
 See L<Neo4j::Driver::Session> for details.
@@ -357,7 +367,8 @@ used.
 
 =head2 run
 
- $result = $transaction->run($query, %params);
+ $result = $transaction->run($query);
+ $result = $transaction->run($query, \%params);
 
 Run a statement and return the L<Result|Neo4j::Driver::Result>.
 This method takes an optional set of parameters that will be injected
