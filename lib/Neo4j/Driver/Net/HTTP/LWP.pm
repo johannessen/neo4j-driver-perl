@@ -233,10 +233,6 @@ configures it using the given L<Neo4j::Driver>.
 Returns the L<LWP::UserAgent> instance in use.
 Meant to facilitate reuse.
 
-=head1 BUGS
-
-The C<fetch_event()> method has not yet been optimised.
-
 =head1 SEE ALSO
 
 L<Neo4j::Driver::Net>

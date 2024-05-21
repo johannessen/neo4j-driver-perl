@@ -420,17 +420,6 @@ These warnings may be disabled if desired.
  no warnings 'deprecated';
  no warnings 'ambiguous';
 
-=head1 BUGS
-
-See the F<TODO> document and Github for known issues and planned
-improvements. Please report new issues and other feedback on Github.
-
-Just like the official Neo4j drivers, this driver has been designed to strike
-a balance between an idiomatic API for Perl and a uniform surface across all
-languages. Differences between this driver and the official Neo4j drivers in
-either the API or the behaviour are generally to be regarded as bugs unless
-there is a compelling reason for a different approach in Perl.
-
 =head1 SEE ALSO
 
 =over

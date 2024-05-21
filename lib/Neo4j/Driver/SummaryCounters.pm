@@ -76,6 +76,10 @@ Contains counters for various operations that a statement triggered.
 To obtain summary counters, call
 L<Neo4j::Driver::ResultSummary/"counters">.
 
+Note that these statistics can be misleading in certain error
+conditions. In particular, using them to verify whether database
+modifications were successful is not advisable.
+
 =head1 ATTRIBUTES
 
 L<Neo4j::Driver::SummaryCounters> implements the following read-only
@@ -93,20 +97,6 @@ attributes.
  my $properties_set        = $counters->properties_set;
  my $relationships_created = $counters->relationships_created;
  my $relationships_deleted = $counters->relationships_deleted;
-
-=head1 BUGS
-
-These counters may not be useful for verifying that writing to the
-database was successful. For one thing, explicit transactions may
-later be rolled back, rendering these statistics outdated. For
-another, certain error conditions produce misleading statistics: It
-was observed that deleting a node that has relationships fails in a
-Cypher shell with an obscure error message, while it succeeds when
-executed over HTTP with this driver. However, the HTTP response then
-reports that the node was deleted, but that the relationship wasn't, which
-is obviously inconsistent. Not quite sure what is going on there. To
-verify that modifying the database was successful, it would therefore
-probably make more sense to run a MATCH query, tedious or not.
 
 =head1 SEE ALSO
 
