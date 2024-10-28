@@ -317,8 +317,8 @@ detach the result, but will never exhaust it.
 
  @keys = $result->keys;
 
-Retrieve the column names of the records this result contains.
-In scalar context, return the number of columns.
+Retrieve the column names (field keys) of the records this result
+contains. In scalar context, return the number of columns.
 
 =head2 list
 

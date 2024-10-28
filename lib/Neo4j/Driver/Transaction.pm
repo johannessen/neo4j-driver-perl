@@ -343,7 +343,7 @@ L<Neo4j::Driver::Transaction> implements the following methods.
 
 Commits an unmanaged transaction.
 
-After committing the transaction is closed and can no longer be used.
+After committing, the transaction is closed and can no longer be used.
 
 =head2 is_open
 
@@ -352,9 +352,10 @@ After committing the transaction is closed and can no longer be used.
 Report whether this transaction is still open, which means commit
 or rollback has not happened and the transaction has not timed out.
 
-Bolt transactions by default have no timeout, while the default
-C<dbms.rest.transaction.idle_timeout> for HTTP transactions is
-S<60 seconds.>
+Bolt transactions by default have no timeout. If necessary, the
+timeout for idle HTTP transactions may be configured in the Neo4j
+server using the setting C<dbms.rest.transaction.idle_timeout> or
+C<server.http.transaction_idle_timeout>, depending on the version.
 
 =head2 rollback
 
@@ -393,8 +394,8 @@ shown in the following example:
  $parameters = {
    number =>  0 + $scalar,
    string => '' . $scalar,
-   true   => \1,
-   false  => \0,
+   true   => builtin::true,   # or JSON::PP::true
+   false  => builtin::false,  # or JSON::PP::false
    null   => undef,
    list   => [ ],
    map    => { },

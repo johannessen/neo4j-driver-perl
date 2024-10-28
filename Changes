@@ -1,8 +1,12 @@
 Revision history for Neo4j::Driver
 
-0.4902  2024-10-28
+0.50  2024-10-28
 
- - Documentation improvements
+ - Various documentation improvements:
+   - Rewrite synopsis sections.
+   - Clarifications regarding proper error handling using try/catch and
+     HTTP result stream detachment.
+   - Update for bugs and limitations.
  - Fix an issue that can cause CI failures in transaction.t when running
    the test suite live on Neo4j 5.23.
 

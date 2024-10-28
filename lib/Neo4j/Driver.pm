@@ -366,7 +366,7 @@ as a hash reference. See L<Neo4j::Driver::Config> for a
 list of supported options. Alternatively, instead of the hash
 reference, the Neo4j server URI may be given as a scalar string.
 
- $driver = Neo4j::Driver->new('http://localhost');
+ $driver = Neo4j::Driver->new('bolt://localhost');
 
 If C<new()> is called with no arguments, a default configuration
 will be used for the driver.
