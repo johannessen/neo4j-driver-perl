@@ -16,7 +16,7 @@ jobs:
     name: Build distribution
     runs-on: ubuntu-latest
     container:
-      image: perldocker/perl-tester:5.38
+      image: perldocker/perl-tester:5.40
     steps:
       - name: git checkout
         uses: actions/checkout@v4
@@ -49,9 +49,9 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - neo4j: "5.16.0"  # Neo4j 5
-            perl: "5.38"
-          - neo4j: "4.4.30"  # Neo4j 4
+          - neo4j: "5.24.2"  # Neo4j 5
+            perl: "5.40"
+          - neo4j: "4.4.38"  # Neo4j 4
             perl: "5.36"
           #- neo4j: "4.2.4"   # Neo4j 4, old-style Jolt
           #  perl: "5.32"

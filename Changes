@@ -1,8 +1,10 @@
 Revision history for Neo4j::Driver
 
-0.4901  2024-05-21
+0.4902  2024-10-28
 
  - Documentation improvements
+ - Fix an issue that can cause CI failures in transaction.t when running
+   the test suite live on Neo4j 5.23.
 
 0.49  2024-04-15
 
