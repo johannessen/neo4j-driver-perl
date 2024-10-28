@@ -256,15 +256,18 @@ buffered locally in the driver. Once I<all> data on the result stream
 has been retrieved from the server and buffered locally, the stream
 becomes B<detached.>
 
-Results received over HTTP always contain the complete list of
-records, which is kept buffered in the driver. HTTP result streams
-are thus immediately detached and valid indefinitely.
-
-Result streams received on Bolt are valid until the next statement
+Result streams are valid until the next statement
 is run on the same session or (if the result was retrieved within
 an explicit transaction) until the transaction is closed, whichever
 comes first. When a result stream has become invalid I<before> it
 was detached, calling any methods in this class may fail.
+
+Some result handlers may automatically detach a result stream
+immediately when the result is made available by the server.
+Such result streams are valid indefinitely.
+In driver S<version 0.xx,> this happens for all HTTP results.
+This behaviour is subject to change in future versions and
+shouldn't be relied upon.
 
 To obtain a query result, call L<Neo4j::Driver::Transaction/"run">.
 

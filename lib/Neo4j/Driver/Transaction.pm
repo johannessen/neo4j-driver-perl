@@ -326,9 +326,9 @@ object corresponds to a server transaction.
 Statements may be run lazily. Most of the time, you will not notice
 this, because the driver automatically waits for statements to
 complete at specific points to fulfill its contracts. If you require
-execution of a statement to have completed, you need to call any
-method in the L<Result|Neo4j::Driver::Result>, for example
-C<has_next()>.
+execution of a statement to have completed (S<e. g.> to check for
+statement errors), you need to call any method in the
+L<Result|Neo4j::Driver::Result>, such as C<has_next()>.
 
 Neo4j drivers allow the creation of different kinds of transactions.
 See L<Neo4j::Driver::Session> for details.
@@ -427,23 +427,24 @@ See L<Neo4j::Driver::Plugin/"error"> for accessing error details.
 
 Statement errors occur when the statement is executed on the server.
 This may not necessarily have happened by the time C<run()> returns.
-If you use L<C<try>|perlsyn/"Try"> to handle errors, make sure
-you actually I<use> the L<Result|Neo4j::Driver::Result> within
-the C<try> block, for example by retrieving a record or calling
-the method C<has_next()>.
+If you use L<C<try>/C<catch>|Feature::Compat::Try> to handle errors,
+make sure you actually I<use> the L<Result|Neo4j::Driver::Result>
+within the C<try> block, for example by retrieving a record or
+calling the method C<has_next()>.
 
 Transactions are rolled back and closed automatically if the Neo4j
 server encounters an error when running a query. However, if an
-I<internal> error occurs in the driver or in one of its supporting
-modules, unmanaged transactions may remain open.
+error with the network connection to the server occurs, or if an
+internal error occurs in the driver or in one of its supporting
+modules, I<unmanaged> transactions may remain open.
 
 Typically, no particular handling of error conditions is required.
-But if you wrap your transaction in a C<try> (or C<eval>) block,
+But if you use L<C<try>/C<catch>|Feature::Compat::Try>,
 you intend to continue using the same session even after an error
 condition, I<and> you want to be absolutely sure the session is in
 a defined state, you can roll back a failed transaction manually:
 
- use feature 'try';
+ use Feature::Compat::Try;
  $tx = $session->begin_transaction;
  try {
    ...;
@@ -473,8 +474,6 @@ L<ITransaction (.NET)|https://neo4j.com/docs/api/dotnet-driver/5.2/html/b64c7dfe
 L<Sessions & Transactions (Python)|https://neo4j.com/docs/api/python-driver/5.2/api.html#transaction>
 
 =item * Neo4j L<Transactional Cypher HTTP API|https://neo4j.com/docs/http-api/5/actions/>
-
-=item * L<Feature::Compat::Try>
 
 =back
 
