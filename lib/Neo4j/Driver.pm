@@ -249,7 +249,7 @@ __END__
  $driver->basic_auth( $user, $password );
  $session = $driver->session;
  
- $query = <<~ END;
+ $query = <<~END;
    MATCH (someone :Person)-[:KNOWS]->(friend)
    WHERE someone.name = \$name
    RETURN friend.name
