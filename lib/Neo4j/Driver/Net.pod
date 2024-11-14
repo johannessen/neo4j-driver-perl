@@ -5,6 +5,10 @@
 
 =head1 OVERVIEW
 
+I<This document will be removed from the CPAN distribution with the
+next major update. It will continue to be available
+L<on GitHub|https://github.com/johannessen/neo4j-driver-perl/blob/0.51/lib/Neo4j/Driver/Net.pod>.>
+
 Each L<Neo4j::Driver::Session> has exactly one network controller
 instance that is used by the session and all of its transactions
 to communicate with the Neo4j server. This document discusses the

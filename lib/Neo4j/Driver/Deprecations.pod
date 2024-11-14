@@ -811,3 +811,18 @@ as C<< $path->path >>, which are needlessly difficult to comprehend.
 Use L<C<elements()>|Neo4j::Types::Path/"elements"> instead.
 
  $array = [ $path->elements ];
+
+=head1 Neo4j::Driver::Type::Temporal
+
+I<Deprecated in version 0.42 and to be removed in 1.00.
+Originally added in 0.13 as an experimental feature.>
+
+ if ( $value->isa('Neo4j::Driver::Type::Temporal') )
+   { ... }
+
+When implementing Neo4j temporal types, C<Temporal> was split into
+C<DateTime> and C<Duration>. The documentation of C<Temporal> had
+always warned that temporal values were not yet implemented, and
+that the module name may change eventually.
+
+Use L<Neo4j::Types::DateTime> and L<Neo4j::Types::Duration> instead.
