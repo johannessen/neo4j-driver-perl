@@ -598,7 +598,7 @@ Originally added in 0.01 as an experimental feature.>
 
  @records = $session->run('...');
 
-See L</"Call-run()-in-list-context1">
+See L<"Call run() in list context" for Transaction|/"Call-run()-in-list-context1">
 below for details.
 
 =head2 close()

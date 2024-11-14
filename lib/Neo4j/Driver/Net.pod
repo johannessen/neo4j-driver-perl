@@ -114,7 +114,7 @@ of the driver and the Neo4j server
 Bolt, on the other hand, currently only supports a single open
 transaction per connection. While a Bolt connection can be viewed
 as a simple state machine in the backend Bolt library (see
-L<Bolt Protocol Server State Spec|https://7687.org/bolt/bolt-protocol-server-state-specification-4.html#appendix---bolt-message-state-transitions>),
+L<Bolt Protocol Server State Spec|https://neo4j.com/docs/bolt/current/appendix/version-4/>),
 L<Neo4j::Bolt> currently doesn't allow users to directly observe
 state changes, so it is currently somewhat difficult to determine
 the Bolt connection state. This driver infers it based
@@ -122,7 +122,7 @@ on the behaviour of L<Neo4j::Bolt>.
 
 =head1 COMPATIBILITY
 
-L<Neo4j::Driver> S<version 0.50> is compatible with
+L<Neo4j::Driver> S<version 0.51> is compatible with
 S<L<Neo4j::Bolt> 0.01> or later.
 Note that some L<Neo4j::Bolt> and L<Neo4j::Client> versions are
 broken, or simply incompatible with each other. Recommended pairs
