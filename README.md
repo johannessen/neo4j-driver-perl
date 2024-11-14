@@ -14,8 +14,8 @@ this driver. Use of the Bolt protocol requires the XS module
 
 This driver targets the [Neo4j community edition][],
 version 2.0 and newer (including Neo4j 5).
-The Neo4j enterprise edition and AuraDB are only supported as
-far as practical, but issue reports and patches are welcome.
+Other Neo4j editions are only supported as far as practical,
+but issue reports and patches about them are welcome.
 
 See [TODO.pod][] for known issues and planned improvements.
 
