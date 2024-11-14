@@ -278,7 +278,7 @@ into the Neo4j::Driver:: namespace.
 
 =head2 Network adapter API for Bolt
 
-At this time (2022), there is only one known implementation of the
+At this time (2024), there is only one known implementation of the
 Bolt protocol for Perl: L<Neo4j::Bolt>, created by Mark A. Jensen.
 
 For this reason, an abstraction API for Bolt network adapters has

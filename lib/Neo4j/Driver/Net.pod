@@ -141,12 +141,12 @@ of known-good module versions are as follows:
   0.20    0.17  3.4
   0.12     -    3.4  (system libneo4j-client)
 
-When using HTTP, S<L<Neo4j::Driver> 0.50> supports determining the
+When using HTTP, S<L<Neo4j::Driver> 0.51> supports determining the
 version of any Neo4j server via L<Neo4j::Driver::Session/"server">.
 This even works on S<Neo4j 1.x>, but running statements on
 S<Neo4j 1.x> will fail, because it lacks the transactional API.
 
-S<L<Neo4j::Driver> 0.50> is compatible with Neo4j S<versions 2.x>,
+S<L<Neo4j::Driver> 0.51> is compatible with Neo4j S<versions 2.x>,
 3.x, S<4.x, and 5.x>. It supports HTTP responses in the
 L<formats|https://neo4j.com/docs/http-api/4.4/actions/result-format/>
 JSON and Jolt (strict and sparse, line-delimited and sequenced).
@@ -271,7 +271,7 @@ see L<Neo4j::Driver::Plugin/"USE OF INTERNAL APIS">.
 =head2 Custom HTTP networking modules
 
 L<Neo4j::Driver> includes a default HTTP network adapter.
-The included adapter may change in future. As of S<version 0.50>,
+The included adapter may change in future. As of S<version 0.51>,
 the default adapter uses L<LWP> directly. Versions earlier
 S<than 0.21> used L<REST::Client>.
 
