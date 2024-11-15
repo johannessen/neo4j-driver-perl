@@ -12,7 +12,7 @@ that are deprecated, but still working for completeness' sake,
 briefly explains the reason for their deprecation, and suggests
 alternatives where possible.
 
-The intention is that most deprecated features will be removed with
+The intention is that all deprecated features will be removed with
 the next major update to L<Neo4j::Driver>, likely in December 2024.
 
 =head1 Neo4j::Driver
