@@ -25,7 +25,7 @@ use if $no_warnings = $ENV{AUTHOR_TESTING} ? 1 : 0, 'Test::Warnings';
 use Neo4j::Driver;
 use Neo4j_Test::MockHTTP;
 
-plan tests => 8 + 1 + $no_warnings;
+plan tests => 9 + 1 + $no_warnings;
 
 my $transaction = $driver->session->begin_transaction;
 
@@ -84,6 +84,18 @@ END
 	lives_and { ok @notifications = $r->notifications; } 'get notifications';
 	# NB: the server is a bit unreliable in providing notifications; if there are problems with this test, restarting the server usually helps
 	}
+};
+
+
+subtest 'empty query' => sub {
+	plan skip_all => '(no empty queries allowed in Bolt)' if $Neo4j_Test::bolt;
+	plan tests => 2;
+	
+	# The result does have stats, but the driver currently doesn't make them available.
+	throws_ok { $s->run()->summary } qr/missing stats/i, 'missing statement - summary';
+	
+	# The result also has no field names
+	throws_ok { $s->run('')->_column_keys } qr/missing columns/i, 'result missing columns';
 };
 
 

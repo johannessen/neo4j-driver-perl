@@ -49,7 +49,7 @@ sub new {
 		$uri->userinfo( $auth->{principal} . ':' . $auth->{credentials} );
 	}
 	
-	my $net_module = $driver->config('net_module') || 'Neo4j::Bolt';
+	my $net_module = $driver->{config}->{net_module} || 'Neo4j::Bolt';
 	if ($net_module eq 'Neo4j::Bolt') {
 		croak "Protocol scheme 'bolt' is not supported (Neo4j::Bolt not installed)\n"
 			. "Neo4j::Driver will support 'bolt' URLs if the Neo4j::Bolt module is installed.\n"
@@ -75,7 +75,7 @@ sub new {
 		uri => $uri,
 		result_module => $net_module->can('result_handlers') ? ($net_module->result_handlers)[0] : $RESULT_MODULE,
 		server_info => $driver->{server_info},
-		cypher_types => $driver->config('cypher_types'),
+		cypher_types => $driver->{config}->{cypher_types},
 		active_tx => 0,
 	}, $class;
 }

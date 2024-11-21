@@ -1,5 +1,12 @@
 Revision history for Neo4j::Driver
 
+1.00  2024-11-21  (TRIAL RELEASE)
+
+ - Disallow all deprecated features.
+
+    - For a complete list, see:
+      https://metacpan.org/release/AJNN/Neo4j-Driver-0.52/view/lib/Neo4j/Driver/Deprecations.pod
+
 0.52  2024-11-21
 
  - Minor documentation updates.

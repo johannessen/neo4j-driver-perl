@@ -11,7 +11,6 @@ package Neo4j::Driver::Type::DateTime;
 
 
 use parent 'Neo4j::Types::DateTime';
-use parent 'Neo4j::Driver::Type::Temporal';
 
 
 sub _parse {

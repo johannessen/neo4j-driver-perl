@@ -94,16 +94,14 @@ subtest 'config illegal args' => sub {
 
 
 subtest 'config/session sequence' => sub {
-	plan tests => 8;
+	plan tests => 7;
 	lives_ok { $d = 0; $d = Neo4j::Driver->new->plugin(Neo4j_Test::MockHTTP->new) } 'new mock driver';
 	lives_ok { $d->basic_auth(user => 'pw') } 'basic_auth before session';
 	lives_ok { $d->config(auth => undef) } 'config before session';
 	lives_ok { $d->session(database => 'dummy') } 'first session';
-	lives_ok { $w = ''; $w = warning {
+	throws_ok {
 		$d->basic_auth(user => 'pw');
-	}} 'basic_auth after session lives';
-	like $w, qr/\bDeprecated sequence\b.*\bsession\b/i, 'basic_auth after session deprecated'
-		or diag 'got warning(s): ', explain $w;
+	} qr/\bUnsupported sequence\b.*\bbasic_auth\b/i, 'basic_auth after session';
 	throws_ok {
 		$d->config(auth => undef);
 	} qr/\bUnsupported sequence\b.*\bsession\b/i, 'config after session';

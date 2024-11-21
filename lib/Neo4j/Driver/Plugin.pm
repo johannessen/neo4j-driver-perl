@@ -205,9 +205,6 @@ to provide additional arguments. Because subroutine signatures
 perform strict checks of the number of arguments, they are not
 recommended for event handlers.
 
-This method used to be named C<add_event_handler()>.
-There is a compatibility alias, but its use is deprecated.
-
 =item trigger
 
  $events->trigger( 'event_name', @parameters );
@@ -233,9 +230,6 @@ ignored. This will likely change in a future version of the driver.
 Calling this method in list context is discouraged, because doing
 so might be treated specially by a future version of the driver.
 Use C<scalar> to be safe.
-
-This method used to be named C<trigger_event()>.
-There is a compatibility alias, but its use is deprecated.
 
 =back
 

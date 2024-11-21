@@ -110,14 +110,9 @@ lives_and { ok $s = new_session('Local::Bolt') } 'driver';
 
 
 subtest 'run empty' => sub {
-	plan tests => 5;
+	plan tests => 2;
 	lives_and { ok $r = $s->run('') } 'empty lives';
 	lives_and { is $r->size(), 0 } 'empty no rows';
-	my ($w, @a) = ('', 0);
-	lives_ok { $w = warning { @a = $s->run('') }; } 'empty list run';
-	is_deeply [@a], [], 'empty list';
-	like $w, qr/\brun\b.* in list context\b.* deprecated\b/i, 'result as list deprecated'
-		or diag 'got warning(s): ', explain $w;
 };
 
 
@@ -197,10 +192,9 @@ subtest 'bolt error' => sub {
 	lives_and { ok $f = new_session('Local::Bolt::Failure') } 'new failure';
 	throws_ok { $f->run('dummy') } qr/Bolt error -22: Statement evaluation failed/i, 'run failure';
 	dies_ok { $f->begin_transaction } 'no begin';
-	throws_ok {
-		no warnings 'deprecated';
+	dies_ok {
 		$f->run([['A'],['B']]);
-	} qr/\bmultiple statements\b/i, 'no multiple';
+	} 'no multiple';
 	throws_ok { new_session('Local::Bolt::CxnFailure') } qr/Bolt error -13: all wrong/i, 'new cxn failure';
 };
 

@@ -17,7 +17,6 @@ use Neo4j::Driver::Type::Node;
 use Neo4j::Driver::Type::Relationship;
 use Neo4j::Driver::Type::Path;
 use Neo4j::Driver::Type::Point;
-use Neo4j::Driver::Type::Temporal;
 
 
 my %NEO4J_DEFAULT_PORT = (
@@ -28,15 +27,10 @@ my %NEO4J_DEFAULT_PORT = (
 
 my %OPTIONS = (
 	auth => 'auth',
-	ca_file => 'tls_ca',
-	cypher_filter => 'cypher_filter',
 	cypher_params => 'cypher_params_v2',
-	cypher_types => 'cypher_types',
 	encrypted => 'tls',
-	jolt => 'jolt',
 	concurrent_tx => 'concurrent_tx',
 	max_transaction_retry_time => 'max_transaction_retry_time',
-	net_module => 'net_module',
 	timeout => 'timeout',
 	tls => 'tls',
 	tls_ca => 'tls_ca',
@@ -58,7 +52,7 @@ my %DEFAULTS = (
 sub new {
 	my ($class, $config, @extra) = @_;
 	
-	my $self = bless { config => { %DEFAULTS }, die_on_error => 1 }, $class;
+	my $self = bless { config => { %DEFAULTS } }, $class;
 	$self->{plugins} = Neo4j::Driver::Events->new;
 	
 	croak __PACKAGE__ . "->new() with multiple arguments unsupported" if @extra;
@@ -119,7 +113,7 @@ sub _fix_neo4j_uri {
 sub basic_auth {
 	my ($self, $username, $password) = @_;
 	
-	warnings::warnif deprecated => "Deprecated sequence: call basic_auth() before session()" if $self->{server_info};
+	croak "Unsupported sequence: call basic_auth() before session()" if $self->{server_info};
 	
 	$self->{config}->{auth} = {
 		scheme => 'basic',
@@ -164,11 +158,6 @@ sub session {
 		warnings::warnif deprecated => sprintf "Internal API %s->{%s} may be unavailable in Neo4j::Driver 1.00", __PACKAGE__, $_ for grep { $self->{$_} } @OPTIONS{ sort keys %OPTIONS };
 	}
 	
-	$self->{plugins}->{die_on_error} = $self->{die_on_error};
-	warnings::warnif deprecated => __PACKAGE__ . "->{die_on_error} is deprecated" unless $self->{die_on_error};
-	warnings::warnif deprecated => __PACKAGE__ . "->{http_timeout} is deprecated; use config()" if defined $self->{http_timeout};
-	$self->{config}->{timeout} //= $self->{http_timeout};
-	
 	@options = %{$options[0]} if @options == 1 && ref $options[0] eq 'HASH';
 	my %options = $self->_parse_options('session', ['database'], @options);
 	
@@ -185,18 +174,9 @@ sub _parse_options {
 	croak "Odd number of elements in $context options hash" if @options & 1;
 	my %options = @options;
 	
-	warnings::warnif deprecated => "Config option ca_file is deprecated; use trust_ca" if $options{ca_file};
-	warnings::warnif deprecated => "Config option cypher_types is deprecated" if $options{cypher_types};
 	if ($options{cypher_params}) {
 		croak "Unimplemented cypher params filter '$options{cypher_params}'" if $options{cypher_params} !~ m<^\x02|v2$>;
 	}
-	elsif ($options{cypher_filter}) {
-		warnings::warnif deprecated => "Config option cypher_filter is deprecated; use cypher_params";
-		croak "Unimplemented cypher filter '$options{cypher_filter}'" if $options{cypher_filter} ne 'params';
-		$options{cypher_params} = v2;
-	}
-	warnings::warnif deprecated => "Config option jolt is deprecated: Jolt is now enabled by default" if defined $options{jolt};
-	warnings::warnif deprecated => "Config option net_module is deprecated; use plug-in interface" if defined $options{net_module};
 	
 	my @unsupported = ();
 	foreach my $key (keys %options) {
@@ -210,18 +190,12 @@ sub _parse_options {
 
 sub plugin {
 	# uncoverable pod (experimental feature)
-	my ($self, $package, @extra) = @_;
+	my ($self, $plugin, @extra) = @_;
 	
 	croak "plugin() with more than one argument is unsupported" if @extra;
 	croak "Unsupported sequence: call plugin() before session()" if $self->{server_info};
-	$self->{plugins}->_register_plugin($package);
+	$self->{plugins}->_register_plugin($plugin);
 	return $self;
-}
-
-
-sub close {
-	# uncoverable pod (see Deprecations.pod)
-	warnings::warnif deprecated => __PACKAGE__ . "->close() is deprecated";
 }
 
 
@@ -314,13 +288,6 @@ install L<LWP::Protocol::https> separately to enable HTTPS.
 
 The protocol is automatically chosen based on the URI scheme.
 See L<Neo4j::Driver::Config/"uri"> for details.
-
-B<This is the last release in the 0.x branch of Neo4j::Driver.>
-
-See L<Neo4j::Driver::Deprecations> for features set to be removed
-with the next major update.
-Version 0.x of Neo4j::Driver has been targeting S<Perl v5.10>
-and later.
 
 =head1 METHODS
 

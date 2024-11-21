@@ -30,7 +30,6 @@ sub new {
 		mode => $mode,
 		unused => 1,  # for HTTP only
 		closed => 0,
-		return_graph => 0,
 		return_stats => 1,
 		error_handler => sub { $events->trigger(error => shift) },
 	};
@@ -44,14 +43,12 @@ sub run {
 	
 	croak 'Transaction already closed' unless $self->is_open;
 	
-	warnings::warnif deprecated => __PACKAGE__ . "->{return_graph} is deprecated" if $self->{return_graph};
+	croak sprintf 'The %s->{return_graph} feature was removed', __PACKAGE__ if $self->{return_graph};
 	
 	my @statements;
 	if (ref $query eq 'ARRAY') {
-		warnings::warnif deprecated => "run() with multiple statements is deprecated";
-		foreach my $args (@$query) {
-			push @statements, $self->_prepare(@$args);
-		}
+		croak 'Call run() with a single query statement only';
+		# Consider using the private internal method _run_multiple() if you really have to
 	}
 	elsif ($query) {
 		@statements = ( $self->_prepare($query, @parameters) );
@@ -62,12 +59,8 @@ sub run {
 	
 	my @results = $self->{net}->_run($self, @statements);
 	
-	if (scalar @statements <= 1) {
-		my $result = $results[0] // Neo4j::Driver::Result->new;
-		warnings::warnif deprecated => "run() in list context is deprecated" if wantarray;
-		return wantarray ? $result->list : $result;
-	}
-	return wantarray ? @results : \@results;
+	my $result = $results[0] // Neo4j::Driver::Result->new;
+	return $result;
 }
 
 
@@ -144,10 +137,7 @@ sub _run_autocommit {
 	};
 	$self->{net}->{active_tx} = 0;
 	
-	return $results unless wantarray;
-	warnings::warnif deprecated => "run() in list context is deprecated";
-	return $results->list if ref $query ne 'ARRAY';
-	return @$results;
+	return $results;
 }
 
 
@@ -203,7 +193,6 @@ use Carp qw(croak);
 
 # use 'rest' in place of broken 'meta', see neo4j #12306
 my $RESULT_DATA_CONTENTS = ['row', 'rest'];
-my $RESULT_DATA_CONTENTS_GRAPH = ['row', 'rest', 'graph'];
 
 
 sub _run_multiple {
@@ -227,7 +216,6 @@ sub _prepare {
 	
 	my $json = { statement => '' . $cypher };
 	$json->{resultDataContents} = $RESULT_DATA_CONTENTS;
-	$json->{resultDataContents} = $RESULT_DATA_CONTENTS_GRAPH if $self->{return_graph};
 	$json->{includeStats} = \1 if $self->{return_stats};
 	$json->{parameters} = $parameters if %$parameters;
 	

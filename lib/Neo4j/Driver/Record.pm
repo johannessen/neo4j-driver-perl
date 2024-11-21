@@ -55,28 +55,6 @@ sub get {
 }
 
 
-# The various JSON modules for Perl tend to represent a boolean false value
-# using a blessed scalar overloaded to evaluate to false in Perl expressions.
-# This almost always works perfectly fine. However, some tests might not expect
-# a non-truthy value to be blessed, which can result in wrong interpretation of
-# query results. The get_bool method was meant to ensure boolean results would
-# evaluate correctly in such cases. Given that such cases are rare and that no
-# specific examples for such cases are currently known, this method now seems
-# superfluous.
-sub get_bool {
-	# uncoverable pod (see Deprecations.pod)
-	my ($self, $field) = @_;
-	warnings::warnif deprecated => __PACKAGE__ . "->get_bool is deprecated";
-	
-	my $value = $self->get($field);
-	no if $^V ge v5.36, 'warnings', 'experimental::builtin';
-	return undef if ! $value && $^V ge v5.36 && builtin::is_bool $value;
-	return $value if ! is_bool $value;
-	return $value if !! $value;
-	return undef;  ##no critic (ProhibitExplicitReturnUndef)
-}
-
-
 sub data {
 	my ($self) = @_;
 	
@@ -93,15 +71,6 @@ sub summary {
 	
 	$self->{_summary} //= Neo4j::Driver::ResultSummary->new;
 	return $self->{_summary}->_init;
-}
-
-
-sub stats {
-	# uncoverable pod (see Deprecations.pod)
-	my ($self) = @_;
-	warnings::warnif deprecated => __PACKAGE__ . "->stats is deprecated; use summary instead";
-	
-	return $self->{_summary} ? $self->{_summary}->counters : {};
 }
 
 

@@ -11,7 +11,6 @@ package Neo4j::Driver::Type::Duration;
 
 
 use parent 'Neo4j::Types::Duration';
-use parent 'Neo4j::Driver::Type::Temporal';
 
 
 sub _parse {

@@ -63,22 +63,6 @@ sub new {
 }
 
 
-sub protocol {
-	# uncoverable pod (see Deprecations.pod)
-	my ($self) = @_;
-	warnings::warnif deprecated => __PACKAGE__ . "->protocol() is deprecated";
-	return $self->{response}->protocol // 'HTTP';
-}
-
-
-sub agent {
-	# uncoverable pod (see Deprecations.pod)
-	my ($self) = @_;
-	warnings::warnif deprecated => __PACKAGE__ . "->agent() is deprecated; call ua() instead";
-	return $self->{agent};
-}
-
-
 sub ua { shift->{agent} }
 
 sub uri { shift->{uri_base} }

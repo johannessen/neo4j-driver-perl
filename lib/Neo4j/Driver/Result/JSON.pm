@@ -145,6 +145,7 @@ sub _init_record {
 	
 	$record->{column_keys} = $self->{columns};
 	$self->_deep_bless( $record->{row}, $record->{meta}, $record->{rest} );
+	$record->{meta} = 'The Neo4j::Driver::Record->{meta} feature was removed';
 	return bless $record, 'Neo4j::Driver::Record';
 }
 

@@ -33,16 +33,6 @@ sub protocol_version {
 }
 
 
-sub protocol {
-	# uncoverable pod (see Deprecations.pod)
-	my ($self) = @_;
-	warnings::warnif deprecated => __PACKAGE__ . "->protocol() is deprecated; use protocol_version() instead";
-	my $bolt_version = $self->{protocol};
-	return "Bolt/$bolt_version" if $bolt_version;
-	return defined $bolt_version ? "Bolt" : "HTTP";
-}
-
-
 # discover default database on Neo4j >= 4 using the given driver config
 sub _default_database {
 	my ($self, $driver) = @_;

@@ -69,28 +69,8 @@ sub id {
 # https://github.com/neo4j/neo4j/blob/0c092b70cc/community/cypher/runtime-util/src/main/java/org/neo4j/cypher/operations/CypherFunctions.java#L771-L802
 
 
-sub deleted {
-	# uncoverable pod
-	my ($self) = @_;
-	
-	warnings::warnif deprecated => __PACKAGE__ . "->deleted() is deprecated";
-	return $$self->{_meta}->{deleted};
-}
-
-
 sub _hash {
-	my ($self) = @_;
-	
-	warnings::warnif deprecated => "Direct hash access is deprecated; use " . __PACKAGE__ . "->properties()";
-	return $$self;
-}
-
-
-# for experimental Cypher type system customisation only
-sub _private {
-	my ($self) = @_;
-	
-	return $$self;
+	croak 'Use properties() to access Neo4j node properties';
 }
 
 

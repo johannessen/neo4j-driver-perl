@@ -51,11 +51,8 @@ subtest 'static' => sub {
 
 
 subtest 'agent' => sub {
-	plan tests => 9;
-	my $w;
-	lives_ok { $w = ''; $w = warning { my $p = $m->agent() }; } 'agent lives';
-	like $w, qr/\bagent\b.*\bdeprecated\b/i, 'agent deprecated'
-		or diag 'got warning(s): ', explain $w;
+	plan tests => 8;
+	dies_ok { $m->agent() } 'agent renamed to ua';
 	lives_ok { $ua = 0; $ua = $m->ua() } 'ua';
 	isa_ok $ua, 'LWP::UserAgent', 'ua type';
 	lives_and { ok $ua->default_header('X-Stream') } 'X-Stream';
@@ -132,7 +129,7 @@ subtest 'response' => sub {
 	lives_and { is $m->http_header->{status}, '200' } 'status';
 	lives_and { ok $m->http_header->{success} } 'success';
 	lives_and { is $m->http_reason(), 'OK' } 'reason';
-	lives_and { my $p; warning { $p = $m->protocol() }; is $p, 'HTTP/1.1' } 'protocol';  # deprecated
+	dies_ok { $m->protocol() } 'protocol removed';
 };
 
 
@@ -146,7 +143,7 @@ subtest 'response error' => sub {
 	lives_and { is $m->http_header->{status}, '300' } 'status error';
 	lives_and { ok ! $m->http_header->{success} } 'no success';
 	lives_and { is $m->http_reason(), '' } 'reason no default';
-	lives_and { my $p; warning { $p = $m->protocol() }; is $p, 'HTTP' } 'protocol no version';  # deprecated
+	dies_ok { $m->protocol() } 'protocol removed';
 	$m->{response} = HTTP::Response->new;
 	SKIP: { skip "(HTTP::Status too old)", 2 if $HTTP::Headers::VERSION lt '6.12';
 		lives_and { is $m->http_header->{status}, '' } 'status empty';

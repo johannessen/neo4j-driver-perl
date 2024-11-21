@@ -39,29 +39,8 @@ sub elements {
 }
 
 
-sub path {
-	# uncoverable pod (see Deprecations.pod)
-	my ($self) = @_;
-	
-	warnings::warnif deprecated => __PACKAGE__ . "->path() is deprecated; use elements()";
-	return [ @{$self->{path}} ];
-}
-
-
 sub _array {
-	my ($self) = @_;
-	
-	warnings::warnif deprecated => "Direct array access is deprecated; use " . __PACKAGE__ . "->elements()";
-	return $self->{path};
-}
-
-
-# for experimental Cypher type system customisation only
-sub _private {
-	my ($self) = @_;
-	
-	$self->{private} //= {};
-	return $self->{private};
+	croak 'Use elements() to access Neo4j path elements';
 }
 
 

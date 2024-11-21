@@ -13,6 +13,8 @@ package Neo4j::Driver::Type::Relationship;
 use parent 'Neo4j::Types::Relationship';
 use overload '%{}' => \&_hash, fallback => 1;
 
+use Carp ();
+
 
 sub get {
 	my ($self, $property) = @_;
@@ -100,28 +102,8 @@ sub id {
 }
 
 
-sub deleted {
-	# uncoverable pod
-	my ($self) = @_;
-	
-	warnings::warnif deprecated => __PACKAGE__ . "->deleted() is deprecated";
-	return $$self->{_meta}->{deleted};
-}
-
-
 sub _hash {
-	my ($self) = @_;
-	
-	warnings::warnif deprecated => "Direct hash access is deprecated; use " . __PACKAGE__ . "->properties()";
-	return $$self;
-}
-
-
-# for experimental Cypher type system customisation only
-sub _private {
-	my ($self) = @_;
-	
-	return $$self;
+	Carp::croak 'Use properties() to access Neo4j relationship properties';
 }
 
 

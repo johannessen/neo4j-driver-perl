@@ -132,12 +132,6 @@ sub execute_write {
 }
 
 
-sub close {
-	# uncoverable pod (see Deprecations.pod)
-	warnings::warnif deprecated => __PACKAGE__ . "->close() is deprecated";
-}
-
-
 sub server {
 	my ($self) = @_;
 	

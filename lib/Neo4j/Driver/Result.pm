@@ -7,8 +7,6 @@ package Neo4j::Driver::Result;
 # ABSTRACT: Result of running a Cypher statement (a stream of records)
 
 
-use parent 'Neo4j::Driver::StatementResult';
-
 use Carp qw(croak);
 
 use Neo4j::Driver::Record;
@@ -152,24 +150,6 @@ sub has_next {
 }
 
 
-sub attached {
-	# uncoverable pod (see Deprecations.pod)
-	my ($self) = @_;
-	
-	warnings::warnif deprecated => __PACKAGE__ . "->attached is deprecated";
-	return $self->{attached};
-}
-
-
-sub detach {
-	# uncoverable pod (see Deprecations.pod)
-	my ($self) = @_;
-	
-	warnings::warnif deprecated => __PACKAGE__ . "->detach is deprecated";
-	return $self->_fill_buffer;
-}
-
-
 sub consume {
 	my ($self) = @_;
 	
@@ -186,16 +166,6 @@ sub summary {
 	$self->{summary} //= Neo4j::Driver::ResultSummary->new( $self->{result}, $self->{notifications}, $self->{statement}, $self->{server_info} );
 	
 	return $self->{summary}->_init;
-}
-
-
-sub stats {
-	# uncoverable pod (see Deprecations.pod)
-	my ($self) = @_;
-	warnings::warnif deprecated => __PACKAGE__ . "->stats is deprecated; use summary instead";
-	
-	$self->_fill_buffer;
-	return $self->{result}->{stats} ? $self->summary->counters : {};
 }
 
 

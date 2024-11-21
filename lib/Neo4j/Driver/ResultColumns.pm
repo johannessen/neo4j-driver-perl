@@ -69,14 +69,7 @@ sub key {
 
 
 sub list {
-	my ($self) = @_;
-	warnings::warnif deprecated => "Neo4j::Driver::Record->{column_keys} is deprecated";
-	
-	# returns the unordered list of keys
-	# (prior to version 0.1701, the list was returned in the original order)
-	my @list = grep { length && $_ ne $self->{$_} } keys %$self;
-	push @list, keys %{$self->{''}} if exists $self->{''};
-	return @list;
+	croak 'The Neo4j::Driver::Record->{column_keys} feature was removed';
 }
 
 
