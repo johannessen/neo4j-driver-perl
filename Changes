@@ -1,8 +1,9 @@
 Revision history for Neo4j::Driver
 
-1.0051  2024-11-23  (TRIAL RELEASE)
+1.0052  2024-11-23  (TRIAL RELEASE)
 
  - Deprecate config options tls/tls_ca in favour of encrypted/trust_ca
+ - Deprecate ServerInfo->version() in favour of agent()
 
 1.00  2024-11-21  (TRIAL RELEASE)
 

@@ -42,7 +42,7 @@ subtest 'database selection (HTTP)' => sub {
 	my ($version, $db);
 	# no database option (or undefined)
 	lives_ok { $s = 0; $s = $driver->session( database => undef ); } 'default lives';
-	($version) = $s->server->version =~ m(Neo4j/([0-9]+)\.)i;
+	($version) = $s->server->agent =~ m(Neo4j/([0-9]+)\.)i;
 	ok defined $version, 'version number';
 	if ($version >= 4) {
 		# this test assumes that the default database is always named neo4j

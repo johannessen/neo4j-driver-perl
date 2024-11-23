@@ -59,7 +59,7 @@ END
 };
 
 
-eval { $ver = '??'; $ver = $s->server->version; };
+eval { $ver = '??'; $ver = $s->server->agent; };
 
 
 subtest 'Property types: spatial type semantics' => sub {
