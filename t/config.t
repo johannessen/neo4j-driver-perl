@@ -20,7 +20,7 @@ use Try::Tiny;
 
 my ($d, $r, $w);
 
-plan tests => 17 + $no_warnings;
+plan tests => 18 + $no_warnings;
 
 
 my $default_scheme = 'neo4j';
@@ -296,7 +296,7 @@ subtest 'uris with path/query' => sub {
 
 
 subtest 'tls' => sub {
-	plan tests => 9;
+	plan tests => 7;
 	my $ca_file = '8aA6EPsGYE7sbB7bLWiu.';  # doesn't exist
 	lives_ok { $d = Neo4j::Driver->new('https://test/')->config(trust_ca => $ca_file); } 'create https with CA file';
 	is $d->config('trust_ca'), $ca_file, 'trust_ca';
@@ -312,8 +312,26 @@ subtest 'tls' => sub {
 	throws_ok {
 		Neo4j::Driver->new('http://test/')->config(encrypted => 1)->session;
 	} qr/\bHTTP does not support encrypted communication\b/i, 'no encrypted http';
-	lives_and { is(Neo4j::Driver->new->config(tls => 4)->config('encrypted'), 4) } 'config tls';
-	lives_and { is(Neo4j::Driver->new->config(tls_ca => $ca_file)->config('trust_ca'), $ca_file) } 'config tls_ca';
+};
+
+
+subtest 'tls deprecated' => sub {
+	plan tests => 6 + 4;
+	my $ca_file = '/dev/null';
+	my ($d1, $d2);
+	lives_ok { $d1 = Neo4j::Driver->new(); } 'new driver tls';
+	lives_ok { $d2 = Neo4j::Driver->new(); } 'new driver tls_ca';
+	lives_ok { $w = ''; $w = warning { $d1->config(tls => 7) }; } 'set config tls';
+	like $w, qr/\btls is deprecated\b/i, 'tls deprecated'
+		or diag 'got warning(s): ', explain $w;
+	lives_ok { $w = ''; $w = warning { $d2->config(tls_ca => $ca_file) }; } 'set config tls_ca';
+	like $w, qr/\btls_ca is deprecated\b/i, 'tls_ca deprecated'
+		or diag 'got warning(s): ', explain $w;
+	no warnings 'deprecated';  # there may or may not be warnings for the getters
+	lives_and { is $d1->config('tls'), 7; } 'get tls';
+	lives_and { is $d1->config('encrypted'), 7; } 'get tls encrypted';
+	lives_and { is $d2->config('tls_ca'), $ca_file; } 'get tls_ca';
+	lives_and { is $d2->config('trust_ca'), $ca_file; } 'get tls_ca trust_ca';
 };
 
 

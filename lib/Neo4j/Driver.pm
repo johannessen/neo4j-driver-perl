@@ -28,13 +28,13 @@ my %NEO4J_DEFAULT_PORT = (
 my %OPTIONS = (
 	auth => 'auth',
 	cypher_params => 'cypher_params_v2',
-	encrypted => 'tls',
 	concurrent_tx => 'concurrent_tx',
+	encrypted => 'encrypted',
 	max_transaction_retry_time => 'max_transaction_retry_time',
 	timeout => 'timeout',
-	tls => 'tls',
-	tls_ca => 'tls_ca',
-	trust_ca => 'tls_ca',
+	tls => 'encrypted',
+	tls_ca => 'trust_ca',
+	trust_ca => 'trust_ca',
 	uri => 'uri',
 );
 
@@ -105,7 +105,7 @@ sub _fix_neo4j_uri {
 	croak "The concurrent_tx config option may only be used with http:/https: URIs" if $self->{config}->{concurrent_tx};
 	
 	my $uri = $self->{config}->{uri};
-	$uri->scheme( exists $INC{'Neo4j/Bolt.pm'} ? 'bolt' : $self->{config}->{tls} ? 'https' : 'http' );
+	$uri->scheme( exists $INC{'Neo4j/Bolt.pm'} ? 'bolt' : $self->{config}->{encrypted} ? 'https' : 'http' );
 	$uri->port( $NEO4J_DEFAULT_PORT{ $uri->scheme } ) if ! $uri->_port;
 }
 
@@ -173,6 +173,9 @@ sub _parse_options {
 	
 	croak "Odd number of elements in $context options hash" if @options & 1;
 	my %options = @options;
+	
+	warnings::warnif deprecated => "Config option tls is deprecated; use encrypted" if $options{tls};
+	warnings::warnif deprecated => "Config option tls_ca is deprecated; use trust_ca" if $options{tls_ca};
 	
 	if ($options{cypher_params}) {
 		croak "Unimplemented cypher params filter '$options{cypher_params}'" if $options{cypher_params} !~ m<^\x02|v2$>;

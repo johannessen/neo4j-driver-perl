@@ -96,7 +96,7 @@ sub new_session {
 	my $d = Neo4j::Driver->new('bolt:');
 	$d->{config}->{net_module} = shift;
 	$d->basic_auth(username => 'password');
-	$d->{config}->{tls} = shift if scalar @_;
+	$d->{config}->{encrypted} = shift if scalar @_;
 	$d->{config}->{auth} = shift if scalar @_;
 	return ( $d, $d->session(database => 'dummy') );
 }

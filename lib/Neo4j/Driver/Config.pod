@@ -126,8 +126,8 @@ This option is only useful for Bolt connections. For HTTP
 connections, the use of TLS encryption is governed by the chosen
 URI scheme (C<http> / C<https>).
 
-Before version 0.27, this option was named C<tls>. Use of the
-former name is now discouraged.
+Before version 0.27, this option was named C<tls>. That name has since
+been deprecated, matching a corresponding change in S<Neo4j 3.2>.
 
 =head2 max_transaction_retry_time
 
@@ -164,8 +164,8 @@ the certificates in this file (or by an intermediary).
 Self-signed certificates (such as those automatically provided by
 some Neo4j versions) should also work if their S<"CA bit"> is set.
 
-Before version 0.27, this option was named C<tls_ca>. Use of the
-former name is now discouraged.
+Before version 0.27, this option was named C<tls_ca>. That name has
+since been deprecated, as it didn't match Neo4j terminology.
 
 =head2 uri
 

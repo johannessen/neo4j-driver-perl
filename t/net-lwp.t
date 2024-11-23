@@ -212,13 +212,13 @@ subtest 'tls' => sub {
 	plan tests => 8;
 	my $config;
 	lives_ok {
-		$config = { uri => URI->new('https://e.net.test/'), tls => 1 };
+		$config = { uri => URI->new('https://e.net.test/'), encrypted => 1 };
 		$driver = Neo4j_Test::DriverConfig->new($config);
 		$m = Neo4j::Driver::Net::HTTP::LWP->new($driver);
 	} 'encrypted https';
 	lives_and { like $m->uri(), qr|^https://e|i } 'encrypted https uri';
 	lives_ok {
-		$config = { uri => URI->new('https://d.net.test/'), tls => undef };
+		$config = { uri => URI->new('https://d.net.test/'), encrypted => undef };
 		$driver = Neo4j_Test::DriverConfig->new($config);
 		$m = Neo4j::Driver::Net::HTTP::LWP->new($driver);
 	} 'https';
@@ -227,7 +227,7 @@ subtest 'tls' => sub {
 	SKIP: {
 		skip "(Mozilla::CA unavailable)", 4 unless $ca_file;
 		lives_ok {
-			$config = { uri => URI->new('https://c.net.test/'), tls_ca => $ca_file };
+			$config = { uri => URI->new('https://c.net.test/'), trust_ca => $ca_file };
 			$driver = Neo4j_Test::DriverConfig->new($config);
 			$m = Neo4j::Driver::Net::HTTP::LWP->new($driver);
 		} 'https ca_file lives';
@@ -242,14 +242,14 @@ subtest 'tls config errors' => sub {
 	plan tests => 2;
 	my $config;
 	throws_ok {
-		$config = { uri => $base, tls => 1 };
+		$config = { uri => $base, encrypted => 1 };
 		$driver = Neo4j_Test::DriverConfig->new($config);
 		Neo4j::Driver::Net::HTTP::LWP->new($driver);
 	} qr/\bHTTP does not support encrypted communication\b/i, 'no encrypted http';
 	SKIP: {
 		skip "(LWP::Protocol::https unavailable)", 1 unless eval 'require LWP::Protocol::https; 1';
 		throws_ok {
-			$config = { uri => URI->new('https://net.test/'), tls => 0 };
+			$config = { uri => URI->new('https://net.test/'), encrypted => 0 };
 			$driver = Neo4j_Test::DriverConfig->new($config);
 			Neo4j::Driver::Net::HTTP::LWP->new($driver);
 		} qr/\bHTTPS does not support unencrypted communication\b/i, 'no unencrypted https';
@@ -265,9 +265,7 @@ package Neo4j_Test::DriverConfig;
 sub config {
 	my ($driver, $option) = @_;
 	my %aliases = (
-		encrypted => 'tls',
 		timeout => 'http_timeout',
-		trust_ca => 'tls_ca',
 	);
 	return $driver->{$aliases{$option}} if $aliases{$option};
 	return $driver->{$option};
