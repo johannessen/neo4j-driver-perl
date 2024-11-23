@@ -312,7 +312,7 @@ stream.
 The list is internally buffered by this class. Calling this method
 multiple times returns the buffered list.
 
-This method returns an array reference if called in scalar context.
+In scalar context, returns an array reference (discouraged in new code).
 
 =head2 peek
 
