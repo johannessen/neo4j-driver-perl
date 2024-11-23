@@ -1,6 +1,6 @@
 Revision history for Neo4j::Driver
 
-1.0055  2024-11-24  (TRIAL RELEASE)
+1.0056  2024-11-24  (TRIAL RELEASE)
 
  - Deprecate config options tls/tls_ca in favour of encrypted/trust_ca
  - Deprecate ServerInfo->version() in favour of agent()
@@ -8,6 +8,7 @@ Revision history for Neo4j::Driver
  - Deprecate Result->summary() in favour of consume()
  - Raise recommended version of Perl to v5.20 or later. (GH #18)
  - Raise minimum required version of Perl to v5.12.
+ - Raise minimum required version of Neo4j::Types to 2.00.
 
 1.00  2024-11-21  (TRIAL RELEASE)
 

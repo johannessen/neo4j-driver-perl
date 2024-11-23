@@ -8,7 +8,7 @@ package Neo4j::Driver::Type::Bytes;
 # For documentation, see Neo4j::Driver::Types.
 
 
-use parent -norequire, 'Neo4j::Types::ByteArray';
+use parent 'Neo4j::Types::ByteArray';
 use overload '""' => \&_overload_stringify, fallback => 1;
 
 use Carp ();
@@ -22,10 +22,6 @@ sub as_string {
 sub _overload_stringify {
 	Carp::croak 'Use as_string() to access byte array values';
 }
-
-
-package # Compatibility with Neo4j::Types v1
-        Neo4j::Types::ByteArray;
 
 
 1;

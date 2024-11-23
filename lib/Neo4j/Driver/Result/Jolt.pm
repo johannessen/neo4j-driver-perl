@@ -296,11 +296,9 @@ sub _deep_bless {
 			return bless $data, $cypher_types->{temporal};
 		}
 		if ($value =~ m/^-?P/) {
-			require Neo4j::Driver::Type::Duration;
 			bless $data, 'Neo4j::Driver::Type::Duration';
 		}
 		else {
-			require Neo4j::Driver::Type::DateTime;
 			bless $data, 'Neo4j::Driver::Type::DateTime';
 		}
 		return $data;
@@ -308,7 +306,6 @@ sub _deep_bless {
 	if ($sigil eq '#') {  # Bytes
 		$value =~ tr/ //d;  # spaces were allowed in the Jolt draft, but aren't actually implemented in Neo4j 4.2's jolt.JoltModule
 		$value = pack 'H*', $value;  # see neo4j#12660
-		require Neo4j::Driver::Type::Bytes;
 		return bless \$value, 'Neo4j::Driver::Type::Bytes';
 	}
 	

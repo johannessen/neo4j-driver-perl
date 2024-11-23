@@ -210,8 +210,6 @@ sub _deep_bless {
 		if ($type eq 'Neo4j::Driver::Type::Temporal') {
 			$type = 'Neo4j::Driver::Type::DateTime';
 			$type = 'Neo4j::Driver::Type::Duration' if $data =~ m/^-?P/;
-			require Neo4j::Driver::Type::DateTime;
-			require Neo4j::Driver::Type::Duration;
 		}
 		$data = bless { data => $data, type => $meta->{type} }, $type;
 		$cypher_types->{init}->($data) if $cypher_types->{init};

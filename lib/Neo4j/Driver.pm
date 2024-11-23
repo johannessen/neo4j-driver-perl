@@ -11,6 +11,9 @@ use URI 1.25;
 use Neo4j::Driver::Events;
 use Neo4j::Driver::Session;
 
+use Neo4j::Driver::Type::Bytes;
+use Neo4j::Driver::Type::DateTime;
+use Neo4j::Driver::Type::Duration;
 use Neo4j::Driver::Type::Node;
 use Neo4j::Driver::Type::Relationship;
 use Neo4j::Driver::Type::Path;

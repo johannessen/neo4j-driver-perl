@@ -105,11 +105,4 @@ sub _hash {
 }
 
 
-# As long as we remain compatible with Neo4j::Types 1.00,
-# we need to register the warning category explicitly.
-package # private
-        Neo4j::Types;
-use warnings::register;
-
-
 1;

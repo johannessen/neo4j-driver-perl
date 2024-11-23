@@ -79,7 +79,6 @@ END
 
 subtest 'Property types: temporal type semantics' => sub {
 	plan skip_all => "(temporal types unavailable in server $ver)" if $ver lt 'Neo4j/3.4';
-	plan skip_all => "(temporal types unavailable in old Neo4j::Types)" unless eval { Neo4j::Types->VERSION('2.00') };
 	plan skip_all => "(temporal types unavailable in old Neo4j::Bolt)" if $Neo4j_Test::bolt && ! eval { require Neo4j::Bolt; Neo4j::Bolt->VERSION('0.4500') };
 	plan tests => 4;
 	$q = <<END;
