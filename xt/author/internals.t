@@ -81,9 +81,10 @@ subtest 'disable HTTP summary counters' => sub {
 	my $tx = $driver->session->begin_transaction;
 	$tx->{return_stats} = 0;
 	dies_ok {
-		$tx->run('RETURN "no stats 0"')->summary->counters->labels_added;
+		$tx->run('RETURN "no stats 0"')->consume->counters->labels_added;
 	} 'no stats requested - summary';
 	dies_ok {
+		no warnings 'deprecated';
 		$tx->run('RETURN "no stats 1"')->single->summary->counters->labels_added;
 	} 'no stats requested - single summary';
 	lives_ok {
@@ -99,7 +100,7 @@ subtest 'summary: plan/notification internals' => sub {
 	$q = <<END;
 EXPLAIN MATCH (n), (m) RETURN n, m
 END
-	lives_ok { $r = $s->run($q)->summary; } 'get summary with plan';
+	lives_ok { $r = $s->run($q)->consume; } 'get summary with plan';
 	my ($plan, @notifications);
 	lives_ok { $plan = $r->plan;  1; } 'get plan';
 	SKIP: {
@@ -120,8 +121,8 @@ subtest 'summary: repeated invocation' => sub {
 	# to the exact same object.
 	plan tests => 3;
 	lives_ok { $r = $s->run('RETURN 42') } 'get result';
-	lives_and { is $r->summary, $r->summary } 'summary identical';
-	lives_and { is $r->summary->counters, $r->summary->counters } 'counters identical';
+	lives_and { is $r->consume, $r->consume } 'summary identical';
+	lives_and { is $r->consume->counters, $r->consume->counters } 'counters identical';
 };
 
 

@@ -67,7 +67,9 @@ sub data {
 
 
 sub summary {
+	# uncoverable pod (see consume)
 	my ($self) = @_;
+	warnings::warnif deprecated => "summary() in Neo4j::Driver::Record is deprecated; use consume() in Neo4j::Driver::Result instead";
 	
 	$self->{_summary} //= Neo4j::Driver::ResultSummary->new;
 	return $self->{_summary}->_init;

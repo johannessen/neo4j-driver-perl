@@ -118,7 +118,7 @@ subtest 'die_on_error = 0' => sub {
 	is $Neo4j_Test::Plugin::NoDieOnError::error->as_string, 'bar', 'error text';
 	
 	# Surviving errors yields results with no summary
-	ok ! eval { $r->summary->server }, 'error missing summary';
+	ok ! eval { $r->consume->server }, 'error missing summary';
 };
 
 

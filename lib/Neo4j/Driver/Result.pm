@@ -61,7 +61,7 @@ sub single {
 	
 	croak 'There is not exactly one result record' if $self->size != 1;
 	my ($record) = $self->list;
-	$record->{_summary} = $self->summary if $self->{result}->{stats};
+	$record->{_summary} = $self->_summary if $self->{result}->{stats};
 	return $record;
 }
 
@@ -154,11 +154,18 @@ sub consume {
 	my ($self) = @_;
 	
 	1 while $self->fetch;  # Exhaust the result stream
-	return $self->summary;
+	return $self->_summary;
 }
 
 
 sub summary {
+	# uncoverable pod (see consume)
+	warnings::warnif deprecated => "summary() in Neo4j::Driver::Result is deprecated; use consume() instead";
+	&_summary;
+}
+
+
+sub _summary {
 	my ($self) = @_;
 	
 	$self->_fill_buffer;
@@ -256,6 +263,11 @@ result stream, discarding any remaining records. If you want to
 access records I<after> retrieving the summary, you should use
 C<list()> before C<consume()> to buffer all records into memory.
 
+Before driver S<version 0.44>, the summary was retrieved with
+the C<summary()> method, which didn't exhaust the result.
+That method has since been deprecated, matching a corresponding
+change in S<Neo4j 4.0>.
+
 =head2 fetch
 
  while ($record = $result->fetch) {
@@ -330,23 +342,6 @@ Return the count of records that calling C<list()> would yield.
 
 Calling this method exhausts the result stream and buffers all records
 for use by C<list()>.
-
-=head2 summary
-
- $result_summary = $result->summary;
-
-Return a L<Neo4j::Driver::ResultSummary> object. Calling this method
-detaches the result stream, but does I<not> exhaust it.
-
-This method is discouraged. It may be deprecated and removed in
-a future version. Please use C<consume()> instead.
-
-As a special case, L<Record|Neo4j::Driver::Record>s returned by the
-C<single> method also have a C<summary> method that works the same
-way.
-
- $record = $transaction->run('...')->single;
- $result_summary = $record->summary;
 
 =head1 SEE ALSO
 
