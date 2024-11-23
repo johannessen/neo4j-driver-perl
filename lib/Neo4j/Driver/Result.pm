@@ -1,7 +1,5 @@
-use 5.010;
-use strict;
+use v5.12;
 use warnings;
-use utf8;
 
 package Neo4j::Driver::Result;
 # ABSTRACT: Result of running a Cypher query (a stream of records)

@@ -1,5 +1,4 @@
-use 5.010;
-use strict;
+use v5.12;
 use warnings;
 
 package Neo4j::Driver::Plugin;

@@ -1,7 +1,5 @@
-use 5.010;
-use strict;
+use v5.12;
 use warnings;
-use utf8;
 
 package Neo4j::Driver::Session;
 # ABSTRACT: Context of work for database interactions
@@ -190,6 +188,8 @@ sub new_tx {
 1;
 
 __END__
+
+=encoding utf8
 
 =head1 SYNOPSIS
 
