@@ -4,7 +4,7 @@ use warnings;
 use utf8;
 
 package Neo4j::Driver::SummaryCounters;
-# ABSTRACT: Statement statistics
+# ABSTRACT: Query statistics
 
 
 sub new {
@@ -71,7 +71,7 @@ __END__
 
 =head1 DESCRIPTION
 
-Contains counters for various operations that a statement triggered.
+Contains counters for various operations that a query triggered.
 
 To obtain summary counters, call
 L<Neo4j::Driver::ResultSummary/"counters">.

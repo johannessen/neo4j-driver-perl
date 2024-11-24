@@ -311,11 +311,11 @@ Logical container for an atomic unit of work that is either committed
 in its entirety or is rolled back on failure. A driver Transaction
 object corresponds to a server transaction.
 
-Statements may be run lazily. Most of the time, you will not notice
-this, because the driver automatically waits for statements to
+Queries may be run lazily. Most of the time, you will not notice
+this, because the driver automatically waits for queries to
 complete at specific points to fulfill its contracts. If you require
-execution of a statement to have completed (S<e. g.> to check for
-statement errors), you need to call any method in the
+execution of a query to have completed (S<e. g.> to check for
+query errors), you need to call any method in the
 L<Result|Neo4j::Driver::Result>, such as C<has_next()>.
 
 Neo4j drivers allow the creation of different kinds of transactions.
@@ -359,9 +359,9 @@ used.
  $result = $transaction->run($query);
  $result = $transaction->run($query, \%params);
 
-Run a statement and return the L<Result|Neo4j::Driver::Result>.
+Run a query and return the L<Result|Neo4j::Driver::Result>.
 This method takes an optional set of parameters that will be injected
-into the Cypher statement by Neo4j. Using parameters is highly
+into the Cypher query by Neo4j. Using parameters is highly
 encouraged: It helps avoid dangerous Cypher injection attacks and
 improves database performance as Neo4j can re-use query plans more
 often.
@@ -414,7 +414,7 @@ This driver always reports all errors using C<die()>. Error messages
 received from the Neo4j server are passed on as-is.
 See L<Neo4j::Driver::Plugin/"error"> for accessing error details.
 
-Statement errors occur when the statement is executed on the server.
+Query errors can occur when the query is executed on the server.
 This may not necessarily have happened by the time C<run()> returns.
 If you use L<C<try>/C<catch>|Feature::Compat::Try> to handle errors,
 make sure you actually I<use> the L<Result|Neo4j::Driver::Result>

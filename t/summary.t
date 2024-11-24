@@ -18,7 +18,7 @@ my $s = $driver->session;  # only for autocommit transactions
 
 use Test::More 0.94;
 use Test::Exception;
-use Test::Warnings 0.010 qw(:no_end_test);
+use Test::Warnings 0.010 qw(warning :no_end_test);
 my $no_warnings;
 use if $no_warnings = $ENV{AUTHOR_TESTING} ? 1 : 0, 'Test::Warnings';
 
@@ -59,7 +59,7 @@ subtest 'result stream interface: summary' => sub {
 
 
 subtest 'ResultSummary' => sub {
-	plan tests => 11;
+	plan tests => 13;
 	$q = <<END;
 RETURN {fortytwo}
 END
@@ -68,8 +68,12 @@ END
 	isa_ok $r, 'Neo4j::Driver::ResultSummary', 'ResultSummary';
 	isa_ok $r->server, 'Neo4j::Driver::ServerInfo', 'ServerInfo';
 	my $param_start = $s->{cypher_params_v2} ? '\$' : '\{';
-	lives_and { like $r->statement->{text}, qr/RETURN ${param_start}fortytwo\b/ } 'statement text';
-	lives_and { is_deeply $r->statement->{parameters}, {@params} } 'statement params';
+	lives_and { like $r->query->{text}, qr/RETURN ${param_start}fortytwo\b/ } 'query text';
+	lives_and { is_deeply $r->query->{parameters}, {@params} } 'query params';
+	my $w;
+	lives_and { $w = warning { is_deeply $r->statement, $r->query } } 'statement';
+	like $w, qr/\bstatement\b.* deprecated\b/i, 'statement deprecated'
+		or diag 'got warning(s): ', explain $w;
 	lives_and { ok ! $r->plan; } 'no plan';
 	lives_and { is_deeply [$r->notifications], []; } 'no notification';
 #	diag explain $r;
@@ -78,7 +82,7 @@ END
 EXPLAIN MATCH (n), (m) RETURN n, m
 END
 	lives_ok { $r = $s->run($q)->consume; } 'get summary with plan';
-	lives_and { is_deeply $r->statement->{parameters}, {} } 'no params';
+	lives_and { is_deeply $r->query->{parameters}, {} } 'no params';
 	my ($plan, @notifications);
 	lives_and { ok $plan = $r->plan; } 'get plan';
 	lives_and { ok @notifications = $r->notifications; } 'get notifications';

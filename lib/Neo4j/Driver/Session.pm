@@ -315,7 +315,7 @@ which is always safe to do.
 
  $result = $session->run('...');
 
-Run and commit a statement using an auto-commit transaction and return
+Run and commit a query using an auto-commit transaction and return
 the L<Result|Neo4j::Driver::Result>.
 
 This method is semantically exactly equivalent to the following code,

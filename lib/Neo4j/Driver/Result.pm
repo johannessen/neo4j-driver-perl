@@ -4,7 +4,7 @@ use warnings;
 use utf8;
 
 package Neo4j::Driver::Result;
-# ABSTRACT: Result of running a Cypher statement (a stream of records)
+# ABSTRACT: Result of running a Cypher query (a stream of records)
 
 
 use Carp qw(croak);
@@ -215,7 +215,7 @@ __END__
 
 =head1 DESCRIPTION
 
-The result of running a Cypher statement, conceptually a stream of
+The result of running a Cypher query, conceptually a stream of
 records. The result stream can be navigated through using C<fetch()>
 to consume records one at a time, or be consumed in its entirety
 using C<list()> to get an array of all records.
@@ -226,7 +226,7 @@ buffered locally in the driver. Once I<all> data on the result stream
 has been retrieved from the server and buffered locally, the stream
 becomes B<detached.>
 
-Result streams are valid until the next statement
+Result streams are valid until the next query
 is run on the same session or (if the result was retrieved within
 an explicit transaction) until the transaction is closed, whichever
 comes first. When a result stream has become invalid I<before> it
@@ -240,8 +240,6 @@ This behaviour is subject to change in future versions and
 shouldn't be relied upon.
 
 To obtain a query result, call L<Neo4j::Driver::Transaction/"run">.
-
-Until version 0.18, this module was named C<StatementResult>.
 
 =head1 METHODS
 

@@ -93,7 +93,7 @@ __END__
 =head1 DESCRIPTION
 
 Container for Cypher result values. Records are returned from Cypher
-statement execution, contained within a Result. A record is
+query execution, contained within a Result. A record is
 a form of ordered map and, as such, contained values can be accessed
 by either positional index or textual key.
 

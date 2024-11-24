@@ -4,7 +4,7 @@ use warnings;
 use utf8;
 
 package Neo4j::Driver::ResultSummary;
-# ABSTRACT: Details about the result of running a statement
+# ABSTRACT: Details about the result of running a query
 
 
 use Carp qw(croak);
@@ -60,6 +60,13 @@ sub plan {
 
 
 sub statement {
+	# uncoverable pod (see query)
+	warnings::warnif deprecated => "statement() in Neo4j::Driver::ResultSummary is deprecated; use query() instead";
+	&query;
+}
+
+
+sub query {
 	my ($self) = @_;
 	
 	return {
@@ -101,7 +108,7 @@ __END__
 
 =head1 DESCRIPTION
 
-The result summary of running a statement. The result summary can be
+The result summary of running a query. The result summary can be
 used to investigate details about the result, like the Neo4j server
 version, how many and which kinds of updates have been executed, and
 query plan information if available.
@@ -117,7 +124,7 @@ L<Neo4j::Driver::ResultSummary> implements the following methods.
  $summary_counters = $summary->counters;
 
 Returns the L<SummaryCounters|Neo4j::Driver::SummaryCounters> with
-statistics counts for operations the statement triggered.
+statistics counts for operations the query triggered.
 
 =head2 notifications
 
@@ -126,10 +133,10 @@ statistics counts for operations the statement triggered.
  print Dumper @notifications;
 
 A list of notifications that might arise when executing the
-statement. Notifications can be warnings about problematic statements
+query. Notifications can be warnings about problematic queries
 or other valuable information that can be presented in a client.
 Unlike failures or errors, notifications do not affect the execution
-of a statement.
+of a query.
 In scalar context, return the number of notifications.
 
 This driver only supports notifications over HTTP.
@@ -139,10 +146,21 @@ This driver only supports notifications over HTTP.
  use Data::Dumper;
  print Dumper $summary->plan;
 
-This describes how the database will execute your statement.
-Available if this is the summary of a Cypher C<EXPLAIN> statement.
+This describes how the database will execute your query.
+Available if this is the summary of a Cypher C<EXPLAIN> query.
 
 This driver only supports execution plans over HTTP.
+
+=head2 query
+
+ $query  = $summary->query->{text};
+ $params = $summary->query->{parameters};
+
+The executed query and query parameters this summary is for.
+
+Before driver S<version 1.00>, the query was retrieved with the
+C<statement()> method. That method has since been deprecated,
+matching a corresponding change in S<Neo4j 4.0>.
 
 =head2 server
 
@@ -151,13 +169,6 @@ This driver only supports execution plans over HTTP.
 
 The L<ServerInfo|Neo4j::Driver::ServerInfo>, consisting of
 the host, port, protocol and Neo4j version.
-
-=head2 statement
-
- $query  = $summary->statement->{text};
- $params = $summary->statement->{parameters};
-
-The statement and parameters this summary is for.
 
 =head1 SEE ALSO
 
