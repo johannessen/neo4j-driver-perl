@@ -86,7 +86,8 @@ This driver allows concurrent transactions on HTTP when the
 C<concurrent_tx> config option is enabled. Trying to enable this
 option on a Bolt connection is a fatal error.
 
-Using concurrent transactions will make your code less portable.
+Using concurrent transactions in new code is discouraged,
+because it will make your code less portable.
 This feature exists primarily to support legacy applications.
 
 =head2 cypher_params

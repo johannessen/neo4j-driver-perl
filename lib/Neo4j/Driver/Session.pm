@@ -254,10 +254,6 @@ queries will never be retried. See L</"run"> below.
 Only one open transaction per session at a time is supported. To
 work with multiple concurrent transactions, simply use more than
 one session.
-On C<http:> and C<https:> connections, you can
-alternatively enable concurrent transactions within the same
-session through a config option; see
-L<Neo4j::Driver::Config/"concurrent_tx"> for details.
 
 To create a new session, call L<Neo4j::Driver/"session">.
 
