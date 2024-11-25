@@ -1,6 +1,6 @@
 Revision history for Neo4j::Driver
 
-1.0059  2024-11-25  (TRIAL RELEASE)
+1.0060  2024-11-25  (TRIAL RELEASE)
 
  - Deprecate config options tls/tls_ca in favour of encrypted/trust_ca
  - Deprecate ServerInfo->version() in favour of agent()
@@ -14,6 +14,8 @@ Revision history for Neo4j::Driver
    interpreted as config options.
  - Remove the use of operator overloading for the access of byte array values
    by string interpolation of the object itself.
+ - Internal change: Remove NO_NEO4J_CORE_BOOLS environment variable as a way
+   to influence the boolean values to be used for values returned from Neo4j.
 
 1.00  2024-11-21  (TRIAL RELEASE)
 

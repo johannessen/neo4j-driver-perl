@@ -176,7 +176,7 @@ sub _summary {
 
 sub _bool_values {
 	no if $^V ge v5.36, 'warnings', 'experimental::builtin';
-	if ( $^V ge v5.36 && ! $ENV{NO_NEO4J_CORE_BOOLS} ) {
+	if ( $^V ge v5.36 ) {
 		return builtin::false(), builtin::true();
 	}
 	else {
