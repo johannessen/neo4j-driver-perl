@@ -17,13 +17,12 @@ version 2.0 and newer (including Neo4j 5).
 Other Neo4j editions are only supported as far as practical,
 but issue reports and patches about them are welcome.
 
-See [TODO.pod][] for known issues and planned improvements.
+See [TODO.pod](TODO.pod) for known issues and planned improvements.
 
 [Perl]: https://www.perl.org/
 [Neo4j Driver API]: https://neo4j.com/docs/driver-manual/4.1/session-api/
 [Neo4j community edition]: https://neo4j.com/download-center/#community
 [Neo4j::Bolt]: https://metacpan.org/release/Neo4j-Bolt
-[TODO.pod]: https://github.com/johannessen/neo4j-driver-perl/blob/master/TODO.pod
 
 
 Installation
