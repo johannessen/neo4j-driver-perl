@@ -135,7 +135,7 @@ sub config {
 		# get config option
 		my $key = $options[0];
 		croak sprintf "Unsupported config option: %s", $key if none {$_ eq $key} keys %OPTIONS;
-		return $self->{$OPTIONS{$key}} // $self->{config}->{$OPTIONS{$key}};
+		return $self->{config}->{$OPTIONS{$key}};
 	}
 	
 	croak "Unsupported sequence: call config() before session()" if $self->{server_info};
@@ -153,10 +153,6 @@ sub config {
 
 sub session {
 	my ($self, @options) = @_;
-	
-	if (! $self->{server_info}) {
-		warnings::warnif deprecated => sprintf "Internal API %s->{%s} may be unavailable in Neo4j::Driver 1.00", __PACKAGE__, $_ for grep { $self->{$_} } @OPTIONS{ sort keys %OPTIONS };
-	}
 	
 	@options = %{$options[0]} if @options == 1 && ref $options[0] eq 'HASH';
 	my %options = $self->_parse_options('session', ['database'], @options);
