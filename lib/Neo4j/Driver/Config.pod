@@ -206,8 +206,7 @@ if no port is specified, the protocol's default port will be used.
 Note that there sometimes are issues with IPv4/IPv6 dual-stack
 hostnames such as C<localhost> when using HTTP. The connection may
 appear to "hang". Literal IP addresses like C<127.0.0.1> are not
-affected. See L<Neo4j::Driver::Net/"IPv6 / dual-stack support">
-for further discussion.
+affected.
 
 =head1 SEE ALSO
 

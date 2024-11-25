@@ -17,7 +17,11 @@ version 2.0 and newer (including Neo4j 5).
 Other Neo4j editions are only supported as far as practical,
 but issue reports and patches about them are welcome.
 
-See [TODO.pod](TODO.pod) for known issues and planned improvements.
+Further information:
+
+* [Neo4j::Driver on CPAN](https://metacpan.org/dist/Neo4j-Driver) – documentation and release tarballs
+* [Neo4j::Driver::Net](lib/Neo4j/Driver/Net.pod) – notes on network controllers
+* [TODO.pod](TODO.pod) – known issues and planned improvements
 
 [Perl]: https://www.perl.org/
 [Neo4j Driver API]: https://neo4j.com/docs/driver-manual/4.1/session-api/

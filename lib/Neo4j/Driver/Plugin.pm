@@ -295,7 +295,9 @@ of Cypher queries or custom object-graph mapping.
 The driver primarily uses HTTP network adapters by first calling
 the C<request()> method, which initiates a request on the network,
 and then calling other methods to obtain information about the
-response. See L<Neo4j::Driver::Net> for more information.
+response. See
+L<Neo4j::Driver::Net|https://github.com/johannessen/neo4j-driver-perl/blob/0.52/lib/Neo4j/Driver/Net.pod>
+for more information.
 
  $adapter->request('GET', '/', undef, 'application/json');
  $status  = $adapter->http_header->{status};

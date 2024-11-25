@@ -218,6 +218,6 @@ Meant to facilitate reuse.
 
 =head1 SEE ALSO
 
-L<Neo4j::Driver::Net>
+L<Neo4j::Driver::Plugin>
 
 =cut

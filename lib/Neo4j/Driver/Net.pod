@@ -3,11 +3,11 @@
 
 =encoding utf8
 
-=head1 OVERVIEW
+=head1 NAME
 
-I<This document will be removed from the CPAN distribution with the
-next major update. It will continue to be available
-L<on GitHub|https://github.com/johannessen/neo4j-driver-perl/blob/0.52/lib/Neo4j/Driver/Net.pod>.>
+Neo4j::Driver::Net - Explains the design of the networking modules
+
+=head1 OVERVIEW
 
 Each L<Neo4j::Driver::Session> has exactly one network controller
 instance that is used by the session and all of its transactions
@@ -243,7 +243,7 @@ triggering this issue:
 
 The C<net_module> config option available in driver S<versions 0.21>
 S<through 0.30> has been replaced with an experimental plug-in API;
-see L<Neo4j::Driver::Deprecations/"Custom networking modules">.
+see L<"Custom networking modules" in Neo4j::Driver::Deprecations|https://metacpan.org/release/AJNN/Neo4j-Driver-0.52/view/lib/Neo4j/Driver/Deprecations.pod#Custom-networking-modules>.
 
 =head2 Custom Bolt networking modules
 
@@ -305,5 +305,15 @@ L<Neo4j::Driver::Plugin/"Result handler API">.
 
 This section has been replaced by
 L<Neo4j::Driver::Plugin/"USE OF INTERNAL APIS">.
+
+=head1 AUTHOR
+
+Arne Johannessen (L<AJNN|https://metacpan.org/author/AJNN>)
+
+=head1 LICENSE
+
+This is free software; you can redistribute it and/or modify it under
+the terms of the Artistic License 2.0 or (at your option) the same terms
+as the Perl 5 programming language system itself.
 
 =cut
