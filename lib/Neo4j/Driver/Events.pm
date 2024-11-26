@@ -89,9 +89,9 @@ sub trigger {
 sub _register_plugin {
 	my ($self, $plugin) = @_;
 	
-	croak "Package $plugin is not a Neo4j::Driver::Plugin" unless $plugin->DOES('Neo4j::Driver::Plugin');
-	croak "Method register() not implemented by package $plugin (is this a Neo4j::Driver plug-in?)" unless $plugin->can('register');
-	croak "Neo4j::Driver->plugin() requires a plug-in object" if ref $plugin eq '';
+	croak sprintf "Package %s is not a Neo4j::Driver::Plugin", $plugin unless $plugin->DOES('Neo4j::Driver::Plugin');
+	croak sprintf "Method register() not implemented by package %s (is this a Neo4j::Driver plug-in?)", $plugin unless $plugin->can('register');
+	croak "Neo4j::Driver->plugin() requires a plug-in object" unless ref $plugin ne '';
 	
 	$plugin->register($self);
 }

@@ -6,6 +6,7 @@ package Neo4j::Driver;
 
 
 use Carp qw(croak);
+use List::Util 1.33 qw(none);
 
 use URI 1.25;
 use Neo4j::Driver::Events;
@@ -74,12 +75,10 @@ sub _check_uri {
 		$uri =~ s|^|neo4j:| if $uri =~ m{^//};
 		$uri = URI->new($uri);
 		
-		if ( ! $uri->scheme ) {
-			croak sprintf "Failed to parse URI '%s'", $uri;
-		}
-		if ( $uri->scheme !~ m/^https?$|^bolt$|^neo4j$/ ) {
-			croak sprintf "URI scheme '%s' unsupported; use 'bolt', 'http', or 'neo4j'", $uri->scheme // "";
-		}
+		$uri->scheme or croak
+			sprintf "Failed to parse URI '%s'", $uri;
+		$uri->scheme =~ m/^(?:https?|bolt|neo4j)$/i or croak
+			sprintf "URI scheme '%s' unsupported; use 'bolt', 'http', or 'neo4j'", $uri->scheme;
 		
 		if (my $userinfo = $uri->userinfo(undef)) {
 			my @userinfo = $userinfo =~ m/^([^:]*):?(.*)/;
@@ -135,7 +134,7 @@ sub config {
 	if (@options < 2) {
 		# get config option
 		my $key = $options[0];
-		croak "Unsupported config option: $key" unless grep m/^$key$/, keys %OPTIONS;
+		croak sprintf "Unsupported config option: %s", $key if none {$_ eq $key} keys %OPTIONS;
 		return $self->{$OPTIONS{$key}} // $self->{config}->{$OPTIONS{$key}};
 	}
 	
@@ -172,21 +171,20 @@ sub session {
 sub _parse_options {
 	my (undef, $context, $supported, @options) = @_;
 	
-	croak "Odd number of elements in $context options hash" if @options & 1;
+	croak sprintf "Odd number of elements in %s options hash", $context if @options & 1;
 	my %options = @options;
 	
 	warnings::warnif deprecated => "Config option tls is deprecated; use encrypted" if $options{tls};
 	warnings::warnif deprecated => "Config option tls_ca is deprecated; use trust_ca" if $options{tls_ca};
 	
 	if ($options{cypher_params}) {
-		croak "Unimplemented cypher params filter '$options{cypher_params}'" if $options{cypher_params} !~ m<^\x02|v2$>;
+		$options{cypher_params} =~ m<^(?:\x02|v2)$> or croak
+			sprintf "Unimplemented cypher params filter '%s'", $options{cypher_params};
 	}
 	
-	my @unsupported = ();
-	foreach my $key (keys %options) {
-		push @unsupported, $key unless grep m/^$key$/, @$supported;
-	}
-	croak "Unsupported $context option: " . join ", ", sort @unsupported if @unsupported;
+	my @unsupported = grep { my $key = $_; none {$_ eq $key} @$supported } keys %options;
+	@unsupported and croak
+		sprintf "Unsupported %s option: %s", $context, join ", ", sort @unsupported;
 	
 	return %options;
 }

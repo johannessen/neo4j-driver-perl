@@ -33,7 +33,9 @@ sub get {
 	my ($self, $field) = @_;
 	
 	if ( ! defined $field ) {
-		warnings::warnif ambiguous => "Ambiguous get() on " . __PACKAGE__ . " with multiple fields" if @{$self->{row}} > 1;
+		warnings::warnif ambiguous =>
+			sprintf "Ambiguous get() on %s with multiple fields", __PACKAGE__
+			if @{$self->{row}} > 1;
 		return $self->{row}->[0];
 	}
 	
@@ -43,12 +45,14 @@ sub get {
 	return $self->{row}->[$unambiguous_key] if defined $unambiguous_key;
 	
 	if ( _looks_like_int $field ) {
-		croak "Field $field not present in query result" if $field < 0 || $field >= @{$self->{row}};
+		croak sprintf "Field %i not present in query result", $field
+			unless $field >= 0 && $field < @{$self->{row}};
 		return $self->{row}->[$field];
 	}
 	
 	my $key = $self->{column_keys}->key($field);
-	croak "Field '$field' not present in query result" if ! defined $key;
+	croak sprintf "Field '%s' not present in query result", $field
+		unless defined $key;
 	return $self->{row}->[$key];
 }
 

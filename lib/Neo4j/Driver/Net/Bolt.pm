@@ -21,7 +21,7 @@ use Neo4j::Error;
 
 my $RESULT_MODULE = 'Neo4j::Driver::Result::Bolt';
 
-our $verify_lib_version = 1;
+our $verify_version = 1;
 
 
 sub new {
@@ -38,12 +38,7 @@ sub new {
 	}
 	
 	my $net_module = $driver->{config}->{net_module} || 'Neo4j::Bolt';
-	if ($net_module eq 'Neo4j::Bolt') {
-		croak "Protocol scheme 'bolt' is not supported (Neo4j::Bolt not installed)\n"
-			. "Neo4j::Driver will support 'bolt' URLs if the Neo4j::Bolt module is installed.\n"
-			unless eval { require Neo4j::Bolt; 1 };
-		_verify_lib_version() if $verify_lib_version;
-	}
+	_verify_version() if $verify_version && $net_module eq 'Neo4j::Bolt';
 	
 	my $cxn;
 	if ($driver->config('encrypted')) {
@@ -79,20 +74,24 @@ sub new {
 #  0.4203  0.46  4.4
 #  0.20    0.17  3.4
 #  0.12     -    3.4  (system libneo4j-client)
-sub _verify_lib_version {
-	no warnings 'uninitialized';
-	
+sub _verify_version {
 	# Running this check once (for the first session) is enough.
-	$verify_lib_version = 0;
+	$verify_version = 0;
 	
-	my $bolt_version = Neo4j::Bolt->VERSION('0.4201');
-	return unless $bolt_version eq '0.4203';
-	my $client_version = eval { require Neo4j::Client; Neo4j::Client->VERSION };
-	return unless $client_version =~ m/^0\.5[012]$/;
-	
-	warnings::warnif misc => sprintf
-		"Installed Neo4j::Client version %s is defective (known-good versions are 0.46 and 0.54 or later; you may also need to reinstall Neo4j::Bolt)",
-		$client_version, "0.46", $bolt_version;
+	try {
+		require Neo4j::Bolt;
+		my $bolt_version = Neo4j::Bolt->VERSION('0.4201');
+		
+		return if $bolt_version ge '0.5000';
+		my $client_version = eval { Neo4j::Client->VERSION } // '';
+		$client_version =~ m/^0\.5[012]$/ and die
+			sprintf "Installed Neo4j::Client version %s is defective (known-good versions are 0.46 and 0.54 or later; you may also need to reinstall Neo4j::Bolt)\n", $client_version;
+	}
+	catch {
+		my $e = $_;
+		$e =~ s/\.?\s*$//;
+		croak sprintf "Protocol scheme 'bolt' is not supported (Neo4j::Bolt not installed).\nNeo4j::Driver will support 'bolt' URLs if the Neo4j::Bolt module is installed.\n%s", $e;
+	};
 }
 
 

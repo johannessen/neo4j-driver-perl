@@ -49,9 +49,11 @@ sub _default_database {
 		my $sys = $driver->session(database => 'system');
 		$database = $sys->run('SHOW DEFAULT DATABASE')->single->get('name');
 	};
-	croak $@ . "Session creation failed because the default "
-	         . "database of $self->{version} at $self->{uri} "
-	         . "could not be determined" unless defined $database;
+	unless (defined $database) {
+		croak sprintf
+			"%sSession creation failed because the default database of %s at %s could not be determined",
+			$@, $self->{version}, $self->{uri};
+	}
 	return $self->{default_database} = $database;
 }
 
