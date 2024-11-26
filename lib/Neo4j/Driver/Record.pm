@@ -50,7 +50,7 @@ sub get {
 		return $self->{row}->[$field];
 	}
 	
-	my $key = $self->{column_keys}->key($field);
+	my $key = $self->_field_index( $field );
 	croak sprintf "Field '%s' not present in query result", $field
 		unless defined $key;
 	return $self->{row}->[$key];
@@ -62,10 +62,67 @@ sub data {
 	
 	my %data = ();
 	foreach my $key (keys %{ $self->{column_keys} }) {
-		$data{$key} = $self->{row}->[ $self->{column_keys}->key($key) ];
+		$data{$key} = $self->{row}->[ $self->_field_index( $key ) ];
 	}
 	return \%data;
 }
+
+
+# Return the index of the given column in the result record array
+sub _field_index {
+	my ($self, $name) = @_;
+	
+	my $cache = $self->{column_keys};
+	return $cache->{$name} if length $name && exists $cache->{$name};
+	return $cache->{''}->{$name} if exists $cache->{''};
+	return undef;
+}
+
+
+# Parse the field names (result column keys) provided by the server and
+# return them as a hash ref for fast index lookups
+sub _field_names_cache {
+	my ($result) = @_;
+	
+	croak 'Result missing columns' unless $result && $result->{columns};
+	my $columns = $result->{columns};
+	my $cache = {};
+	for my $index (0 .. $#$columns) {
+		my $name = $columns->[$index];
+		
+		# Create lookup cache for both index and field name to the index.
+		# Move ambiguous index/name pairs to the '' sub-hash.
+		
+		if ( exists $cache->{$name} ) {
+			delete $cache->{$name};
+			$cache->{''}->{$name} = $index;
+		}
+		else {
+			$cache->{$name} = $index;
+		}
+		
+		if ( exists $cache->{$index} ) {
+			$cache->{''}->{$index} = delete $cache->{$index};
+		}
+		else {
+			$cache->{$index} = $index;
+		}
+	}
+	
+	return $cache;
+}
+
+# The field names (column keys / ex ResultColumns) are stored in a hash ref.
+# For each field, there are entries with keys for the name and the column index
+# in the result record array. The value is always the column index.
+# For example, for `RETURN 1 AS foo`, it would look like this:
+#   $cache = { 'foo' => 0, '0' => 0 };
+
+# Exceptionally, index/name collisions can occur (see record-ambiguous.t).
+# The field names lookup cache is limited to cases where no ambiguity exists.
+# Any field name which would also be a valid index is moved to a sub-hash
+# stored in the entry '' (empty string). Neo4j doesn't allow zero-length
+# field names, so '' itself is never ambiguous.
 
 
 sub summary {

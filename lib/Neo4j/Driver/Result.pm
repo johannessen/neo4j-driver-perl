@@ -8,7 +8,6 @@ package Neo4j::Driver::Result;
 use Carp qw(croak);
 
 use Neo4j::Driver::Record;
-use Neo4j::Driver::ResultColumns;
 use Neo4j::Driver::ResultSummary;
 
 
@@ -26,7 +25,7 @@ sub new {
 sub _column_keys {
 	my ($self) = @_;
 	
-	$self->{columns} = Neo4j::Driver::ResultColumns->new($self->{result}) unless $self->{columns};
+	$self->{columns} //= Neo4j::Driver::Record::_field_names_cache( $self->{result} );
 	return $self->{columns};
 }
 
@@ -74,7 +73,7 @@ sub _as_fully_buffered {
 	# buffered right away, avoiding the need to loop through _fetch_next().
 	# (also used in Bolt/Jolt testing, $gather_results 1)
 	$self->{buffer} = $self->{result}->{data};
-	$self->{columns} = Neo4j::Driver::ResultColumns->new($self->{result});
+	$self->{columns} = Neo4j::Driver::Record::_field_names_cache( $self->{result} );
 	$self->_init_record( $_ ) for @{ $self->{buffer} };
 	return $self;
 }
