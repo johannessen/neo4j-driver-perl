@@ -165,13 +165,6 @@ than just by offset are not supported
 (L<libneo4j-omni#5|https://github.com/majensen/libneo4j-omni/issues/5>).
 
 =item *
-With L<Neo4j::Bolt> version 0.01, the value of node or
-relationship properties named C<_end>, C<_node>, C<_labels>,
-C<_relationship>, C<_start>, or C<_type> may not be returned
-correctly. Note that support for all L<Neo4j::Bolt> versions
-earlier than 0.4201 will be phased out entirely soon.
-
-=item *
 The use of L<builtin::true|builtin/"true">,
 L<builtin::false|builtin/"false">, byte arrays, spatial values,
 and temporal values requires a recent enough L<Neo4j::Bolt>

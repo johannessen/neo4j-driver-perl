@@ -149,28 +149,6 @@ sub _deep_bless {
 		return $rel;
 	}
 	
-	# support for Neo4j::Bolt 0.01 data structures (to be phased out)
-	if (ref $data eq 'HASH' && defined $data->{_node}) {  # node
-		my $node = bless \$data, $cypher_types->{node};
-		$data->{_meta} = {
-			id => $data->{_node},
-			labels => $data->{_labels},
-		};
-		$cypher_types->{init}->($node) if $cypher_types->{init};
-		return $node;
-	}
-	if (ref $data eq 'HASH' && defined $data->{_relationship}) {  # relationship
-		my $rel = bless \$data, $cypher_types->{relationship};
-		$data->{_meta} = {
-			id => $data->{_relationship},
-			start => $data->{_start},
-			end => $data->{_end},
-			type => $data->{_type},
-		};
-		$cypher_types->{init}->($rel) if $cypher_types->{init};
-		return $rel;
-	}
-	
 	if (ref $data eq 'Neo4j::Bolt::Path') {  # path
 		my $path = bless { path => $data }, $cypher_types->{path};
 		foreach my $i ( 0 .. $#{$data} ) {

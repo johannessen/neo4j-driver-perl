@@ -1,5 +1,5 @@
 #!perl
-use strict;
+use v5.12;
 use warnings;
 use lib qw(./lib t/lib);
 
@@ -14,6 +14,7 @@ package Local::Bolt;
 sub new { bless [\(my $b = undef), @_], shift }
 sub connect { &new }
 sub connect_tls { &new }
+sub protocol_version { 0 }
 
 # Cxn
 sub connected { 1 }
@@ -29,7 +30,7 @@ my @row = (
 	( bless { id => 11 }, 'Neo4j::Bolt::Node' ),
 	( bless { id => 13 }, 'Neo4j::Bolt::Relationship' ),
 	{ _node => 0.01 },
-	{ _relationship => 0.01 },
+	( bless \(my $o = "\xff"), 'Neo4j::Bolt::Bytes' ),
 	( bless [undef], 'Neo4j::Bolt::Path' ),
 	[],
 	{ no => JSON::PP::false() },
@@ -53,9 +54,10 @@ use parent -norequire => 'Local::Bolt';
 sub success { 0 }
 sub failure { 1 }
 sub errnum { -22 }
+sub errmsg { "Statement evaluation failed" }
 sub server_errcode { "oops" }
 sub server_errmsg { "" }
-sub protocol_version { 0 }
+sub get_failure_details {}
 sub result_handlers { qw(Neo4j::Driver::Result::Bolt) }
 
 package Local::Bolt::CxnFailure;
@@ -79,8 +81,11 @@ sub client_errnum { shift->{client_errnum} // 0 }
 sub client_errmsg { shift->{client_errmsg} }
 sub errnum { shift->{errnum} // 0 }
 sub errmsg { shift->{errmsg} }
+sub get_failure_details {}
 sub reset_cxn { $_[0]->{$_} = $_[0]->{"reset_$_"} for qw( errnum errmsg ); }
 sub _bolt_error { &Neo4j::Driver::Net::Bolt::_bolt_error }
+
+package Neo4j::Bolt::Bytes { use parent 'Neo4j::Types::ByteArray' }
 
 package main;
 
@@ -117,7 +122,7 @@ subtest 'run empty' => sub {
 
 
 subtest 'deep_bless' => sub {
-	plan tests => 23;
+	plan tests => 20;
 	lives_and { ok $r = $s->run('dummy') } 'run';
 	lives_and { ok $v = $r->fetch } 'fetch';
 	lives_and { ok ! $r->has_next } 'no has_next';
@@ -128,10 +133,7 @@ subtest 'deep_bless' => sub {
 	isa_ok $v->get(1), 'Neo4j::Types::Relationship', 'rel blessed';
 	lives_and { is $v->get(1)->id(), 13 } 'rel';
 	lives_ok { $v->get(1)->get('prop') } 'rel prop';
-	isa_ok $v->get(2), 'Neo4j::Types::Node', 'old node blessed';
-	lives_and { is $v->get(2)->id(), 0.01 } 'old node';
-	isa_ok $v->get(3), 'Neo4j::Types::Relationship', 'old rel blessed';
-	lives_and { is $v->get(3)->id(), 0.01 } 'old rel';
+	isa_ok $v->get(3), 'Neo4j::Types::ByteArray', 'bytes blessed';
 	isa_ok $v->get(4), 'Neo4j::Types::Path', 'path blessed';
 	lives_and { is_deeply [$v->get(4)->relationships], [] } 'no path length';
 	is ref($v->get(5)), 'ARRAY', 'list';
@@ -266,7 +268,6 @@ subtest 'gather_results' => sub {
 
 
 subtest 'bolt live' => sub {
-	plan skip_all => "Perl version too old for Neo4j::Bolt" if $] < 5.012;
 	plan tests => 1;
 	throws_ok {
 		Neo4j::Driver->new('bolt://localhost:14')->session();

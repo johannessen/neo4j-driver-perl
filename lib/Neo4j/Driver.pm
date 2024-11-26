@@ -270,8 +270,8 @@ the recommended protocol. However, Perl support for it tends
 to lag behind after major updates to Neo4j.
 
 This driver supports Bolt, but doesn't bundle the necessary XS
-packages. You will need to install L<Neo4j::Bolt> separately
-to enable Bolt for this driver.
+packages. You will need to install S<L<Neo4j::Bolt> 0.4201> or
+later separately to enable Bolt for this driver.
 
 =item HTTP / HTTPS
 

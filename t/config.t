@@ -236,7 +236,7 @@ subtest 'neo4j uri scheme' => sub {
 		$d = Neo4j::Driver->new('neo4j://bb');
 		my $is_bolt;
 		try { $d->session }
-		catch { $is_bolt = m/\bconnect\b.*\bpackage\b.*\bNeo4j::Bolt\b/ };
+		catch { $is_bolt = m<\bNeo4j::Bolt\b.* at lib/Neo4j/Driver/Net/Bolt\.pm\b> };
 		ok $is_bolt && $d->{config}{uri} eq 'bolt://bb:7687';
 	} 'neo4j bolt uri default port';
 	lives_and {
@@ -245,7 +245,7 @@ subtest 'neo4j uri scheme' => sub {
 		$d = Neo4j::Driver->new('neo4j://bbp:80');
 		my $is_bolt;
 		try { $d->session }
-		catch { $is_bolt = m/\bconnect\b.*\bpackage\b.*\bNeo4j::Bolt\b/ };
+		catch { $is_bolt = m<\bNeo4j::Bolt\b.* at lib/Neo4j/Driver/Net/Bolt\.pm\b> };
 		ok $is_bolt && $d->{config}{uri} eq 'bolt://bbp:80';
 	} 'neo4j bolt uri explicit port';
 };

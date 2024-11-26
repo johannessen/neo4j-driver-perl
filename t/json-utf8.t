@@ -103,7 +103,7 @@ subtest 'read full property list' => sub {
 
 subtest 'no utf8' => sub {
 	plan tests => 3;
-	TODO: { local $TODO = 'no utf8 unsupported by Neo4j::Bolt 0.4201 (perlbolt#38)' if $Neo4j_Test::bolt;
+	TODO: { local $TODO = 'no utf8 unsupported by Neo4j::Bolt 0.4201 (perlbolt#38)' if $Neo4j_Test::bolt && ! eval { require Neo4j::Bolt; Neo4j::Bolt->VERSION('0.4202') };
 	no utf8;
 	my $smp = "😀";  # 0xf09f9880 = LATIN SMALL LETTER ETH + APPLICATION PROGRAM COMMAND + START OF STRING + PADDING CHARACTER (Latin-1)
 	lives_ok {

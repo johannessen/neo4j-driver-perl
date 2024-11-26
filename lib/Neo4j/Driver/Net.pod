@@ -126,8 +126,8 @@ on the behaviour of L<Neo4j::Bolt>.
 
 =head1 COMPATIBILITY
 
-L<Neo4j::Driver> S<version 0.52> is compatible with
-S<L<Neo4j::Bolt> 0.01> or later.
+L<Neo4j::Driver> S<version 1.00> is compatible with
+S<L<Neo4j::Bolt> 0.4201> or later.
 Note that some L<Neo4j::Bolt> and L<Neo4j::Client> versions are
 broken, or simply incompatible with each other. Recommended pairs
 of known-good module versions are as follows:

@@ -60,6 +60,7 @@ $mock_plugin->response_for('/db/dummy/tx/commit',   '' => \%empty_jolt);
 	package Local::Bolt;
 	sub new { bless \(my $b = undef), shift }
 	sub connect { &new }
+	sub protocol_version { 0 }
 	
 	# Cxn
 	sub connected { 1 }

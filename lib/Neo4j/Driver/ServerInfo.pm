@@ -109,10 +109,6 @@ where the major and minor version numbers both are integers.
 When the HTTP protocol is used instead of Bolt, this method
 returns an undefined value.
 
-If the Bolt protocol is used, but the version number is unknown,
-an empty string is returned. This situation shouldn't occur unless
-you use L<Neo4j::Bolt> S<version 0.20> or older.
-
 =head1 SEE ALSO
 
 =over

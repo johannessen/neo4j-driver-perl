@@ -19,16 +19,6 @@ use Neo4j::Driver::ServerInfo;
 use Neo4j::Error;
 
 
-# Neo4j::Bolt < 0.10 didn't report human-readable error messages
-# (perlbolt#24), so we re-create the most common ones here
-my %BOLT_ERROR = (
-	 61 => "Connection refused",
-	-13 => "Unknown host",
-	-14 => "Could not agree on a protocol version",
-	-15 => "Username or password is invalid",
-	-22 => "Statement evaluation failed",
-);
-
 my $RESULT_MODULE = 'Neo4j::Driver::Result::Bolt';
 
 our $verify_lib_version = 1;
@@ -95,13 +85,13 @@ sub _verify_lib_version {
 	# Running this check once (for the first session) is enough.
 	$verify_lib_version = 0;
 	
-	my $bolt_version = eval { Neo4j::Bolt->VERSION };
+	my $bolt_version = Neo4j::Bolt->VERSION('0.4201');
 	return unless $bolt_version eq '0.4203';
 	my $client_version = eval { require Neo4j::Client; Neo4j::Client->VERSION };
 	return unless $client_version =~ m/^0\.5[012]$/;
 	
 	warnings::warnif misc => sprintf
-		"Installed Neo4j::Client version %s is defective (downgrade to Neo4j::Client %s and reinstall Neo4j::Bolt %s, or use HTTP)",
+		"Installed Neo4j::Client version %s is defective (known-good versions are 0.46 and 0.54 or later; you may also need to reinstall Neo4j::Bolt)",
 		$client_version, "0.46", $bolt_version;
 }
 
@@ -118,18 +108,18 @@ sub _trigger_bolt_error {
 	$error = $error->append_new( Server => {
 		code => scalar $ref->server_errcode,
 		message => scalar $ref->server_errmsg,
-		raw => scalar try { $ref->get_failure_details },  # Neo4j::Bolt >= 0.41
+		raw => scalar $ref->get_failure_details,
 	}) if try { $ref->server_errcode || $ref->server_errmsg };
 	
 	$error = $error->append_new( Network => {
 		code => scalar $ref->client_errnum,
-		message => scalar $ref->client_errmsg // $BOLT_ERROR{$ref->client_errnum},
+		message => scalar $ref->client_errmsg,
 		as_string => $self->_bolt_error($ref),
 	}) if try { $ref->client_errnum || $ref->client_errmsg };
 	
 	$error = $error->append_new( Network => {
 		code => scalar $ref->errnum,
-		message => scalar $ref->errmsg // $BOLT_ERROR{$ref->errnum},
+		message => scalar $ref->errmsg,
 		as_string => $self->_bolt_error($ref),
 	}) if try { $ref->errnum || $ref->errmsg };
 	
@@ -137,13 +127,13 @@ sub _trigger_bolt_error {
 		my $cxn = $connection // $self->{connection};
 		$error = $error->append_new( Network => {
 			code => scalar $cxn->errnum,
-			message => scalar $cxn->errmsg // $BOLT_ERROR{$cxn->errnum},
+			message => scalar $cxn->errmsg,
 			as_string => $self->_bolt_error($cxn),
 		}) if try { $cxn->errnum || $cxn->errmsg } && $cxn != $ref;
 		$cxn->reset_cxn;
 		$error = $error->append_new( Internal => {  # perlbolt#51
 			code => scalar $cxn->errnum,
-			message => scalar $cxn->errmsg // $BOLT_ERROR{$cxn->errnum},
+			message => scalar $cxn->errmsg,
 			as_string => $self->_bolt_error($cxn),
 		}) if try { $cxn->errnum || $cxn->errmsg };
 	};
@@ -160,7 +150,6 @@ sub _bolt_error {
 	($errnum, $errmsg) = ($ref->errnum, $ref->errmsg) if $ref->can('errnum');
 	($errnum, $errmsg) = ($ref->client_errnum, $ref->client_errmsg) if $ref->can('client_errnum');
 	
-	$errmsg //= $BOLT_ERROR{$errnum};
 	return "Bolt error $errnum: $errmsg" if $errmsg;
 	return "Bolt error $errnum";
 }
@@ -173,7 +162,7 @@ sub _server {
 	return $self->{server_info} = Neo4j::Driver::ServerInfo->new({
 		uri => $self->{uri},
 		version => $cxn->server_id,
-		protocol => $cxn->can('protocol_version') ? $cxn->protocol_version : '',
+		protocol => $cxn->protocol_version,
 	});
 }
 
@@ -234,7 +223,6 @@ sub _new_tx {
 	$params->{mode} = lc substr $driver_tx->{mode}, 0, 1 if $driver_tx->{mode};
 	
 	my $transaction = "$self->{net_module}::Txn";
-	return unless $transaction->can('new');
 	return $transaction->new( $self->{connection}, $params, $self->{database} );
 }
 

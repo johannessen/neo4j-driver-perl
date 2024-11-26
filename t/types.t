@@ -64,7 +64,7 @@ eval { $ver = '??'; $ver = $s->server->agent; };
 
 subtest 'Property types: spatial type semantics' => sub {
 	plan skip_all => "(spatial types unavailable in server $ver)" if $ver lt 'Neo4j/3.4';
-	plan skip_all => "(spatial types unavailable in old Neo4j::Bolt)" if $Neo4j_Test::bolt && ! eval { require Neo4j::Bolt; Neo4j::Bolt->VERSION('0.4500') };
+	plan skip_all => "(spatial types unavailable in old Neo4j::Bolt)" if $Neo4j_Test::bolt && ! eval { require Neo4j::Bolt; Neo4j::Bolt->VERSION('0.5000') };
 	plan tests => 4;
 	$q = <<END;
 RETURN point({ x:3, y:0 })
@@ -79,7 +79,7 @@ END
 
 subtest 'Property types: temporal type semantics' => sub {
 	plan skip_all => "(temporal types unavailable in server $ver)" if $ver lt 'Neo4j/3.4';
-	plan skip_all => "(temporal types unavailable in old Neo4j::Bolt)" if $Neo4j_Test::bolt && ! eval { require Neo4j::Bolt; Neo4j::Bolt->VERSION('0.4500') };
+	plan skip_all => "(temporal types unavailable in old Neo4j::Bolt)" if $Neo4j_Test::bolt && ! eval { require Neo4j::Bolt; Neo4j::Bolt->VERSION('0.5000') };
 	plan tests => 4;
 	$q = <<END;
 RETURN
