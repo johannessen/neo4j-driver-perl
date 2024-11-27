@@ -197,11 +197,6 @@ Return the keys and values of this record as a hash reference.
 
 =item * L<Neo4j::Driver::Types>
 
-=item * Equivalent documentation for the official Neo4j drivers:
-L<Record (Java)|https://neo4j.com/docs/api/java-driver/5.26/org.neo4j.driver/org/neo4j/driver/Record.html>,
-L<Record (JavaScript)|https://neo4j.com/docs/api/javascript-driver/5.26/class/lib6/record.js~Record.html>,
-L<IRecord (.NET)|https://neo4j.com/docs/api/dotnet-driver/5.26/api/Neo4j.Driver.IRecord.html>
-
 =back
 
 =cut

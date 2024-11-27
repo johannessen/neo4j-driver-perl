@@ -121,11 +121,6 @@ returns an undefined value.
 =item * L<Neo4j::Driver::B<Session>>,
 L<Neo4j::Driver::B<ResultSummary>>
 
-=item * Equivalent documentation for the official Neo4j drivers:
-L<ServerInfo (Java)|https://neo4j.com/docs/api/java-driver/5.26/org.neo4j.driver/org/neo4j/driver/summary/ServerInfo.html>,
-L<IServerInfo (.NET)|https://neo4j.com/docs/api/dotnet-driver/5.26/api/Neo4j.Driver.IServerInfo.html>,
-L<ServerInfo (Python)|https://neo4j.com/docs/api/python-driver/5.26/api.html#serverinfo>
-
 =back
 
 =cut

@@ -385,18 +385,6 @@ Interacting with a Neo4j database:
 
 =back
 
-Official API documentation:
-
-=over
-
-=item * L<Neo4j Driver API Specification|https://github.com/neo4j/docs-bolt/blob/main/modules/ROOT/pages/driver-api/index.adoc>
-
-=item * L<Neo4j Drivers Manual|https://neo4j.com/docs/java-manual/5/>
-
-=item * L<Neo4j HTTP API Docs|https://neo4j.com/docs/http-api/5/>
-
-=back
-
 Other Perl modules for working with Neo4j:
 
 =over

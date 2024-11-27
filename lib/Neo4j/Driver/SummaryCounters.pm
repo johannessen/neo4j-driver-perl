@@ -102,9 +102,6 @@ attributes.
 
 =item * L<Neo4j::Driver>
 
-=item * Equivalent documentation for the official Neo4j drivers:
-L<SummaryCounters (Java)|https://neo4j.com/docs/api/java-driver/5.26/org.neo4j.driver/org/neo4j/driver/summary/SummaryCounters.html>
-
 =back
 
 =cut

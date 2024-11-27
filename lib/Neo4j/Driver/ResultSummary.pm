@@ -180,11 +180,6 @@ the host, port, protocol and Neo4j version.
 =item * L<Neo4j::Driver::B<ServerInfo>>,
 L<Neo4j::Driver::B<SummaryCounters>>
 
-=item * Equivalent documentation for the official Neo4j drivers:
-L<ResultSummary (Java)|https://neo4j.com/docs/api/java-driver/5.26/org.neo4j.driver/org/neo4j/driver/summary/ResultSummary.html>,
-L<ResultSummary (JavaScript)|https://neo4j.com/docs/api/javascript-driver/5.26/class/lib6/result-summary.js~ResultSummary.html>,
-L<IResultSummary (.NET)|https://neo4j.com/docs/api/dotnet-driver/5.26/api/Neo4j.Driver.IResultSummary.html>
-
 =back
 
 =cut

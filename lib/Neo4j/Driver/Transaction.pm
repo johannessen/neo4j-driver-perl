@@ -453,12 +453,6 @@ a defined state, you can roll back a failed transaction manually:
 
 =item * L<Neo4j::Driver::Types>
 
-=item * Equivalent documentation for the official Neo4j drivers:
-L<Transaction (Java)|https://neo4j.com/docs/api/java-driver/5.26/org.neo4j.driver/org/neo4j/driver/Transaction.html>,
-L<Transaction (JavaScript)|https://neo4j.com/docs/api/javascript-driver/5.26/class/lib6/transaction.js~Transaction.html>,
-L<ITransaction (.NET)|https://neo4j.com/docs/api/dotnet-driver/5.13/html/b64c7dfe-87e9-8b85-5a02-8ff03800b67b.htm>,
-L<Sessions & Transactions (Python)|https://neo4j.com/docs/api/python-driver/5.26/api.html#transaction>
-
 =back
 
 =cut

@@ -349,12 +349,6 @@ for use by C<list()>.
 =item * L<Neo4j::Driver::B<Record>>,
 L<Neo4j::Driver::B<ResultSummary>>
 
-=item * Equivalent documentation for the official Neo4j drivers:
-L<Result (Java)|https://neo4j.com/docs/api/java-driver/5.26/org.neo4j.driver/org/neo4j/driver/Result.html>,
-L<Result (Python)|https://neo4j.com/docs/api/python-driver/5.26/api.html#result>,
-L<Result (JavaScript)|https://neo4j.com/docs/api/javascript-driver/5.26/class/lib6/result.js~Result.html>,
-L<IResult (.NET)|https://neo4j.com/docs/api/dotnet-driver/5.13/html/f1ac31ec-c6dd-798b-b5d6-3ca0794d7502.htm>
-
 =back
 
 =cut
