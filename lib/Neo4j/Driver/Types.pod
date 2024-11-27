@@ -55,9 +55,9 @@ E<ndash> booleans
 
 =over
 
-=item * hash ref  C<{ ... }> E<ndash> Neo4j maps
-
 =item * array ref C<[ ... ]> E<ndash> Neo4j lists
+
+=item * hash ref  C<{ ... }> E<ndash> Neo4j maps
 
 =back
 

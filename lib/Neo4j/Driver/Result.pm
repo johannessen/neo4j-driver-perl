@@ -210,7 +210,7 @@ __END__
  $summary = $result->consume;
  
  # For error checking, call any method on the result to ensure
- # the statement has executed before leaving the try block
+ # the query has executed before leaving the try block
  try {
    $result = $transaction->run( ... );
    $result->has_next;
@@ -239,7 +239,7 @@ was detached, calling any methods in this class may fail.
 Some result handlers may automatically detach a result stream
 immediately when the result is made available by the server.
 Such result streams are valid indefinitely.
-In driver S<version 0.xx,> this happens for all HTTP results.
+In driver S<version 0.xx,> this happened for all HTTP results.
 This behaviour is subject to change in future versions and
 shouldn't be relied upon.
 
@@ -337,7 +337,7 @@ method multiple times returns the buffered record.
 
 Return the count of records that calling C<list()> would yield.
 
-Calling this method exhausts the result stream and buffers all records
+Calling this method may exhaust the result stream and may buffer all records
 for use by C<list()>.
 
 =head1 SEE ALSO
@@ -346,8 +346,9 @@ for use by C<list()>.
 
 =item * L<Neo4j::Driver>
 
-=item * L<Neo4j::Driver::B<Record>>,
-L<Neo4j::Driver::B<ResultSummary>>
+=item * L<Neo4j::Driver::B<Record>>
+
+=item * L<Neo4j::Driver::B<ResultSummary>>
 
 =back
 

@@ -287,7 +287,7 @@ install L<LWP::Protocol::https> separately to enable HTTPS.
 The protocol is automatically chosen based on the URI scheme.
 See L<Neo4j::Driver::Config/"uri"> for details.
 
-Version 1 of Neo4j::Driver is targeting Perl v5.20 and newer.
+Version 1 of Neo4j::Driver is targeting Perl v5.20 and later.
 Patches will be accepted to address issues with Perl versions
 as old as v5.16.3 for as long as practical.
 

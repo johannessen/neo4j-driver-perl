@@ -25,7 +25,7 @@ Further information:
 
 [Perl]: https://www.perl.org/
 [Neo4j community edition]: https://neo4j.com/download-center/#community
-[Neo4j::Bolt]: https://metacpan.org/release/Neo4j-Bolt
+[Neo4j::Bolt]: https://metacpan.org/dist/Neo4j-Bolt
 
 
 Installation
@@ -55,8 +55,8 @@ This is a “Pure Perl” distribution, which means you don’t need
 the repository and run the test suite using `prove` instead.
 
 [CPAN]: https://www.cpan.org/modules/INSTALL.html
-[Neo4j::Driver]: https://metacpan.org/release/Neo4j-Driver
-[Dist::Zilla]: https://metacpan.org/release/Dist-Zilla
+[Neo4j::Driver]: https://metacpan.org/dist/Neo4j-Driver
+[Dist::Zilla]: https://metacpan.org/dist/Dist-Zilla
 
 
 Neo4j Documentation

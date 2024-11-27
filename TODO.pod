@@ -13,10 +13,6 @@ See also: L<https://github.com/johannessen/neo4j-driver-perl/issues>
 
 =over
 
-=item * Make concurrent transactions warning fatal
-
-=item * Remove ResultColumns, deprecated modules, deprecated features
-
 =item * Check Neo4p for deprecated / internal stuff, offer PR if necessary or
 maybe fix directly.
 
@@ -24,42 +20,10 @@ maybe fix directly.
 
 =head3 Tier 1
 
-=for comment
-may happen in 1.00 already:
-
-=over
-
-=item * Deprecate discouraged features (including C<summary()> in Record)
-
-=item * Discourage C<list()> (in Result) in scalar context
-
-=item * Bump prereq versions (Bolt, Types, perl v5.12)
-
-=item * Remove Type::Bytes and use the generic type instead (requires Types v2)
-
-=item * General refactoring, S<e. g.> change user-visible strings to be
-single-line sprintf (ability to grep for them),
-remove check for C<$ENV{NO_NEO4J_CORE_BOOLS}>,
-use C<none {} LIST> in unsupported option check etc.
-
-=item * General docs update, S<e. g.> remove "official equivalent",
-remove hacker-centric Net.pod from the CPAN dist,
-remove C<concurrent_tx> pointer from L<Neo4j::Driver::Session>,
-abc in L<Neo4j::Driver::Types/"Constructed values">,
-adjust all docs (S<e. g.> for prereqs) based on version changes (S<e. g.> "protocol_version" won't need the 0.20 note anymore; reference to driver version 0.xx in Result should be past tense) etc.
-
-=back
-
-=head3 Tier 2
-
-=for comment
-should NOT happen in 1.00 itself:
-
 =over
 
 =item * Drop Bolt deep_bless. This requires perlbolt Types v2 support though.
-(I I<really> want this, but a lot of other changes are even more important,
-which is why this item is not tier 1.)
+(I I<really> want this.)
 
 =item * Refactor Node etc. to match the Jolt data structures instead of JSON;
 refactor Record to be implemented as just a single array representing the row,
@@ -69,10 +33,20 @@ with the (C<get("2")>-fixed) column lookup hash appended at the array's end
 will then actually be the fastest way to get a single property (about 8% faster
 than C<get()>).
 
-=item * For the transaction functions, there is technically no guarantee
-that C<$_> will contain the exception we need it to contain; see
-L<Try::Tiny/"CAVEATS">. L<Feature::Compat::Try> doesn't have this problem
-and should also be faster.
+=back
+
+=head3 Tier 2
+
+=over
+
+=item * Neo4j::Driver::Net::HTTP::Tiny
+
+=item * Refactor summary access
+
+=item * add missing fields to result summary and counters, see
+L</"Neo4j::Driver::ResultSummary"> / L</"Neo4j::Driver::SummaryCounters"> below
+
+=item * Remove old-style Jolt (limit Jolt to 4.3+)
 
 =back
 
@@ -80,20 +54,13 @@ and should also be faster.
 
 =over
 
-=item * C<new()> in Neo4j::Driver::Net::Bolt shouldn't swallow the exception
-if loading L<Neo4j::Bolt> fails; see
-L<https://www.nntp.perl.org/group/perl.perl5.porters/2021/07/msg260971.html>
-
-=item * Better version checks for L<Neo4j::Bolt> using C<< ->VERSION(...) >>
-
-=item * Neo4j::Driver::Net::HTTP::Tiny
-
 =item * Config rework, see L</"Neo4j::Driver::Config"> below
 
-=item * add missing fields to result summary and counters, see
-L</"Neo4j::Driver::ResultSummary"> / L</"Neo4j::Driver::SummaryCounters"> below
+=item * look into why empty queries behave so weirdly (see test in F<summary.t>)
 
-=item * Remove old-style Jolt (limit Jolt to 4.3+)
+=item * we can probably get rid of the C<return_stats> internal API by using
+the sim to modify the adapter directly (tests that need stats would have to
+S<e. g.> set a global in the sim though)
 
 =back
 
@@ -335,6 +302,15 @@ it might be possible to try and reconnect (once) if the connection is in fact
 closed by the lib. But that shouldn't happen any more now, so I'm not sure if
 this idea is worth the effort.
 
+=item * Once L<Neo4j::Types> removes the old default implementations, include
+it in the version checks. Specifically, using Bolt with a new L<Neo4j::Types>
+version will only work if the L<Neo4j::Bolt> version is also new (0.5000+).
+
+=for comment
+# in Net::Bolt::_verify_version() try block:
+require Neo4j::Types;
+Neo4j::Types->VERSION lt '2.50' and die sprintf "Neo4j::Bolt version 0.5000 required--this is only version %s\n", $bolt_version;
+
 =back
 
 =head2 L<Neo4j::Driver::Net::HTTP>
@@ -353,6 +329,10 @@ might be of some use there. But this idea is very likely not worth the effort.
 =item * There is a new-ish Aura Query API; it seems to offer a new query format
 that also allows 3.2+ values as query params: C<application/vnd.neo4j.query>
 L<https://neo4j.com/docs/query-api/current/>
+Unfortunately it doesn't support transactions yet, so it's somewhat useless.
+(Except maybe if C<vnd.neo4j.query> is allowed for regular HTTP API requests?)
+Still, creating an experimental plugin for this would be a nice way to figure
+out how the plugin API would have to look like in order to be useful.
 
 =back
 
@@ -378,5 +358,7 @@ access to e. g. properties using the pre-0.13 hashref syntax. See
 L<https://metacpan.org/pod/overload#Two-face-References> for an example.
 L<perltie> might perhaps also work.
 Note that L<overload> might be a memory hog; see L<Types::Serialiser/"BUGS">.
+
+=item * Remove Type::Bytes and use the generic type instead
 
 =back

@@ -89,7 +89,7 @@ L<Neo4j::Driver::Result>. They provide methods to initialise and
 bless result data records as L<Neo4j::Driver::Record> objects.
 Result handlers are also responsible that all values returned
 from Neo4j are provided to users in the format that is documented
-for L<Neo4j::Driver::Record/"get">. For backwards compatibility,
+in L<Neo4j::Driver::Types>. For backwards compatibility,
 a lot of the internal data structures currently (0.52) match the
 format of Neo4j JSON responses.
 
@@ -156,7 +156,7 @@ For Bolt as well as HTTP, future versions of the driver will tend
 to implement new requirements in order to stay compatible with
 newer versions of Neo4j. Support for old Neo4j or library versions
 is likely to only be dropped with major updates to the driver
-(such as S<0.x to 1.x>).
+(such as S<1.x to 2.x>).
 
 =head1 BUGS AND LIMITATIONS
 

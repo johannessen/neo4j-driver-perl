@@ -118,8 +118,9 @@ returns an undefined value.
 
 =item * L<Neo4j::Driver>
 
-=item * L<Neo4j::Driver::B<Session>>,
-L<Neo4j::Driver::B<ResultSummary>>
+=item * L<Neo4j::Driver::B<ResultSummary>>
+
+=item * L<Neo4j::Driver::B<Session>>
 
 =back
 

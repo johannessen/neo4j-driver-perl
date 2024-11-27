@@ -98,8 +98,8 @@ __END__
  $counters = $summary->counters;
  
  # Query information
- $query  = $summary->statement->{text};
- $params = $summary->statement->{parameters};
+ $query  = $summary->query->{text};
+ $params = $summary->query->{parameters};
  $plan   = $summary->plan;
  @notes  = $summary->notifications;
  
@@ -129,9 +129,10 @@ statistics counts for operations the query triggered.
 
 =head2 notifications
 
- use Data::Dumper;
  @notifications = $summary->notifications;
- print Dumper @notifications;
+ 
+ use Data::Printer;
+ p @notifications;
 
 A list of notifications that might arise when executing the
 query. Notifications can be warnings about problematic queries
@@ -144,8 +145,10 @@ This driver only supports notifications over HTTP.
 
 =head2 plan
 
- use Data::Dumper;
- print Dumper $summary->plan;
+ $plan = $summary->plan;
+ 
+ use Data::Printer;
+ p $plan;
 
 This describes how the database will execute your query.
 Available if this is the summary of a Cypher C<EXPLAIN> query.
@@ -177,8 +180,9 @@ the host, port, protocol and Neo4j version.
 
 =item * L<Neo4j::Driver>
 
-=item * L<Neo4j::Driver::B<ServerInfo>>,
-L<Neo4j::Driver::B<SummaryCounters>>
+=item * L<Neo4j::Driver::B<ServerInfo>>
+
+=item * L<Neo4j::Driver::B<SummaryCounters>>
 
 =back
 

@@ -102,6 +102,8 @@ attributes.
 
 =item * L<Neo4j::Driver>
 
+=item * L<Neo4j::Driver::B<ResultSummary>>
+
 =back
 
 =cut

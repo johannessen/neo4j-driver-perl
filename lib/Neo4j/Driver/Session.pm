@@ -338,9 +338,9 @@ regard.
 
 =item * L<Neo4j::Driver>
 
-=item * L<Neo4j::Driver::B<Transaction>>,
-L<Neo4j::Driver::B<ServerInfo>>,
-L<Neo4j::Driver::B<Result>>
+=item * L<Neo4j::Driver::B<Result>>
+
+=item * L<Neo4j::Driver::B<Transaction>>
 
 =back
 

@@ -195,6 +195,8 @@ Return the keys and values of this record as a hash reference.
 
 =item * L<Neo4j::Driver>
 
+=item * L<Neo4j::Driver::B<Result>>
+
 =item * L<Neo4j::Driver::Types>
 
 =back

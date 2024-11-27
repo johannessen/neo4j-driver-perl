@@ -475,7 +475,7 @@ a Neo4j HTTP adapter module. It may only be implemented by
 network adapters that actually offer custom result handlers.
 Note that the result handler API is currently internal and
 expected to change, and this method will likely disappear
-entirely in future; see L</"RESULT HANDLER API"> below.
+entirely in future; see L</"Result handler API"> below.
 
 =item uri
 
