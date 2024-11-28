@@ -1,4 +1,4 @@
-use v5.12;
+use v5.14;
 use warnings;
 
 package Neo4j::Driver::Net::Bolt;
@@ -10,8 +10,7 @@ package Neo4j::Driver::Net::Bolt;
 
 use Carp qw(croak);
 our @CARP_NOT = qw(Neo4j::Driver::Transaction Neo4j::Driver::Transaction::Bolt);
-
-use Try::Tiny;
+use Feature::Compat::Try;
 use URI 1.25;
 
 use Neo4j::Driver::Result::Bolt;
@@ -87,11 +86,10 @@ sub _verify_version {
 		$client_version =~ m/^0\.5[012]$/ and die
 			sprintf "Installed Neo4j::Client version %s is defective (known-good versions are 0.46 and 0.54 or later; you may also need to reinstall Neo4j::Bolt)\n", $client_version;
 	}
-	catch {
-		my $e = $_;
+	catch ($e) {
 		$e =~ s/\.?\s*$//;
 		croak sprintf "Protocol scheme 'bolt' is not supported (Neo4j::Bolt not installed).\nNeo4j::Driver will support 'bolt' URLs if the Neo4j::Bolt module is installed.\n%s", $e;
-	};
+	}
 }
 
 
@@ -108,19 +106,19 @@ sub _trigger_bolt_error {
 		code => scalar $ref->server_errcode,
 		message => scalar $ref->server_errmsg,
 		raw => scalar $ref->get_failure_details,
-	}) if try { $ref->server_errcode || $ref->server_errmsg };
+	}) if eval { $ref->server_errcode || $ref->server_errmsg };
 	
 	$error = $error->append_new( Network => {
 		code => scalar $ref->client_errnum,
 		message => scalar $ref->client_errmsg,
 		as_string => $self->_bolt_error($ref),
-	}) if try { $ref->client_errnum || $ref->client_errmsg };
+	}) if eval { $ref->client_errnum || $ref->client_errmsg };
 	
 	$error = $error->append_new( Network => {
 		code => scalar $ref->errnum,
 		message => scalar $ref->errmsg,
 		as_string => $self->_bolt_error($ref),
-	}) if try { $ref->errnum || $ref->errmsg };
+	}) if eval { $ref->errnum || $ref->errmsg };
 	
 	try {
 		my $cxn = $connection // $self->{connection};
@@ -128,14 +126,15 @@ sub _trigger_bolt_error {
 			code => scalar $cxn->errnum,
 			message => scalar $cxn->errmsg,
 			as_string => $self->_bolt_error($cxn),
-		}) if try { $cxn->errnum || $cxn->errmsg } && $cxn != $ref;
+		}) if eval { $cxn->errnum || $cxn->errmsg } && $cxn != $ref;
 		$cxn->reset_cxn;
 		$error = $error->append_new( Internal => {  # perlbolt#51
 			code => scalar $cxn->errnum,
 			message => scalar $cxn->errmsg,
 			as_string => $self->_bolt_error($cxn),
-		}) if try { $cxn->errnum || $cxn->errmsg };
-	};
+		}) if eval { $cxn->errnum || $cxn->errmsg };
+	}
+	catch ($e) {}
 	
 	return $error_handler->($error) if ref $error_handler eq 'CODE';
 	$error_handler->trigger(error => $error);

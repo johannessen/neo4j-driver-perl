@@ -1,4 +1,4 @@
-use v5.12;
+use v5.14;
 use warnings;
 
 package Neo4j::Driver::ServerInfo;
@@ -7,6 +7,7 @@ package Neo4j::Driver::ServerInfo;
 
 use Carp qw(croak);
 our @CARP_NOT = qw(Neo4j::Driver::Session);
+use Feature::Compat::Try;
 use URI 1.25;
 
 
@@ -45,14 +46,14 @@ sub _default_database {
 	return $database if defined $database;
 	
 	return if $self->{version} =~ m{^Neo4j/[123]\.};
-	eval {
+	try {
 		my $sys = $driver->session(database => 'system');
 		$database = $sys->run('SHOW DEFAULT DATABASE')->single->get('name');
-	};
-	unless (defined $database) {
+	}
+	catch ($e) {
 		croak sprintf
 			"%sSession creation failed because the default database of %s at %s could not be determined",
-			$@, $self->{version}, $self->{uri};
+			$e, $self->{version}, $self->{uri};
 	}
 	return $self->{default_database} = $database;
 }

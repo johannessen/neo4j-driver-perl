@@ -1,4 +1,4 @@
-use v5.12;
+use v5.14;
 use warnings;
 
 package Neo4j::Driver::Transaction;
@@ -10,7 +10,6 @@ our @CARP_NOT = qw(
 	Neo4j::Driver::Session
 	Neo4j::Driver::Session::Bolt
 	Neo4j::Driver::Session::HTTP
-	Try::Tiny
 );
 use Scalar::Util qw(blessed);
 
@@ -99,7 +98,7 @@ package # private
 use parent -norequire => 'Neo4j::Driver::Transaction';
 
 use Carp qw(croak);
-use Try::Tiny;
+use Feature::Compat::Try;
 
 
 sub _begin {
@@ -110,9 +109,9 @@ sub _begin {
 	try {
 		$self->{bolt_txn} = $self->{net}->_new_tx($self);
 	}
-	catch {
-		die $_ if $_ !~ m/\bprotocol version\b/i;  # Bolt v1/v2
-	};
+	catch ($e) {
+		die $e if $e !~ m/\bprotocol version\b/i;  # Bolt v1/v2
+	}
 	$self->{net}->{active_tx} = 1;
 	$self->run('BEGIN') unless $self->{bolt_txn};
 	return $self;
@@ -129,10 +128,10 @@ sub _run_autocommit {
 	try {
 		$results = $self->run($query, @parameters);
 	}
-	catch {
+	catch ($e) {
 		$self->{net}->{active_tx} = 0;
-		croak $_;
-	};
+		croak $e;
+	}
 	$self->{net}->{active_tx} = 0;
 	
 	return $results;

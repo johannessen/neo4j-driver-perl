@@ -1,4 +1,4 @@
-use v5.12;
+use v5.14;
 use warnings;
 
 package Neo4j::Driver::Result::JSON;
@@ -12,9 +12,8 @@ use parent 'Neo4j::Driver::Result';
 
 use Carp qw(carp croak);
 our @CARP_NOT = qw(Neo4j::Driver::Net::HTTP);
+use Feature::Compat::Try;
 use JSON::MaybeXS 1.002004 ();
-use Try::Tiny;
-
 use URI 1.31;
 
 use Neo4j::Error;
@@ -87,12 +86,12 @@ sub _parse_json {
 	try {
 		$json = $params->{http_agent}->json_coder->decode($response);
 	}
-	catch {
+	catch ($e) {
 		$error = $error->append_new( Internal => {
-			as_string => "$_",
+			as_string => "$e",
 			raw => $response,
 		});
-	};
+	}
 	if (ref $json->{errors} eq 'ARRAY') {
 		$error = $error->append_new( Server => $_ ) for @{$json->{errors}};
 	}

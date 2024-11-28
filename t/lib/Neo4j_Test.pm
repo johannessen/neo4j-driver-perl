@@ -1,7 +1,8 @@
 package Neo4j_Test;
-use strict;
+use v5.14;
 use warnings;
 
+use Feature::Compat::Try;
 use URI;
 use Neo4j::Driver;
 use Neo4j_Test::NetModulePlugin;
@@ -22,11 +23,11 @@ our $sim;
 sub driver_maybe {
 	
 	my $driver;
-	eval {
+	try {
 		# a default URI (localhost) is built into the driver
 		$driver = Neo4j::Driver->new( $server );
-	};
-	return unless $driver;
+	}
+	catch ($e) { return }
 	
 	$driver->basic_auth($user, $pass);
 	$driver->config(timeout => 2);  # 2 seconds timeout may speed up testing
@@ -52,12 +53,12 @@ sub driver {
 	my $driver = driver_maybe;
 	
 	# verify that the supplied credentials actually work
-	eval {
+	try {
 		# the Neo4j HTTP API allows running empty statements
 		$driver->session->run('');
-	};
-	if ($@) {
-		$error = $@;
+	}
+	catch ($e) {
+		$error = $e;
 		return;
 	}
 	
