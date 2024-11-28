@@ -55,7 +55,7 @@ sub new {
 	my ($class, $config, @extra) = @_;
 	
 	my $self = bless { config => { %DEFAULTS } }, $class;
-	$self->{plugins} = Neo4j::Driver::Events->new;
+	$self->{events} = Neo4j::Driver::Events->new;
 	
 	croak __PACKAGE__ . "->new() with multiple arguments unsupported" if @extra;
 	$config = { uri => $config } if ref $config ne 'HASH';
@@ -192,7 +192,7 @@ sub plugin {
 	
 	croak "plugin() with more than one argument is unsupported" if @extra;
 	croak "Unsupported sequence: call plugin() before session()" if $self->{server_info};
-	$self->{plugins}->_register_plugin($plugin);
+	$self->{events}->_register_plugin($plugin);
 	return $self;
 }
 

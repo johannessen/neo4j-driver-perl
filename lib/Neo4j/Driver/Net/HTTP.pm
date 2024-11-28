@@ -34,14 +34,14 @@ sub new {
 	# uncoverable pod
 	my ($class, $driver) = @_;
 	
-	$driver->{plugins}->{default_handlers}->{http_adapter_factory} //= sub {
+	$driver->{events}->{default_handlers}->{http_adapter_factory} //= sub {
 		my $net_module = $driver->{config}->{net_module} || 'Neo4j::Driver::Net::HTTP::LWP';
 		return $net_module->new($driver);
 	};
-	my $http_adapter = $driver->{plugins}->trigger('http_adapter_factory', $driver);
+	my $http_adapter = $driver->{events}->trigger('http_adapter_factory', $driver);
 	
 	my $self = bless {
-		events => $driver->{plugins},
+		events => $driver->{events},
 		cypher_types => $driver->{config}->{cypher_types},
 		server_info => $driver->{server_info},
 		http_agent => $http_adapter,

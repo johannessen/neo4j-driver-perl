@@ -95,7 +95,7 @@ sub _execute {
 			croak $e unless blessed $e && $e->isa('Neo4j::Error');
 			
 			if (! $e->is_retryable || Time::HiRes::time >= $time_stop) {
-				$self->{driver}->{plugins}->trigger( error => $e );
+				$self->{driver}->{events}->trigger( error => $e );
 				return;  # in case the event handler doesn't die
 			}
 		}

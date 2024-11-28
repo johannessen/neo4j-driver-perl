@@ -49,7 +49,7 @@ sub new {
 	else {
 		$cxn = $net_module->connect( "$uri", $driver->config('timeout') );
 	}
-	$class->_trigger_bolt_error( $cxn, $driver->{plugins} ) unless $cxn->connected;
+	$class->_trigger_bolt_error( $cxn, $driver->{events} ) unless $cxn->connected;
 	
 	return bless {
 		net_module => $net_module,

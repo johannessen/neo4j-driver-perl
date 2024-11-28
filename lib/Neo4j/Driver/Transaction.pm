@@ -20,7 +20,7 @@ sub new {
 	# uncoverable pod (private method)
 	my ($class, $session, $mode) = @_;
 	
-	my $events = $session->{driver}->{plugins};
+	my $events = $session->{driver}->{events};
 	my $transaction = {
 		cypher_params_v2 => $session->{cypher_params_v2},
 		net => $session->{net},

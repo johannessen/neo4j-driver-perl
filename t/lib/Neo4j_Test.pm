@@ -80,7 +80,7 @@ sub driver_no_connect {
 sub driver_no_auth {
 	my $driver = driver_maybe;
 	if ($sim) {
-		delete $driver->{plugins}->{handlers}->{http_adapter_factory};
+		delete $driver->{events}->{handlers}->{http_adapter_factory};
 		$driver->plugin(Neo4j_Test::NetModulePlugin->new( Neo4j_Test::Sim->new({auth => 0}) ));
 	}
 	$driver->{config}->{auth} = { scheme => 'basic', principal => "no\tuser", credentials => "no\tpass" };
