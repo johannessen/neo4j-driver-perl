@@ -8,7 +8,7 @@ package Neo4j::Driver::Net::HTTP;
 # This package is not part of the public Neo4j::Driver API.
 
 
-use Carp qw(carp croak);
+use Carp qw(croak);
 our @CARP_NOT = qw(Neo4j::Driver::Transaction Neo4j::Driver::Transaction::HTTP);
 
 use Time::Piece 1.20 qw();

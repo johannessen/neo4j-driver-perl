@@ -10,7 +10,7 @@ package Neo4j::Driver::Result::Jolt;
 
 use parent 'Neo4j::Driver::Result';
 
-use Carp qw(carp croak);
+use Carp qw(croak);
 our @CARP_NOT = qw(Neo4j::Driver::Net::HTTP Neo4j::Driver::Result);
 use JSON::MaybeXS 1.002004 ();
 

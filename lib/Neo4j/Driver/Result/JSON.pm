@@ -10,11 +10,10 @@ package Neo4j::Driver::Result::JSON;
 
 use parent 'Neo4j::Driver::Result';
 
-use Carp qw(carp croak);
+use Carp qw(croak);
 our @CARP_NOT = qw(Neo4j::Driver::Net::HTTP);
 use Feature::Compat::Try;
 use JSON::MaybeXS 1.002004 ();
-use URI 1.31;
 
 use Neo4j::Error;
 

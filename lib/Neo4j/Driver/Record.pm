@@ -6,7 +6,6 @@ package Neo4j::Driver::Record;
 
 
 use Carp qw(croak);
-use JSON::MaybeXS 1.003003 qw(is_bool);
 
 use Neo4j::Driver::ResultSummary;
 

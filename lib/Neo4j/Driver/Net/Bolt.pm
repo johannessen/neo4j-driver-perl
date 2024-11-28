@@ -11,7 +11,6 @@ package Neo4j::Driver::Net::Bolt;
 use Carp qw(croak);
 our @CARP_NOT = qw(Neo4j::Driver::Transaction Neo4j::Driver::Transaction::Bolt);
 use Feature::Compat::Try;
-use URI 1.25;
 
 use Neo4j::Driver::Result::Bolt;
 use Neo4j::Driver::ServerInfo;

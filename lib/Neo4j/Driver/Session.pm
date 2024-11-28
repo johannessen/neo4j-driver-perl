@@ -13,7 +13,6 @@ use Feature::Compat::Try;
 use List::Util qw(min);
 use Scalar::Util qw(blessed);
 use Time::HiRes ();
-use URI 1.25;
 
 use Neo4j::Driver::Net::Bolt;
 use Neo4j::Driver::Net::HTTP;
