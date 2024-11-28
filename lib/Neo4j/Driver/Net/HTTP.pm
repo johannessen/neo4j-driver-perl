@@ -113,9 +113,9 @@ sub _set_database {
 }
 
 
-# Send statements to the Neo4j server and return a list of all results.
+# Send queries to the Neo4j server and return a list of all results.
 sub _run {
-	my ($self, $tx, @statements) = @_;
+	my ($self, $tx, @queries) = @_;
 	
 	if ( ! $self->{want_concurrent} ) {
 		# A new HTTP tx has no commit endpoint until after the first result is received.
@@ -123,7 +123,7 @@ sub _run {
 		$is_concurrent and croak "Concurrent transactions for HTTP are disabled; use multiple sessions or enable the concurrent_tx config option";
 	}
 	
-	my $json = { statements => \@statements };
+	my $json = { statements => \@queries };
 	return $self->_request($tx, 'POST', $json)->_results;
 }
 
@@ -185,7 +185,7 @@ sub _request {
 		http_header => $header,
 		cypher_types => $self->{cypher_types},
 		server_info => $self->{server_info},
-		statements => $json ? $json->{statements} : [],
+		queries => $json ? $json->{statements} : [],
 	});
 	
 	my $info = $result->_info;

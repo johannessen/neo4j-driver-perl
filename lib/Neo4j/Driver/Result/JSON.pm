@@ -35,14 +35,14 @@ sub new {
 	my @results = ();
 	@results = @{ $json->{results} } if ref $json->{results} eq 'ARRAY';
 	@results = map { $class->_new_result($_, $json, $params) } @results;
-	$results[$_]->{statement} = $params->{statements}->[$_] for (0 .. $#results);
+	$results[$_]->{query} = $params->{queries}->[$_] for (0 .. $#results);
 	
 	if (@results == 1) {
 		$results[0]->{json} = $json;  # for _info()
 		return $results[0];
 	}
 	
-	# If the number of Cypher statements run wasn't exactly one, provide
+	# If the number of Cypher queries run wasn't exactly one, provide
 	# a dummy result containing the raw JSON so that callers can do their
 	# own parsing. Also, provide a list of all results so that callers
 	# get a uniform interface for all of them.

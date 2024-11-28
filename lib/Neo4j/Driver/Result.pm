@@ -167,7 +167,7 @@ sub _summary {
 	
 	$self->_fill_buffer;
 	
-	$self->{summary} //= Neo4j::Driver::ResultSummary->new( $self->{result}, $self->{notifications}, $self->{statement}, $self->{server_info} );
+	$self->{summary} //= Neo4j::Driver::ResultSummary->new( $self->{result}, $self->{notifications}, $self->{query}, $self->{server_info} );
 	
 	return $self->{summary}->_init;
 }

@@ -123,14 +123,14 @@ sub _gather_results {
 	
 	if (@results == 1) {
 		$self->{result} = $results[0];
-		$self->{statement} = $params->{statements}->[0];
+		$self->{query} = $params->{queries}->[0];
 		return $self->_as_fully_buffered;
 	}
 	
-	# If the number of Cypher statements run wasn't exactly one, provide a list
+	# If the number of Cypher queries run wasn't exactly one, provide a list
 	# of all results so that callers get a uniform interface for all of them.
 	@results = map { __PACKAGE__->_new_result($_, undef, $params) } @results;
-	$results[$_]->{statement} = $params->{statements}->[$_] for (0 .. $#results);
+	$results[$_]->{query} = $params->{queries}->[$_] for (0 .. $#results);
 	$self->{attached} = 0;
 	$self->{exhausted} = 1;
 	$self->{result_list} = \@results if @results;

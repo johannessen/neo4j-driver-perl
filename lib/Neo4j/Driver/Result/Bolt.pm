@@ -46,7 +46,7 @@ sub new {
 		columns => undef,
 		summary => undef,
 		cypher_types => $params->{cypher_types},
-		statement => $params->{statement},
+		query => $params->{query},
 		cxn => $params->{bolt_connection},  # important to avoid dereferencing the connection
 		stream => $params->{bolt_stream},
 		server_info => $params->{server_info},

@@ -1,6 +1,6 @@
 Revision history for Neo4j::Driver
 
-1.0062  2024-11-28  (TRIAL RELEASE)
+1.0063  2024-11-28  (TRIAL RELEASE)
 
  - Deprecate config options tls/tls_ca in favour of encrypted/trust_ca
  - Deprecate ServerInfo->version() in favour of agent()
@@ -18,6 +18,7 @@ Revision history for Neo4j::Driver
    to influence the boolean values to be used for values returned from Neo4j.
  - Internal change: Merge ResultColumns logic into Record class.
  - Internal change: Replace Try::Tiny with Feature::Compat::Try.
+ - Internal change: Rename in Result / ResultSummary: {statement} -> {query}
 
 1.00  2024-11-21  (TRIAL RELEASE)
 

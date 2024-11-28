@@ -173,23 +173,18 @@ sub _set_database {
 }
 
 
-# Send statements to the Neo4j server and return a list of all results.
+# Send queries to the Neo4j server and return a list of all results.
 sub _run {
-	my ($self, $tx, @statements) = @_;
+	my ($self, $tx, @queries) = @_;
 	
-	die "multiple statements not supported for Bolt" if @statements > 1;
-	my ($statement) = @statements;
-	
-	my $statement_json = {
-		statement => $statement->[0],
-		parameters => $statement->[1],
-	};
+	die "multiple queries not supported for Bolt" if @queries > 1;
+	my ($query) = @queries;
 	
 	my $query_runner = $tx->{bolt_txn} ? $tx->{bolt_txn} : $self->{connection};
 	
 	my ($stream, $result);
-	if ($statement->[0]) {
-		$stream = $query_runner->run_query( @$statement, $self->{database} );
+	if ($query->[0]) {
+		$stream = $query_runner->run_query( @$query, $self->{database} );
 		
 		if (! $stream || $stream->failure) {
 			# failure() == -1 is an error condition because run_query_()
@@ -203,7 +198,7 @@ sub _run {
 		$result = $self->{result_module}->new({
 			bolt_stream => $stream,
 			bolt_connection => $self->{connection},
-			statement => $statement_json,
+			query => $query,
 			cypher_types => $self->{cypher_types},
 			server_info => $self->{server_info},
 			error_handler => $tx->{error_handler},

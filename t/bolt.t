@@ -108,7 +108,7 @@ sub new_session {
 
 my ($s, $f, $t, $r, $v);
 
-plan tests => 1 + 10 + $no_warnings;
+plan tests => 1 + 11 + $no_warnings;
 
 
 lives_and { ok $s = new_session('Local::Bolt') } 'driver';
@@ -171,6 +171,13 @@ subtest 'txn' => sub {
 	throws_ok {
 		$s->execute_read( sub { shift->rollback } );
 	} qr/\brollback\b.*\bmanaged transaction\b/i, 'managed explicit rollback dies';
+};
+
+
+subtest 'summary' => sub {
+	plan tests => 2;
+	lives_and { ok $r = $s->run('dummy')->consume } 'consume';
+	lives_and { is_deeply $r->query, { text => 'dummy', parameters => {} } } 'query';
 };
 
 
