@@ -50,6 +50,7 @@ lives_ok { $r = 0; $r = $transaction->run($q)->single; } 'run query (structural 
 
 subtest 'direct node/rel/path access' => sub {
 	plan skip_all => '(query failed)' if ! $r;
+	plan skip_all => 'Neo4j::Bolt is designed for direct access' if $Neo4j_Test::bolt;
 	plan tests => 6;
 	ok my $n = $r->get('n4'), 'get node';
 	dies_ok { $n->{answer} = 42 } 'set node prop';

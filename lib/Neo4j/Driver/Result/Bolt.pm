@@ -16,15 +16,6 @@ use List::Util ();
 
 use Neo4j::Driver::Net::Bolt;
 
-my ($FALSE, $TRUE) = Neo4j::Driver::Result->_bool_values;
-
-my @valid_bolt_neo4j_types = qw(
-	Neo4j::Bolt::Bytes
-	Neo4j::Bolt::DateTime
-	Neo4j::Bolt::Duration
-	Neo4j::Bolt::Point
-);
-
 
 our $gather_results = 0;  # 1: detach from the stream immediately (yields JSON-style result; used for testing)
 
@@ -45,7 +36,6 @@ sub new {
 		buffer => [],
 		columns => undef,
 		summary => undef,
-		cypher_types => $params->{cypher_types},
 		query => $params->{query},
 		cxn => $params->{bolt_connection},  # important to avoid dereferencing the connection
 		stream => $params->{bolt_stream},
@@ -111,77 +101,13 @@ sub _fetch_next {
 
 
 sub _init_record {
-	my ($self, $record, $cypher_types) = @_;
+	my ($self, $record) = @_;
 	
 	return undef unless $record;  ##no critic (ProhibitExplicitReturnUndef)
 	
 	$record->{column_keys} = $self->{columns};
-	$self->_deep_bless( $record->{row} );
 	$record->{meta} = 'The Neo4j::Driver::Record->{meta} feature was removed';
 	return bless $record, 'Neo4j::Driver::Record';
-}
-
-
-sub _deep_bless {
-	my ($self, $data) = @_;
-	my $cypher_types = $self->{cypher_types};
-	
-	if (ref $data eq 'Neo4j::Bolt::Node') {  # node
-		my $node = \( $data->{properties} // {} );
-		bless $node, $cypher_types->{node};
-		$$node->{_meta} = {
-			id => $data->{id},
-			labels => $data->{labels},
-		};
-		$cypher_types->{init}->($node) if $cypher_types->{init};
-		return $node;
-	}
-	if (ref $data eq 'Neo4j::Bolt::Relationship') {  # relationship
-		my $rel = \( $data->{properties} // {} );
-		bless $rel, $cypher_types->{relationship};
-		$$rel->{_meta} = {
-			id => $data->{id},
-			start => $data->{start},
-			end => $data->{end},
-			type => $data->{type},
-		};
-		$cypher_types->{init}->($rel) if $cypher_types->{init};
-		return $rel;
-	}
-	
-	if (ref $data eq 'Neo4j::Bolt::Path') {  # path
-		my $path = bless { path => $data }, $cypher_types->{path};
-		foreach my $i ( 0 .. $#{$data} ) {
-			$data->[$i] = $self->_deep_bless($data->[$i]);
-		}
-		$cypher_types->{init}->($path) if $cypher_types->{init};
-		return $path;
-	}
-	
-	if (ref $data eq 'ARRAY') {  # array
-		foreach my $i ( 0 .. $#{$data} ) {
-			$data->[$i] = $self->_deep_bless($data->[$i]);
-		}
-		return $data;
-	}
-	if (ref $data eq 'HASH') {  # and neither node nor relationship ==> map
-		foreach my $key ( keys %$data ) {
-			$data->{$key} = $self->_deep_bless($data->{$key});
-		}
-		return $data;
-	}
-	
-	if (ref $data eq '') {  # scalar
-		return $data;
-	}
-	if (ref $data eq 'JSON::PP::Boolean') {
-		return $data ? $TRUE : $FALSE;
-	}
-	if ( List::Util::first { ref $data eq $_ } @valid_bolt_neo4j_types ) {
-		return $data;
-	}
-	
-	die "Assertion failed: unexpected type: " . ref $data;
 }
 
 

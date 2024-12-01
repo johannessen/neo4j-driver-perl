@@ -56,7 +56,6 @@ sub new {
 		uri => $uri,
 		result_module => $net_module->can('result_handlers') ? ($net_module->result_handlers)[0] : $RESULT_MODULE,
 		server_info => $driver->{server_info},
-		cypher_types => $driver->{config}->{cypher_types},
 		active_tx => 0,
 	}, $class;
 }
@@ -198,7 +197,6 @@ sub _run {
 			bolt_stream => $stream,
 			bolt_connection => $self->{connection},
 			query => $query,
-			cypher_types => $self->{cypher_types},
 			server_info => $self->{server_info},
 			error_handler => $tx->{error_handler},
 		});

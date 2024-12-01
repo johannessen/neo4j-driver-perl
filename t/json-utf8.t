@@ -94,7 +94,7 @@ subtest 'read full property list' => sub {
 	lives_ok {
 		$node = $r->list->[0]->get(0);
 	} 'get node';
-	is ref $node, 'Neo4j::Driver::Type::Node', '$node is blessed node';
+	isa_ok $node, 'Neo4j::Types::Node', '$node is blessed node';
 	foreach my $key (@keys) {
 		is to_hex $node->get($key), to_hex $props{$key}, "prop: $key";
 	}

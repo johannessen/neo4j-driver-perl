@@ -1,5 +1,9 @@
 Revision history for Neo4j::Driver
 
+1.0151  2024-12-01  (TRIAL RELEASE)
+
+ - Pass through Neo4j::Bolt values unchanged, significantly reducing overhead.
+
 1.01  2024-11-28  (TRIAL RELEASE)
 
  - Using Jolt byte array objects in string context now yields the class name.

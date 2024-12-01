@@ -85,7 +85,10 @@ sub get_failure_details {}
 sub reset_cxn { $_[0]->{$_} = $_[0]->{"reset_$_"} for qw( errnum errmsg ); }
 sub _bolt_error { &Neo4j::Driver::Net::Bolt::_bolt_error }
 
-package Neo4j::Bolt::Bytes { use parent 'Neo4j::Types::ByteArray' }
+package Neo4j::Bolt::Bytes        { use parent 'Neo4j::Types::ByteArray' }
+package Neo4j::Bolt::Node         { use parent 'Neo4j::Types::Node' }
+package Neo4j::Bolt::Path         { use parent 'Neo4j::Types::Path' }
+package Neo4j::Bolt::Relationship { use parent 'Neo4j::Types::Relationship' }
 
 package main;
 
