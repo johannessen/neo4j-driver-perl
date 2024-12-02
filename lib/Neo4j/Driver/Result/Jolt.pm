@@ -14,6 +14,15 @@ use Carp qw(croak);
 our @CARP_NOT = qw(Neo4j::Driver::Net::HTTP Neo4j::Driver::Result);
 use JSON::MaybeXS 1.002004 ();
 
+use Neo4j::Driver::Type::Bytes;
+use Neo4j::Driver::Type::DateTime;
+use Neo4j::Driver::Type::Duration;
+use Neo4j::Driver::Type::Node;
+use Neo4j::Driver::Type::Path;
+use Neo4j::Driver::Type::Point;
+use Neo4j::Driver::Type::Relationship;
+use Neo4j::Driver::Type::V1::Node;
+use Neo4j::Driver::Type::V1::Relationship;
 use Neo4j::Error;
 
 my ($FALSE, $TRUE) = Neo4j::Driver::Result->_bool_values;
@@ -24,6 +33,17 @@ my $ACCEPT_HEADER_V1 = "$MEDIA_TYPE+json-seq";
 my $ACCEPT_HEADER_STRICT = "$MEDIA_TYPE+json-seq;strict=true";
 my $ACCEPT_HEADER_SPARSE = "$MEDIA_TYPE+json-seq;strict=false";
 my $ACCEPT_HEADER_NDJSON = "$MEDIA_TYPE";
+
+my @CYPHER_TYPES = (
+	{  # Types with legacy numeric ID (Jolt v1)
+		node => 'Neo4j::Driver::Type::V1::Node',
+		relationship => 'Neo4j::Driver::Type::V1::Relationship',
+	},
+	{  # Types with element ID (Jolt v2)
+		node => 'Neo4j::Driver::Type::Node',
+		relationship => 'Neo4j::Driver::Type::Relationship',
+	},
+);
 
 
 our $gather_results = 1;  # 1: detach from the stream immediately (yields JSON-style result; used for testing)
@@ -41,8 +61,7 @@ sub new {
 		server_info => $params->{server_info},
 		json_coder => $params->{http_agent}->json_coder,
 		http_agent => $params->{http_agent},
-		cypher_types => $params->{cypher_types},
-		v2_id_prefix => $jolt_v2 ? 'element_' : '',
+		jolt_v2 => $jolt_v2,
 	};
 	bless $self, $class;
 	
@@ -141,7 +160,6 @@ sub _gather_results {
 sub _new_result {
 	my ($class, $result, $json, $params) = @_;
 	
-	my $jolt_v2 = $params->{http_header}->{content_type} =~ m/^\Q$MEDIA_TYPE\E-v2\b/i;
 	my $self = {
 		attached => 0,   # 1: unbuffered records may exist on the stream
 		exhausted => 0,  # 1: all records read by the client; fetch() will fail
@@ -149,9 +167,8 @@ sub _new_result {
 		buffer => [],
 		columns => undef,
 		summary => undef,
-		cypher_types => $params->{cypher_types},
 		server_info => $params->{server_info},
-		v2_id_prefix => $jolt_v2 ? 'element_' : '',
+		jolt_v2 => $params->{jolt_v2},
 	};
 	bless $self, $class;
 	
@@ -204,7 +221,6 @@ sub _init_record {
 
 sub _deep_bless {
 	my ($self, $data) = @_;
-	my $cypher_types = $self->{cypher_types};
 	
 	if (JSON::MaybeXS::is_bool $data) {  # Boolean (sparse)
 		return $data ? $TRUE : $FALSE;
@@ -251,57 +267,30 @@ sub _deep_bless {
 		die "Assertion failed: unexpected node type: " . ref $value unless ref $value eq 'ARRAY';
 		die "Assertion failed: unexpected node fields: " . scalar @$value unless @$value == 3;
 		die "Assertion failed: unexpected prop type: " . ref $value->[2] unless ref $value->[2] eq 'HASH';
-		my $props = $value->[2];
-		$props->{$_} = $self->_deep_bless($props->{$_}) for keys %$props;
-		my $node = \( $props );
-		bless $node, $cypher_types->{node};
-		$$node->{_meta} = {
-			"$self->{v2_id_prefix}id" => $value->[0],
-			labels => $value->[1],
-		};
-		$cypher_types->{init}->($node) if $cypher_types->{init};
-		return $node;
+		$_ = $self->_deep_bless($_) for values %{ $value->[2] };
+		return bless $value, $CYPHER_TYPES[ $self->{jolt_v2} ]->{node};
 	}
 	if ($sigil eq '->' || $sigil eq '<-') {  # Relationship
 		die "Assertion failed: unexpected rel type: " . ref $value unless ref $value eq 'ARRAY';
 		die "Assertion failed: unexpected rel fields: " . scalar @$value unless @$value == 5;
 		die "Assertion failed: unexpected prop type: " . ref $value->[4] unless ref $value->[4] eq 'HASH';
-		my $props = $value->[4];
-		$props->{$_} = $self->_deep_bless($props->{$_}) for keys %$props;
-		my $rel = \( $props );
-		bless $rel, $cypher_types->{relationship};
-		$$rel->{_meta} = {
-			"$self->{v2_id_prefix}id" => $value->[0],
-			type => $value->[2],
-			"$self->{v2_id_prefix}start" => $sigil eq '->' ? $value->[1] : $value->[3],
-			"$self->{v2_id_prefix}end" => $sigil eq '->' ? $value->[3] : $value->[1],
-		};
-		$cypher_types->{init}->($rel) if $cypher_types->{init};
-		return $rel;
+		$_ = $self->_deep_bless($_) for values %{ $value->[4] };
+		@{$value}[ 3, 1 ] = @{$value}[ 1, 3 ] if $sigil eq '<-';
+		return bless $value, $CYPHER_TYPES[ $self->{jolt_v2} ]->{relationship};
 	}
 	if ($sigil eq '..') {  # Path
 		die "Assertion failed: unexpected path type: " . ref $value unless ref $value eq 'ARRAY';
 		die "Assertion failed: unexpected path fields: " . scalar @$value unless @$value & 1;
-		$value->[$_] = $self->_deep_bless($value->[$_]) for 0 .. $#{$value};
-		my $path = bless { path => $value }, $cypher_types->{path};
-		$cypher_types->{init}->($path) if $cypher_types->{init};
-		return $path;
+		$_ = $self->_deep_bless($_) for @$value;
+		return bless $data, 'Neo4j::Driver::Type::Path';
 	}
 	if ($sigil eq '@') {  # Spatial
-		bless $data, $cypher_types->{point};
-		return $data;
+		return bless $data, 'Neo4j::Driver::Type::Point';
 	}
 	if ($sigil eq 'T') {  # Temporal
-		if ($cypher_types->{temporal} ne 'Neo4j::Driver::Type::Temporal') {
-			return bless $data, $cypher_types->{temporal};
-		}
-		if ($value =~ m/^-?P/) {
-			bless $data, 'Neo4j::Driver::Type::Duration';
-		}
-		else {
-			bless $data, 'Neo4j::Driver::Type::DateTime';
-		}
-		return $data;
+		return bless $data, $value =~ m/^-?P/
+			? 'Neo4j::Driver::Type::Duration'
+			: 'Neo4j::Driver::Type::DateTime';
 	}
 	if ($sigil eq '#') {  # Bytes
 		$value =~ tr/ //d;  # spaces were allowed in the Jolt draft, but aren't actually implemented in Neo4j 4.2's jolt.JoltModule

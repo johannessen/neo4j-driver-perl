@@ -42,7 +42,6 @@ sub new {
 	
 	my $self = bless {
 		events => $driver->{events},
-		cypher_types => $driver->{config}->{cypher_types},
 		server_info => $driver->{server_info},
 		http_agent => $http_adapter,
 		want_jolt => $driver->{config}->{jolt},
@@ -183,7 +182,6 @@ sub _request {
 		http_method => $method,
 		http_path => $tx_endpoint,
 		http_header => $header,
-		cypher_types => $self->{cypher_types},
 		server_info => $self->{server_info},
 		queries => $json ? $json->{statements} : [],
 	});

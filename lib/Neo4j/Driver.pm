@@ -12,14 +12,6 @@ use URI 1.25;
 use Neo4j::Driver::Events;
 use Neo4j::Driver::Session;
 
-use Neo4j::Driver::Type::Bytes;
-use Neo4j::Driver::Type::DateTime;
-use Neo4j::Driver::Type::Duration;
-use Neo4j::Driver::Type::Node;
-use Neo4j::Driver::Type::Relationship;
-use Neo4j::Driver::Type::Path;
-use Neo4j::Driver::Type::Point;
-
 
 my %NEO4J_DEFAULT_PORT = (
 	bolt => 7687,
@@ -40,21 +32,11 @@ my %OPTIONS = (
 	uri => 'uri',
 );
 
-my %DEFAULTS = (
-	cypher_types => {
-		node => 'Neo4j::Driver::Type::Node',
-		relationship => 'Neo4j::Driver::Type::Relationship',
-		path => 'Neo4j::Driver::Type::Path',
-		point => 'Neo4j::Driver::Type::Point',
-		temporal => 'Neo4j::Driver::Type::Temporal',
-	},
-);
-
 
 sub new {
 	my ($class, $config, @extra) = @_;
 	
-	my $self = bless { config => { %DEFAULTS } }, $class;
+	my $self = bless {}, $class;
 	$self->{events} = Neo4j::Driver::Events->new;
 	
 	croak __PACKAGE__ . "->new() with multiple arguments unsupported" if @extra;

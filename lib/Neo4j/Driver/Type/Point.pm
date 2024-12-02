@@ -14,11 +14,6 @@ use parent 'Neo4j::Types::Point';
 sub _parse {
 	my ($self) = @_;
 	
-	if ( ! exists $self->{'@'} ) {  # JSON format
-		$self->{srid} = $self->{crs}{srid};
-		return;
-	}
-	
 	my ($srid, $x, $y, $z) = $self->{'@'} =~ m/^SRID=([0-9]+);POINT(?: Z)? ?\(([-0-9.]+) ([-0-9.]+)(?: ([-0-9.]+))?\)$/;
 	
 	$self->{srid} = 0 + $srid;

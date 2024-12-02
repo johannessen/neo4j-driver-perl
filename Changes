@@ -1,8 +1,9 @@
 Revision history for Neo4j::Driver
 
-1.0151  2024-12-01  (TRIAL RELEASE)
+1.0152  2024-12-02  (TRIAL RELEASE)
 
  - Pass through Neo4j::Bolt values unchanged, significantly reducing overhead.
+ - Optimise parsing of Jolt result values, improving performance.
 
 1.01  2024-11-28  (TRIAL RELEASE)
 

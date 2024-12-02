@@ -14,10 +14,6 @@ use parent 'Neo4j::Types::DateTime';
 sub _parse {
 	my ($self) = @_;
 	
-	if ( ! exists $self->{T} ) {  # JSON format
-		$self->{T} = $self->{data};
-	}
-	
 	my ($days, $hours, $mins, $secs, $nanos, $tz) = $self->{T} =~ m/^(?:([-+]?[0-9]{4,}-[0-9]{2}-[0-9]{2}))?T?(?:([0-9]{2}):([0-9]{2}):([0-9]{2})(?:[,.]([0-9]+))?)?(.*)$/;
 	
 	if (defined $days) {
