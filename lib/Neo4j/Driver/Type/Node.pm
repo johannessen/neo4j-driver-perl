@@ -30,7 +30,7 @@ sub labels {
 sub properties {
 	my ($self) = @_;
 	
-	return { %{$self->[2]} };
+	return $self->[2];
 }
 
 

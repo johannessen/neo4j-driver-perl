@@ -135,12 +135,15 @@ L<JSON::Types> or with simple unary coercions like this:
 
 =item Properties hash reference
 
-The C<properties()> method of node and relationship objects
-currently makes a new defensive copy of the properties hash
-each time it's called. S<Version 1.xx> of the driver will
-change this to give a reference to the internal hash instead,
-providing a significant performance increase. Until then,
-you might consider caching the hash ref locally.
+Since driver version 1.02, the C<properties()> method of node
+and relationship objects returns a reference to the internal
+hash. This makes C<properties()> the preferred way to retrieve a
+single property, as it's both faster and clearer than C<get()>.
+
+ $value = $node->properties->{key};
+ 
+ # Chaining get() is a potentially confusing anti-pattern
+ $value = $record->get('field')->get('key');  # avoid this!
 
 =back
 

@@ -64,7 +64,7 @@ sub end_id {
 sub properties {
 	my ($self) = @_;
 	
-	return { %{$self->[4]} };
+	return $self->[4];
 }
 
 
