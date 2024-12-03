@@ -183,7 +183,6 @@ sub _next_event {
 	return unless defined $line;
 	
 	my $json = $self->{json_coder}->decode($line);
-	croak "Jolt error: expected reference to HASH, received " . (ref $json ? "reference to " . ref $json : "scalar") unless ref $json eq 'HASH';
 	
 	my @events = keys %$json;
 	croak "Jolt error: expected exactly 1 event, received " . scalar @events unless @events == 1;
@@ -233,7 +232,6 @@ sub _deep_bless {
 		return $data;
 	}
 	
-	die "Assertion failed: unexpected type: " . ref $data unless ref $data eq 'HASH';
 	die "Assertion failed: sigil count: " . scalar keys %$data if scalar keys %$data != 1;
 	my $sigil = (keys %$data)[0];
 	my $value = $data->{$sigil};
@@ -253,32 +251,25 @@ sub _deep_bless {
 		return $value;
 	}
 	if ($sigil eq '[]') {  # List (strict)
-		die "Assertion failed: unexpected list type: " . ref $value unless ref $value eq 'ARRAY';
 		$_ = $self->_deep_bless($_) for @$value;
 		return $value;
 	}
 	if ($sigil eq '{}') {  # Map
-		die "Assertion failed: unexpected map type: " . ref $value unless ref $value eq 'HASH';
 		$_ = $self->_deep_bless($_) for values %$value;
 		return $value;
 	}
 	if ($sigil eq '()') {  # Node
-		die "Assertion failed: unexpected node type: " . ref $value unless ref $value eq 'ARRAY';
 		die "Assertion failed: unexpected node fields: " . scalar @$value unless @$value == 3;
-		die "Assertion failed: unexpected prop type: " . ref $value->[2] unless ref $value->[2] eq 'HASH';
 		$_ = $self->_deep_bless($_) for values %{ $value->[2] };
 		return bless $value, $CYPHER_TYPES[ $self->{jolt_v2} ]->{node};
 	}
 	if ($sigil eq '->' || $sigil eq '<-') {  # Relationship
-		die "Assertion failed: unexpected rel type: " . ref $value unless ref $value eq 'ARRAY';
 		die "Assertion failed: unexpected rel fields: " . scalar @$value unless @$value == 5;
-		die "Assertion failed: unexpected prop type: " . ref $value->[4] unless ref $value->[4] eq 'HASH';
 		$_ = $self->_deep_bless($_) for values %{ $value->[4] };
 		@{$value}[ 3, 1 ] = @{$value}[ 1, 3 ] if $sigil eq '<-';
 		return bless $value, $CYPHER_TYPES[ $self->{jolt_v2} ]->{relationship};
 	}
 	if ($sigil eq '..') {  # Path
-		die "Assertion failed: unexpected path type: " . ref $value unless ref $value eq 'ARRAY';
 		die "Assertion failed: unexpected path fields: " . scalar @$value unless @$value & 1;
 		$_ = $self->_deep_bless($_) for @$value;
 		return bless $data, 'Neo4j::Driver::Type::Path';
