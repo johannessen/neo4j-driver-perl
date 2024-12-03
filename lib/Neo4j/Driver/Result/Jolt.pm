@@ -226,7 +226,7 @@ sub _deep_bless {
 		return $data ? $TRUE : $FALSE;
 	}
 	if (ref $data eq 'ARRAY') {  # List (sparse)
-		$data->[$_] = $self->_deep_bless($data->[$_]) for 0 .. $#{$data};
+		$_ = $self->_deep_bless($_) for @$data;
 		return $data;
 	}
 	if (ref $data eq '') {  # Null or Integer (sparse) or String (sparse)
@@ -254,14 +254,13 @@ sub _deep_bless {
 	}
 	if ($sigil eq '[]') {  # List (strict)
 		die "Assertion failed: unexpected list type: " . ref $value unless ref $value eq 'ARRAY';
-		$value->[$_] = $self->_deep_bless($value->[$_]) for 0 .. $#{$value};
+		$_ = $self->_deep_bless($_) for @$value;
 		return $value;
 	}
 	if ($sigil eq '{}') {  # Map
 		die "Assertion failed: unexpected map type: " . ref $value unless ref $value eq 'HASH';
-		delete $data->{'{}'};
-		$data->{$_} = $self->_deep_bless($value->{$_}) for keys %$value;
-		return $data;
+		$_ = $self->_deep_bless($_) for values %$value;
+		return $value;
 	}
 	if ($sigil eq '()') {  # Node
 		die "Assertion failed: unexpected node type: " . ref $value unless ref $value eq 'ARRAY';
