@@ -96,15 +96,15 @@ END
 
 
 subtest 'empty query' => sub {
-	plan skip_all => '(no empty queries allowed in Bolt)' if $Neo4j_Test::bolt;
-	plan tests => 2;
-	
-	# The result does have stats, but the driver currently doesn't make them available.
-	throws_ok { $s->run()->consume } qr/missing stats/i, 'missing statement - summary';
-	
-	# The result also has no field names
-	require Neo4j::Driver::Record;
-	throws_ok { Neo4j::Driver::Record::_field_names_cache($s->run('')) } qr/missing columns/i, 'result missing columns';
+	plan tests => 8;
+	lives_ok { $r = $s->run()->consume } 'undef query summary lives';
+	lives_ok { $r->counters->nodes_created } 'undef query summary counters live';
+	lives_and { is $r->query->{text}, '' } 'undef query text ""';
+	lives_and { isa_ok $r->server, 'Neo4j::Driver::ServerInfo' } 'undef query ServerInfo';
+	lives_ok { $r = $s->run('')->consume } 'empty query summary lives';
+	lives_ok { $r->counters->nodes_created } 'empty query summary counters live';
+	lives_and { is $r->query->{text}, '' } 'empty query text ""';
+	lives_and { isa_ok $r->server, 'Neo4j::Driver::ServerInfo' } 'empty query ServerInfo';
 };
 
 
@@ -152,7 +152,7 @@ END
 
 
 subtest 'SummaryCounters: from single' => sub {
-	plan tests => 5;
+	plan tests => 6;
 	$q = <<END;
 RETURN 42
 END
@@ -162,6 +162,10 @@ END
 		or diag 'got warning(s): ', explain $w;
 	isa_ok $c, 'Neo4j::Driver::SummaryCounters', 'summary counters';
 	lives_and { ok ! $c->contains_updates } 'contains_updates counter';
+	throws_ok {
+		no warnings 'deprecated';
+		$s->run($q)->fetch->summary
+	} qr/\bconsume\b.*\bsummary\b/i, 'summary for non-single record';
 };
 
 

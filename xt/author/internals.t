@@ -80,13 +80,11 @@ subtest 'disable HTTP summary counters' => sub {
 	plan tests => 3;
 	my $tx = $driver->session->begin_transaction;
 	$tx->{return_stats} = 0;
-	dies_ok {
-		$tx->run('RETURN "no stats 0"')->consume->counters->labels_added;
-	} 'no stats requested - summary';
-	dies_ok {
+	ok ! defined $tx->run('RETURN "no stats 0"')->consume->counters->labels_added, 'no stats requested - summary';
+	{
 		no warnings 'deprecated';
-		$tx->run('RETURN "no stats 1"')->single->summary->counters->labels_added;
-	} 'no stats requested - single summary';
+		ok ! defined $tx->run('RETURN "no stats 1"')->single->summary->counters->labels_added, 'no stats requested - single summary';
+	};
 	lives_ok {
 		$tx->run('RETURN "no stats 2"')->single;
 	} 'no stats requested - single';

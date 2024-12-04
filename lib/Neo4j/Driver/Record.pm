@@ -73,7 +73,6 @@ sub data {
 sub _field_names_cache {
 	my ($result) = @_;
 	
-	croak 'Result missing columns' unless $result && $result->{columns};
 	my $field_names = $result->{columns};
 	my $cache = { '' => $field_names };
 	for my $index (0 .. $#$field_names) {
@@ -118,8 +117,8 @@ sub summary {
 	my ($self) = @_;
 	warnings::warnif deprecated => "summary() in Neo4j::Driver::Record is deprecated; use consume() in Neo4j::Driver::Result instead";
 	
-	$self->{_summary} //= Neo4j::Driver::ResultSummary->new;
-	return $self->{_summary}->_init;
+	croak 'Summary unavailable for Record retrieved with fetch() or list(); use consume() in Neo4j::Driver::Result' unless $self->{_summary};
+	return $self->{_summary};
 }
 
 

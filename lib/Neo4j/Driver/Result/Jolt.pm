@@ -102,7 +102,7 @@ sub _gather_results {
 				data => [@data],
 				stats => $event->{stats},
 				plan => $event->{plan},
-				columns => $columns // [],
+				columns => $columns,
 			};
 			@data = ();
 			$columns = undef;

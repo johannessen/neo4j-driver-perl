@@ -118,9 +118,11 @@ lives_and { ok $s = new_session('Local::Bolt') } 'driver';
 
 
 subtest 'run empty' => sub {
-	plan tests => 2;
+	plan tests => 4;
 	lives_and { ok $r = $s->run('') } 'empty lives';
 	lives_and { is $r->size(), 0 } 'empty no rows';
+	lives_and { is_deeply [$r->keys], [] } 'empty query keys lives';
+	lives_and { isa_ok $r->consume->server(), 'Neo4j::Driver::ServerInfo' };
 };
 
 

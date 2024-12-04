@@ -201,6 +201,10 @@ sub _run {
 			error_handler => $tx->{error_handler},
 		});
 	}
+	else {
+		$result = Neo4j::Driver::Result->new;
+		$result->{server_info} = $self->{server_info};
+	}
 	
 	return ($result);
 }

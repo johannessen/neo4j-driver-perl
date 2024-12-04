@@ -25,7 +25,7 @@ sub new {
 sub keys {
 	my ($self) = @_;
 	
-	return @{ $self->{result}->{columns} };
+	return @{ $self->{result}->{columns} // [] };
 }
 
 
@@ -50,7 +50,7 @@ sub single {
 	
 	croak 'There is not exactly one result record' if $self->size != 1;
 	my ($record) = $self->list;
-	$record->{_summary} = $self->_summary if $self->{result}->{stats};
+	$record->{_summary} = $self->_summary;
 	return $record;
 }
 
@@ -161,7 +161,7 @@ sub _summary {
 	
 	$self->{summary} //= Neo4j::Driver::ResultSummary->new( $self->{result}, $self->{notifications}, $self->{query}, $self->{server_info} );
 	
-	return $self->{summary}->_init;
+	return $self->{summary};
 }
 
 

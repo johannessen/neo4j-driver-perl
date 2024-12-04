@@ -13,31 +13,21 @@ use Neo4j::Driver::SummaryCounters;
 sub new {
 	# uncoverable pod (private method)
 	my ($class, $result, $notifications, $query, $server_info) = @_; 
-	my $self = {};
-	if ($result && $result->{stats}) {
-		$self->{counters} = $result->{stats};
-		$self->{plan} = $result->{plan};
-		$self->{notifications} = $notifications;
-		$self->{query} = $query;
-		$self->{server_info} = $server_info;
-	}
-	return bless $self, $class;
-}
-
-
-sub _init {
-	my ($self) = @_; 
 	
-	# The purpose of this method is to fail as early as possible if we don't
-	# have all necessary info. This should improve the user experience.
-	croak 'Result missing stats' unless $self->{query};
-	return $self;
+	return bless {
+		counters => $result->{stats},
+		notifications => $notifications,
+		plan => $result->{plan},
+		query => $query,
+		server_info => $server_info,
+	}, $class;
 }
 
 
 sub counters {
 	my ($self) = @_;
 	
+	$self->{counters} //= {};
 	return Neo4j::Driver::SummaryCounters->new( $self->{counters} );
 }
 
@@ -67,6 +57,7 @@ sub statement {
 sub query {
 	my ($self) = @_;
 	
+	$self->{query} //= [ '', {} ];
 	return ref $self->{query} eq 'ARRAY' ? {
 		text       => $self->{query}->[0],
 		parameters => $self->{query}->[1],
