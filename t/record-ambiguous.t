@@ -11,13 +11,14 @@ use if $no_warnings = $ENV{AUTHOR_TESTING} ? 1 : 0, 'Test::Warnings';
 
 use Neo4j_Test::MockHTTP;
 use Neo4j::Driver;
+use Neo4j::Driver::Record;
 
 
 # Confirm that ambiguity in record field names is resolved correctly.
 
 my ($d, $s, $r);
 
-plan tests => 4 + $no_warnings;
+plan tests => 5 + $no_warnings;
 
 
 my $mock_plugin = Neo4j_Test::MockHTTP->new;
@@ -95,6 +96,18 @@ subtest 'get without field' => sub {
 		or diag 'got warning(s): ', explain $w;
 	throws_ok { $r->get('') }
 		qr/\bField '' not present\b/i, 'get with empty string dies';
+};
+
+
+subtest 'created_as_number' => sub {
+	plan tests => 7;
+	ok   Neo4j::Driver::Record::_SvNIOKp(0), '0 is number';
+	ok   Neo4j::Driver::Record::_SvNIOKp(-1), '-1 is number';
+	ok   Neo4j::Driver::Record::_SvNIOKp(.1), '.1 is number';
+	ok ! Neo4j::Driver::Record::_SvNIOKp(""), '"" is string';
+	ok ! Neo4j::Driver::Record::_SvNIOKp("1"), '"1" is string';
+	ok ! Neo4j::Driver::Record::_SvNIOKp("NaN"), '"NaN" is string';
+	ok ! Neo4j::Driver::Record::_SvNIOKp({}), '{} is stringy';
 };
 
 

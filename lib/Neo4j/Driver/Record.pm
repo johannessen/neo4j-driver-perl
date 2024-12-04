@@ -11,22 +11,16 @@ use List::Util qw(first);
 use Neo4j::Driver::ResultSummary;
 
 
-# Based on _looks_like_number() in JSON:PP 4.05, originally by HAARG.
-# Modified on 2020 OCT 13 to detect only integers (column index).
-sub _looks_like_int {
-	my $value = shift;
-	# if the utf8 flag is on, it almost certainly started as a string
-	return if utf8::is_utf8($value);
-	# detect numbers
-	# string & "" -> ""
-	# number & "" -> 0 (with warning)
-	# nan and inf can detect as numbers, so check with * 0
+# Check if the given value was created as a number. Older Perls lack stable
+# tracking of numbers vs. strings, but a quirk of bitwise string operators
+# can be used to determine whether the scalar contains a number (see perlop).
+# That isn't quite the same, but it should be good enough for us.
+# (original idea from https://github.com/makamaka/JSON-PP/commit/87bd6a4)
+sub _SvNIOKp {
 	no warnings 'numeric';
-	return unless length((my $dummy = "") & $value);
-	return unless $value eq int $value;
-	return unless $value * 0 == 0;
-	return 1;
+	return length( (my $string = '') & shift );
 }
+*created_as_number = $^V ge v5.36 ? \&builtin::created_as_number : \&_SvNIOKp;
 
 
 sub get {
@@ -44,10 +38,13 @@ sub get {
 	
 	# At this point, it looks like the given $field is both a valid name and
 	# a valid index, which should be pretty rare.
+	# Callers usually specify the field as a literal in the method call, so we
+	# can DWIM and disambiguate by using Perl's created_as_number() built-in.
 	
-	if ( _looks_like_int $field ) {
-		croak sprintf "Field %i not present in query result", $field
-			unless $field >= 0 && $field < @{$self->{row}};
+	no if $^V ge v5.36, 'warnings', 'experimental::builtin';
+	if ( created_as_number($field) ) {
+		croak sprintf "Field %s not present in query result", $field
+			unless $field == int $field && $field >= 0 && $field < @{$self->{row}};
 		return $self->{row}->[$field];
 	}
 	
