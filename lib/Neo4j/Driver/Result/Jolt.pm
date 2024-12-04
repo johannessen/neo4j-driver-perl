@@ -92,7 +92,7 @@ sub _gather_results {
 			croak "Jolt error: unexpected data event $prev" unless $state == 1 || $state == 2;
 			croak "Jolt error: expected reference to ARRAY, received " . (ref $event ? "reference to " . ref $event : "scalar") . " in $type event $prev" unless ref $event eq 'ARRAY';
 			$state = 2;
-			push @data, { row => $event, meta => [] };
+			push @data, { row => $event };
 		}
 		elsif ($type eq 'summary') {  # StatementEndEvent
 			croak "Jolt error: unexpected summary event $prev" unless $state == 1 || $state == 2;
@@ -213,7 +213,6 @@ sub _init_record {
 	
 	$record->{field_names_cache} = $self->{field_names_cache};
 	$self->_deep_bless( $record->{row} );
-	$record->{meta} = 'The Neo4j::Driver::Record->{meta} feature was removed';
 	return bless $record, 'Neo4j::Driver::Record';
 }
 

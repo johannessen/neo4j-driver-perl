@@ -147,7 +147,8 @@ sub _init_record {
 	
 	$record->{field_names_cache} = $self->{field_names_cache};
 	$self->_deep_bless( $record->{row}, $record->{meta}, $record->{rest} );
-	$record->{meta} = 'The Neo4j::Driver::Record->{meta} feature was removed';
+	delete $record->{meta};
+	delete $record->{rest};
 	return bless $record, 'Neo4j::Driver::Record';
 }
 

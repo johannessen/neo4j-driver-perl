@@ -64,7 +64,7 @@ sub _gather_results {
 		croak 'next true and failure/success mismatch: ' . $stream->failure . '/' . $stream->success unless $stream->failure == -1 || $stream->success == -1 || ($stream->failure xor $stream->success);  # assertion
 		Neo4j::Driver::Net::Bolt->_trigger_bolt_error( $stream, $self->{error_handler}, $self->{cxn} ) if $stream->failure && $stream->failure != -1;
 		
-		push @data, { row => \@row, meta => [] };
+		push @data, { row => \@row };
 	}
 	
 	croak 'next false and failure/success mismatch: ' . $stream->failure . '/' . $stream->success unless  $stream->failure == -1 || $stream->success == -1 || ($stream->failure xor $stream->success);  # assertion
@@ -106,7 +106,6 @@ sub _init_record {
 	return undef unless $record;  ##no critic (ProhibitExplicitReturnUndef)
 	
 	$record->{field_names_cache} = $self->{field_names_cache};
-	$record->{meta} = 'The Neo4j::Driver::Record->{meta} feature was removed';
 	return bless $record, 'Neo4j::Driver::Record';
 }
 
