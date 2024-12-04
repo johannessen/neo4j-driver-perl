@@ -103,7 +103,8 @@ subtest 'empty query' => sub {
 	throws_ok { $s->run()->consume } qr/missing stats/i, 'missing statement - summary';
 	
 	# The result also has no field names
-	throws_ok { $s->run('')->_column_keys } qr/missing columns/i, 'result missing columns';
+	require Neo4j::Driver::Record;
+	throws_ok { Neo4j::Driver::Record::_field_names_cache($s->run('')) } qr/missing columns/i, 'result missing columns';
 };
 
 

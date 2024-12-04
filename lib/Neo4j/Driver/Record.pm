@@ -6,6 +6,7 @@ package Neo4j::Driver::Record;
 
 
 use Carp qw(croak);
+use List::Util qw(first);
 
 use Neo4j::Driver::ResultSummary;
 
@@ -38,10 +39,11 @@ sub get {
 		return $self->{row}->[0];
 	}
 	
-	croak "Field '' not present in query result" if ! length $field;
+	my $index = $self->{field_names_cache}->{$field};
+	return $self->{row}->[$index] if defined $index && length $field;
 	
-	my $unambiguous_key = $self->{column_keys}->{$field};
-	return $self->{row}->[$unambiguous_key] if defined $unambiguous_key;
+	# At this point, it looks like the given $field is both a valid name and
+	# a valid index, which should be pretty rare.
 	
 	if ( _looks_like_int $field ) {
 		croak sprintf "Field %i not present in query result", $field
@@ -49,32 +51,23 @@ sub get {
 		return $self->{row}->[$field];
 	}
 	
-	my $key = $self->_field_index( $field );
+	my $field_names = $self->{field_names_cache}->{''};
+	$index = first { $field eq $field_names->[$_] } 0 .. $#$field_names;
 	croak sprintf "Field '%s' not present in query result", $field
-		unless defined $key;
-	return $self->{row}->[$key];
+		unless defined $index;
+	return $self->{row}->[$index];
 }
 
 
 sub data {
 	my ($self) = @_;
 	
-	my %data = ();
-	foreach my $key (keys %{ $self->{column_keys} }) {
-		$data{$key} = $self->{row}->[ $self->_field_index( $key ) ];
-	}
-	return \%data;
-}
-
-
-# Return the index of the given column in the result record array
-sub _field_index {
-	my ($self, $name) = @_;
+	return $self->{hash} if exists $self->{hash};
 	
-	my $cache = $self->{column_keys};
-	return $cache->{$name} if length $name && exists $cache->{$name};
-	return $cache->{''}->{$name} if exists $cache->{''};
-	return undef;
+	my $field_names = $self->{field_names_cache}->{''};
+	my %data;
+	$data{ $field_names->[$_] } = $self->{row}->[$_] for 0 .. $#$field_names;
+	return $self->{hash} = \%data;
 }
 
 
@@ -84,24 +77,23 @@ sub _field_names_cache {
 	my ($result) = @_;
 	
 	croak 'Result missing columns' unless $result && $result->{columns};
-	my $columns = $result->{columns};
-	my $cache = {};
-	for my $index (0 .. $#$columns) {
-		my $name = $columns->[$index];
+	my $field_names = $result->{columns};
+	my $cache = { '' => $field_names };
+	for my $index (0 .. $#$field_names) {
+		my $name = $field_names->[$index];
 		
 		# Create lookup cache for both index and field name to the index.
-		# Move ambiguous index/name pairs to the '' sub-hash.
+		# Skip ambiguous index/name pairs.
 		
 		if ( exists $cache->{$name} ) {
 			delete $cache->{$name};
-			$cache->{''}->{$name} = $index;
 		}
 		else {
 			$cache->{$name} = $index;
 		}
 		
 		if ( exists $cache->{$index} ) {
-			$cache->{''}->{$index} = delete $cache->{$index};
+			delete $cache->{$index};
 		}
 		else {
 			$cache->{$index} = $index;
@@ -119,8 +111,8 @@ sub _field_names_cache {
 
 # Exceptionally, index/name collisions can occur (see record-ambiguous.t).
 # The field names lookup cache is limited to cases where no ambiguity exists.
-# Any field name which would also be a valid index is moved to a sub-hash
-# stored in the entry '' (empty string). Neo4j doesn't allow zero-length
+# A reference to the original list of field names is kept in
+# the entry '' (empty string). Neo4j doesn't allow zero-length
 # field names, so '' itself is never ambiguous.
 
 

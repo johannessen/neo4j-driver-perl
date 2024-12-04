@@ -165,7 +165,7 @@ sub _new_result {
 		exhausted => 0,  # 1: all records read by the client; fetch() will fail
 		result => $result,
 		buffer => [],
-		columns => undef,
+		field_names_cache => undef,
 		summary => undef,
 		server_info => $params->{server_info},
 		jolt_v2 => $params->{jolt_v2},
@@ -211,7 +211,7 @@ sub _info {
 sub _init_record {
 	my ($self, $record) = @_;
 	
-	$record->{column_keys} = $self->{columns};
+	$record->{field_names_cache} = $self->{field_names_cache};
 	$self->_deep_bless( $record->{row} );
 	$record->{meta} = 'The Neo4j::Driver::Record->{meta} feature was removed';
 	return bless $record, 'Neo4j::Driver::Record';

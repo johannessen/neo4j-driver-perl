@@ -22,14 +22,6 @@ sub new {
 }
 
 
-sub _column_keys {
-	my ($self) = @_;
-	
-	$self->{columns} //= Neo4j::Driver::Record::_field_names_cache( $self->{result} );
-	return $self->{columns};
-}
-
-
 sub keys {
 	my ($self) = @_;
 	
@@ -73,7 +65,7 @@ sub _as_fully_buffered {
 	# buffered right away, avoiding the need to loop through _fetch_next().
 	# (also used in Bolt/Jolt testing, $gather_results 1)
 	$self->{buffer} = $self->{result}->{data};
-	$self->{columns} = Neo4j::Driver::Record::_field_names_cache( $self->{result} );
+	$self->{field_names_cache} = Neo4j::Driver::Record::_field_names_cache( $self->{result} );
 	$self->_init_record( $_ ) for @{ $self->{buffer} };
 	return $self;
 }
@@ -84,7 +76,7 @@ sub _fill_buffer {
 	
 	return 0 unless $self->{attached};
 	
-	$self->_column_keys if $self->{result};
+	$self->{field_names_cache} //= Neo4j::Driver::Record::_field_names_cache( $self->{result} );
 	
 	# try to get at least $minimum records on the buffer
 	my $buffer = $self->{buffer};

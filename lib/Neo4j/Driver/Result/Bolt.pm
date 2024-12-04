@@ -34,7 +34,7 @@ sub new {
 		attached => 1,   # 1: unbuffered records may exist on the stream
 		exhausted => 0,  # 1: all records read by the client; fetch() will fail
 		buffer => [],
-		columns => undef,
+		field_names_cache => undef,
 		summary => undef,
 		query => $params->{query},
 		cxn => $params->{bolt_connection},  # important to avoid dereferencing the connection
@@ -105,7 +105,7 @@ sub _init_record {
 	
 	return undef unless $record;  ##no critic (ProhibitExplicitReturnUndef)
 	
-	$record->{column_keys} = $self->{columns};
+	$record->{field_names_cache} = $self->{field_names_cache};
 	$record->{meta} = 'The Neo4j::Driver::Record->{meta} feature was removed';
 	return bless $record, 'Neo4j::Driver::Record';
 }

@@ -60,14 +60,15 @@ subtest 'wrong/ambiguous field names for get()' => sub {
 
 
 subtest 'hashref' => sub {
-	plan tests => 2 + 3;
+	plan tests => 3 + 3;
 	my $fields = {
 		first  => 17,
 		second => 19,
 		third  => 23,
 	};
 	$q = 'RETURN {first} AS first, {second} AS second, {third} AS third';
-	lives_ok { $r = $s->run($q, $fields)->single->data; } 'get hashref';
+	lives_ok { $r = $s->run($q, $fields)->single; } 'get record';
+	lives_and { is $r->data, $r = $r->data } 'get cached hashref';
 	is ref $r, 'HASH', '$r is HASH ref';
 	foreach my $key ( sort keys %$fields ) {
 		is $r->{$key}, $fields->{$key}, "hashref key $key";

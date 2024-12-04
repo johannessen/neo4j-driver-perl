@@ -48,7 +48,7 @@ $s = $d->session;
 
 
 subtest 'ambiguous index/key 0' => sub {
-	plan tests => 6;
+	plan tests => 7;
 	$r = $s->run($query{'RETURN 2, 1 AS `0`'})->fetch;
 	is $r->get( 0 ), 2, 'get( 0 )';
 	is $r->get("0"), 1, 'get("0")';
@@ -56,11 +56,12 @@ subtest 'ambiguous index/key 0' => sub {
 	is $r->get("1"), 1, 'get("1")';
 	is $r->get( 2 ), 2, 'get( 2 )';
 	is $r->get("2"), 2, 'get("2")';
+	is_deeply $r->data, { 2 => 2, 0 => 1 }, 'data hashref';
 };
 
 
 subtest 'ambiguous index/key 1' => sub {
-	plan tests => 6;
+	plan tests => 7;
 	$r = $s->run($query{'RETURN 0 AS `1`, 2'})->fetch;
 	is $r->get( 0 ), 0, 'get( 0 )';
 	is $r->get("0"), 0, 'get("0")';
@@ -68,11 +69,12 @@ subtest 'ambiguous index/key 1' => sub {
 	is $r->get("1"), 0, 'get("1")';
 	is $r->get( 2 ), 2, 'get( 2 )';
 	is $r->get("2"), 2, 'get("2")';
+	is_deeply $r->data, { 1 => 0, 2 => 2 }, 'data hashref';
 };
 
 
 subtest 'ambiguous index/key vice-versa' => sub {
-	plan tests => 6;
+	plan tests => 7;
 	$r = $s->run($query{'RETURN 1, 0, 2'})->fetch;
 	is $r->get( 0 ), 1, 'get( 0 )';
 	is $r->get("0"), 0, 'get("0")';
@@ -80,16 +82,19 @@ subtest 'ambiguous index/key vice-versa' => sub {
 	is $r->get("1"), 1, 'get("1")';
 	is $r->get( 2 ), 2, 'get( 2 )';
 	is $r->get("2"), 2, 'get("2")';
+	is_deeply $r->data, { 1 => 1, 0 => 0, 2 => 2 }, 'data hashref';
 };
 
 
 subtest 'get without field' => sub {
-	plan tests => 2;
+	plan tests => 3;
 	$r = $s->run($query{'RETURN 1, 0, 2'})->fetch;
 	my $w;
 	lives_ok { $w = warning { $r->get; } } 'get without field lives';
 	like $w, qr/\bambiguous\b.*\bget\b.*\bfield/i, 'get without field ambiguous'
 		or diag 'got warning(s): ', explain $w;
+	throws_ok { $r->get('') }
+		qr/\bField '' not present\b/i, 'get with empty string dies';
 };
 
 
