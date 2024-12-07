@@ -271,9 +271,9 @@ see L<Neo4j::Driver::Plugin/"USE OF INTERNAL APIS">.
 =head2 Custom HTTP networking modules
 
 L<Neo4j::Driver> includes a default HTTP network adapter.
-The included adapter may change in future. As of S<version 0.52>,
-the default adapter uses L<LWP> directly. Versions earlier
-S<than 0.21> used L<REST::Client>.
+As of S<version 1.02>, the default adapter uses L<HTTP::Tiny>.
+Earlier versions used L<LWP::UserAgent> S<since 0.21>, or
+L<REST::Client> before that.
 
 The driver's test suite still uses the former C<net_module>
 option internally. Modules to be used as C<net_module> must

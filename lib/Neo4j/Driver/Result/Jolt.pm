@@ -180,7 +180,7 @@ sub _next_event {
 	my ($self) = @_;
 	
 	my $line = $self->{http_agent}->fetch_event;
-	return unless defined $line;
+	return unless length $line;
 	
 	my $json = $self->{json_coder}->decode($line);
 	

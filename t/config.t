@@ -384,11 +384,11 @@ subtest 'auth encoding integration' => sub {
 	my ($m, $uri);
 	$uri = 'http://utf8:%C4%80@test1:10001';
 	lives_ok { $d = 0; $d = Neo4j::Driver->new($uri) } 'utf8 driver lives';
-	lives_ok { $m = 0; $m = Neo4j::Driver::Net::HTTP::LWP->new($d) } 'utf8 net module lives';
+	lives_ok { $m = 0; $m = Neo4j::Driver::Net::HTTP::Tiny->new($d) } 'utf8 net module lives';
 	lives_and { is ''.$m->uri(), $uri } 'utf8 uri';
 	$uri = 'http://latin1:%C4%80%FF@test2:10002';
 	lives_ok { $d = 0; $d = Neo4j::Driver->new($uri) } 'latin1 driver lives';
-	lives_ok { $m = 0; $m = Neo4j::Driver::Net::HTTP::LWP->new($d) } 'latin1 net module lives';
+	lives_ok { $m = 0; $m = Neo4j::Driver::Net::HTTP::Tiny->new($d) } 'latin1 net module lives';
 	lives_and { like ''.$m->uri(), qr/latin1:%C3%84%C2%80%C3%BF@/i } 'latin1 uri after utf8::encode';
 };
 

@@ -14,7 +14,7 @@ our @CARP_NOT = qw(Neo4j::Driver::Transaction Neo4j::Driver::Transaction::HTTP);
 use Time::Piece 1.20 qw();
 use URI 1.31;
 
-use Neo4j::Driver::Net::HTTP::LWP;
+use Neo4j::Driver::Net::HTTP::Tiny;
 use Neo4j::Driver::Result::Jolt;
 use Neo4j::Driver::Result::JSON;
 use Neo4j::Driver::Result::Text;
@@ -35,7 +35,7 @@ sub new {
 	my ($class, $driver) = @_;
 	
 	$driver->{events}->{default_handlers}->{http_adapter_factory} //= sub {
-		my $net_module = $driver->{config}->{net_module} || 'Neo4j::Driver::Net::HTTP::LWP';
+		my $net_module = $driver->{config}->{net_module} || 'Neo4j::Driver::Net::HTTP::Tiny';
 		return $net_module->new($driver);
 	};
 	my $http_adapter = $driver->{events}->trigger('http_adapter_factory', $driver);

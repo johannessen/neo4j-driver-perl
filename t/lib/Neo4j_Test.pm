@@ -32,6 +32,7 @@ sub driver_maybe {
 	$driver->basic_auth($user, $pass);
 	$driver->config(timeout => 2);  # 2 seconds timeout may speed up testing
 	$driver->config(cypher_params => v2);
+	$driver->config(trust_ca => $ENV{HTTPS_CA_FILE});
 	
 	$bolt = $driver->config('uri') && $driver->config('uri')->scheme eq 'bolt';
 	if ($ENV{TEST_NEO4J_NETMODULE}) {
@@ -139,7 +140,7 @@ export TEST_NEO4J_PASSWORD=neo4j
 
 # server with auth disabled
 export TEST_NEO4J_SERVER=http://127.0.0.1:7474
-export TEST_NEO4J_NETMODULE=Neo4j::Driver::Net::HTTP::LWP
+export TEST_NEO4J_NETMODULE=Neo4j::Driver::Net::HTTP::Tiny
 
 
 #! csh

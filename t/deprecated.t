@@ -143,7 +143,7 @@ subtest 'jolt config option' => sub {
 
 subtest 'net_module config option' => sub {
 	plan tests => 2;
-	my $net_module = 'Neo4j::Driver::Net::HTTP::LWP';
+	my $net_module = 'Neo4j::Driver::Net::HTTP::Tiny';
 	dies_ok { Neo4j::Driver->new({ net_module => $net_module }) } 'set net_module';
 	dies_ok { $driver->config('net_module') } 'get net_module';
 };

@@ -145,9 +145,6 @@ Specifies the connection timeout. The semantics of this config
 option vary by network library. Its default value is therefore
 not defined here and is subject to change.
 
-For details, see L<LWP::UserAgent/"timeout"> when using HTTP or
-L<select(2)> when using Bolt.
-
 =head2 trust_ca
 
  $driver->config(trust_ca => 'neo4j/certificates/neo4j.cert');
@@ -176,7 +173,7 @@ Specifies the Neo4j server connection URI. The URI scheme determines
 the type of driver created. Supported schemes are C<bolt>, C<http>,
 C<https>, and C<neo4j>.
 Use of C<bolt> URIs requires L<Neo4j::Bolt> to be installed; use
-of C<https> URIs requires L<LWP::Protocol::https> to be installed.
+of C<https> URIs requires L<IO::Socket::SSL> to be installed.
 
 All URIs using the C<neo4j> scheme are interpreted either as C<bolt>
 or as C<http>/C<https> URIs. The conditions that influence this

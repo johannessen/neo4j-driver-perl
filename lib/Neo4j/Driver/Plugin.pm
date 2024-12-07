@@ -21,10 +21,10 @@ package Neo4j::Driver::Plugin;
    $events->add_handler( http_adapter_factory => sub {
      my ($continue, $driver) = @_;
      
-     # Get and modify the default adapter
-     # (currently Neo4j::Driver::Net::HTTP::LWP)
+     # Get and modify the default adapter (internal API)
+     # (currently Neo4j::Driver::Net::HTTP::Tiny)
      my $adapter = $continue->();
-     $adapter->ua->proxy('http', 'http://192.0.2.2:3128/');
+     $adapter->{http}->proxy('http://192.0.2.2:3128/');
      return $adapter;
    });
  }
@@ -69,7 +69,7 @@ is triggered. Events triggered by the driver are specified in
 L</"EVENTS"> below. Plug-ins can also define custom events.
 
 I<The plug-in interface as described in this document is available
-since version 0.34.>
+since version 1.02.>
 
 =head1 EVENTS
 
@@ -259,7 +259,9 @@ for future use by the driver itself:
 
 =item * Neo4j::Driver::Net::HTTP::Role
 
-=item * Neo4j::Driver::Net::HTTP::Tiny
+=item * Neo4j::Driver::Net::HTTP::Query
+
+=item * Neo4j::Driver::Net::Query
 
 =back
 
@@ -296,7 +298,7 @@ The driver primarily uses HTTP network adapters by first calling
 the C<request()> method, which initiates a request on the network,
 and then calling other methods to obtain information about the
 response. See
-L<Neo4j::Driver::Net|https://github.com/johannessen/neo4j-driver-perl/blob/0.52/lib/Neo4j/Driver/Net.pod>
+L<Neo4j::Driver::Net|https://github.com/johannessen/neo4j-driver-perl/blob/1.02/lib/Neo4j/Driver/Net.pod>
 for more information.
 
  $adapter->request('GET', '/', undef, 'application/json');
@@ -346,7 +348,8 @@ the same request is undefined.
 
 Return the next Jolt event from the response to the last network
 request as a string. When there are no further Jolt events, this
-method returns an undefined value. If the response hasn't been
+method returns the empty string. (Prior to S<version 1.02>, it
+needed to return an undefined value.) If the response hasn't been
 fully received at the time this method is called and the internal
 response buffer does not contain at least one event, this method
 will block until at least one event is available.
@@ -390,6 +393,7 @@ For error responses generated internally by the networking
 library, for example because the connection failed, C<status>
 and C<content_type> should both be the empty string, with
 the C<http_reason()> method providing the error message.
+C<success> should be false for errors.
 Optionally, additional information may be made available in
 a plain text response content; in this case, the C<status>
 should preferably be C<"599">.
@@ -424,7 +428,7 @@ The default adapter included with the driver uses L<JSON::MaybeXS>.
 =item request
 
  sub request {
-   my ($self, $method, $url, $json, $accept) = @_;
+   my ($self, $method, $url, $json, $accept, $mode) = @_;
    ...
  }
 
@@ -441,6 +445,8 @@ parameters are given:
 
 =item * C<$accept> – string with value for the C<Accept:> header
 
+=item * C<$mode> – value for the C<Access-Mode:> header
+
 =back
 
 The request C<$url> is to be interpreted relative to the server
@@ -454,6 +460,10 @@ of C<$json> will be C<undef>.
 C<$accept> will have different values depending on C<$method>;
 this is a workaround for a known issue in the Neo4j server
 (L<#12644|https://github.com/neo4j/neo4j/issues/12644>).
+
+C<Access-Mode> is a non-standard header used by Neo4j for
+server-side routing. C<$mode> can be either C<"READ"> or C<"WRITE">.
+A value of C<undef> will suppress generation of the header.
 
 The C<request()> method may or may not block until the response
 has been received.

@@ -262,7 +262,7 @@ will automatically fall back to slower REST-style JSON.
 
 The driver also supports encrypted communication using HTTPS,
 but doesn't bundle the necessary packages. You will need to
-install L<LWP::Protocol::https> separately to enable HTTPS.
+install L<IO::Socket::SSL> separately to enable HTTPS.
 
 =back
 
