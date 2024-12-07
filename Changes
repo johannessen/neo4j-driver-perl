@@ -1,8 +1,9 @@
 Revision history for Neo4j::Driver
 
-1.0154  2024-12-04  (TRIAL RELEASE)
+1.0155  2024-12-07  (TRIAL RELEASE)
 
  - Fix bug causing data() in Record to have extra or missing entries. (GH #21)
+ - Fix Unicode bug in username/password handling of LWP net adapter.
  - Pass through Neo4j::Bolt values unchanged, significantly reducing overhead.
  - Optimise parsing of Jolt result values, improving performance.
  - The properties() method of nodes and relationships now returns a reference

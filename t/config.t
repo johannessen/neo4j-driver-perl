@@ -359,7 +359,9 @@ subtest 'auth' => sub {
 
 subtest 'auth encoding unit' => sub {
 	plan tests => 12;
-	# The implied assumption here is that anything that *can* be decoded as UTF-8 probably *is* UTF-8.
+	# The Neo4j server expects UTF-8 in the Authorization header. The implied assumption
+	# here is that anything that *can* be decoded as UTF-8 probably *is* UTF-8, and anything
+	# else must be treated as Latin-1. This is exactly the behaviour of utf8::decode().
 	my $a = { scheme => 'basic', principal => "foo\x{100}foo", credentials => '' };
 	lives_ok { $d = 0; $d = Neo4j::Driver->new("http://foo\x{c4}\x{80}foo\@test") } 'uri utf8 auth lives';
 	lives_and { is_deeply $d->config('auth'), $a } 'uri utf8 auth';
@@ -387,7 +389,7 @@ subtest 'auth encoding integration' => sub {
 	$uri = 'http://latin1:%C4%80%FF@test2:10002';
 	lives_ok { $d = 0; $d = Neo4j::Driver->new($uri) } 'latin1 driver lives';
 	lives_ok { $m = 0; $m = Neo4j::Driver::Net::HTTP::LWP->new($d) } 'latin1 net module lives';
-	lives_and { is ''.$m->uri(), $uri } 'latin1 uri';
+	lives_and { like ''.$m->uri(), qr/latin1:%C3%84%C2%80%C3%BF@/i } 'latin1 uri after utf8::encode';
 };
 
 

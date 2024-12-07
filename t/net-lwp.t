@@ -192,7 +192,7 @@ subtest 'auth variations' => sub {
 	$config = { uri => $base, auth => { scheme => 'basic', principal => "\xc4\x80" } };
 	$driver = Neo4j_Test::DriverConfig->new($config);
 	lives_ok { $m = Neo4j::Driver::Net::HTTP::LWP->new($driver) } 'new with latin1 userid';
-	lives_and { like $m->uri(), qr|//%C4%80:@|i } 'uri with latin1 userid';
+	lives_and { like $m->uri(), qr|//%C3%84%C2%80:@|i } 'latin1 userid after utf8::encode';
 	$config = { uri => $base, auth => { scheme => 'basic', credentials => "\x{100}" } };
 	$driver = Neo4j_Test::DriverConfig->new($config);
 	lives_ok { $m = Neo4j::Driver::Net::HTTP::LWP->new($driver) } 'new with utf8 passwd';

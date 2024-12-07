@@ -28,7 +28,7 @@ sub new {
 		my $userid = $auth->{principal}   // '';
 		my $passwd = $auth->{credentials} // '';
 		my $userinfo = join ':', map {
-			utf8::encode $_ if utf8::is_utf8 $_;  # uri_escape doesn't handle wide characters
+			utf8::encode $_;  # uri_escape doesn't handle wide characters
 			URI::Escape::uri_escape $_;
 		} $userid, $passwd;
 		$uri = $uri->clone;
