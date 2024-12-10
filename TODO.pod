@@ -9,58 +9,19 @@ See also: L<https://github.com/johannessen/neo4j-driver-perl/issues>
 
 =head2 Functionality and API
 
-=head3 Tier 0
-
 =over
-
-=item * Check Neo4p for deprecated / internal stuff, offer PR if necessary or
-maybe fix directly.
-
-=back
-
-=head3 Tier 1
-
-=over
-
-=item * Drop Bolt deep_bless. This requires perlbolt Types v2 support though.
-(I I<really> want this.)
-
-=item * Refactor Node etc. to match the Jolt data structures instead of JSON;
-refactor Record to be implemented as just a single array representing the row,
-with the (C<get("2")>-fixed) column lookup hash appended at the array's end
-
-=item * Remove defensive copies in C<property()>; document that C<properties()>
-will then actually be the fastest way to get a single property (about 8% faster
-than C<get()>).
-
-=back
-
-=head3 Tier 2
-
-=over
-
-=item * Neo4j::Driver::Net::HTTP::Tiny
-
-=item * Refactor summary access
 
 =item * add missing fields to result summary and counters, see
 L</"Neo4j::Driver::ResultSummary"> / L</"Neo4j::Driver::SummaryCounters"> below
 
-=item * Remove old-style Jolt (limit Jolt to 4.3+)
-
-=back
-
-=head3 Tier 3
-
-=over
-
 =item * Config rework, see L</"Neo4j::Driver::Config"> below
-
-=item * look into why empty queries behave so weirdly (see test in F<summary.t>)
+(not a breaking change)
 
 =item * we can probably get rid of the C<return_stats> internal API by using
 the sim to modify the adapter directly (tests that need stats would have to
 S<e. g.> set a global in the sim though)
+
+=item * Query API, see L</"Neo4j::Driver::Net::HTTP"> below
 
 =back
 
@@ -77,10 +38,6 @@ impossible to cover. In some of these cases, it may be possible to refactor the
 code, such as by banking on autovivification (i.e. don't defend against undefined
 C<$a> in expressions like C<< $a->{b} >>; see L<perlref/"Using References">).
 L<Test::Without::Module> might help in some cases.
-
-=item * The C<deep_bless> subs contain a lot of assertions and other checks
-that are not normally necessary. Since this logic seems to work fine, it should
-be simplified. (This may also make it easier to unroll the recursion later.)
 
 =item * Documenting each attribute in L<Neo4j::Driver::SummaryCounters> as individual
 methods might be a quick way to bring up the B<pod> coverage stats a bit.
@@ -99,11 +56,6 @@ Use of C<<< << >>> causes statements to end with C<\n>, which the simulator
 could filter out. 
 The internals test "transaction: REST 404 error handling" should run a distinct
 statement.
-
-=item * Consider migrating the LWP tests away from L<Mock::Quick> to reduce
-the dependency chain (L<Mock::MonkeyPatch> and L<Mock::Sub> look extremely
-light-weight, alternatives might I<perhaps> be L<Test::MockObject::Extends>
-or L<Test::LWP::UserAgent>; there is also L<Sub::Override> and L<Test2::Mock>).
 
 =item * Verify that L<Neo4j::Driver::Type::Node/"get"> and
 L<Neo4j::Driver::Type::Relationship/"get"> really do return undef
@@ -166,6 +118,11 @@ researched further.
 =item * Jolt results: if C<concurrent_tx>, then enforce C<gather_results>;
 maybe formally discourage C<concurrent_tx>
 
+=item * A global way of providing auth credentials and perhaps other config
+options might be useful. For example, C<$Neo4j::Driver::Config::auth> or a
+C<Neo4j::Driver::Config::MY> package could be checked. But this should
+probably only happen if no (auth) config at all is given for the driver.
+
 =back
 
 =head2 Neo4j::Driver::Events
@@ -185,11 +142,15 @@ for the special meaning of C<\n>.
 
 =over
 
+=item * Maybe merge Bolt and HTTP packages.
+
 =back
 
 =head2 L<Neo4j::Driver::Transaction>
 
 =over
+
+=item * Maybe move Bolt and HTTP packages into individual files.
 
 =item * Run statements lazily: Just like with the official drivers, statements
 passed to C<run> should be gathered until their results are actually accessed.
@@ -228,6 +189,11 @@ pattern, which is better done using C<< $record->get->properties->{key} >>
 anyway. The official drivers only offer C<get()>, and C<field()> might be too
 similar to C<fields()> in the official Java driver, so it isn't even clear
 if the name is acceptable.
+
+=item * Record could be implemented as just a single array representing the row,
+with the (C<get("2")>-fixed) column lookup hash appended at the array's end.
+However, that is currently blocked by C<single->summary> (I<one> special value
+appended might be acceptable, I<two> seems like too much of a hack).
 
 =back
 
@@ -291,6 +257,8 @@ guaranteed for the C<http_header()> method that the returned hashref will not
 be used by the driver/controller after the next call to C<request()>, so that
 the underlying hash may be reused by the net adapter.
 
+=item * I think C<weaken> can be removed from C<_init_default_handlers>.
+
 =back
 
 =head2 L<Neo4j::Driver::Net::Bolt>
@@ -320,29 +288,25 @@ Neo4j::Types->VERSION lt '2.50' and die sprintf "Neo4j::Bolt version 0.5000 requ
 =item * A small memory leak exists in C<new()>. Probably no big deal.
 The config rework will eventually address this.
 
-=item * Perl HTTP libraries like L<LWP> don't report OS L<errno|Errno> codes.
-(BSD: C<man 2 intro>) C<$!> is unreliable. It might be possible to recreate
-errno codes by parsing error string messages.
-L<mentalisttraceur/errnoname|https://github.com/mentalisttraceur/errnoname>
-might be of some use there. But this idea is very likely not worth the effort.
-
 =item * There is a new-ish Aura Query API; it seems to offer a new query format
 that also allows 3.2+ values as query params: C<application/vnd.neo4j.query>
 L<https://neo4j.com/docs/query-api/current/>
-Unfortunately it doesn't support transactions yet, so it's somewhat useless.
-(Except maybe if C<vnd.neo4j.query> is allowed for regular HTTP API requests?)
-Still, creating an experimental plugin for this would be a nice way to figure
-out how the plugin API would have to look like in order to be useful.
+It only offers transactions starting with 5.26. While it may be available on
+earlier versions, it's mostly useless without transactions. Even in 5.26,
+the Query API seems to have beta quality; just a few weeks ago, B<gjmwoods>
+described it as being "flaky". However, it looks like 5.26 actually deprecates
+the old transactional endpoints, so the Query API is definitely something we
+will have to deal with, possibly in a new Neo4j::Driver::Net::Query controller.
 
-=back
+=item * Old-style Jolt (from broken Neo4j versions 4.2.0-4.2.4) doesn't need
+to be supported anymore. I don't think limiting Jolt to 4.3+ would actually be
+helpful with the current implementation, but it wouldn't be a problem, either.
 
-=head2 L<Neo4j::Driver::Net::HTTP::LWP>
-
-=over
-
-=item * As a micro-optimisation for Jolt event parsing, we should investigate
-the best way to split the buffer; likely by using C<substr ... REPLACEMENT>
-for the OOK hack, see L<http://nntp.perl.org/group/perl.perl5.porters/269043>
+=item * Trying to speak HTTP to Neo4j on port 7687 leads to nasty errors
+(C<malformed JSON string ... at character offset 0 at .../JSON.pm line 92>).
+Can this be changed to a more helpful message? Looks like C<_parse_json()> in
+F<JSON.pm> receives exactly the empty string as C<$response>. Maybe just give
+a better error message with hint in that particular case, like in F<Text.pm>.
 
 =back
 
@@ -356,9 +320,10 @@ for element ID comparison on nodes and relationships.
 =item * Consider whether to use C<use overload '%{}'> to allow direct
 access to e. g. properties using the pre-0.13 hashref syntax. See
 L<https://metacpan.org/pod/overload#Two-face-References> for an example.
-L<perltie> might perhaps also work.
 Note that L<overload> might be a memory hog; see L<Types::Serialiser/"BUGS">.
 
 =item * Remove Type::Bytes and use the generic type instead
+(however, Bytes would be the only type where we could do this;
+it's probably not worth the potential extra dependency).
 
 =back
