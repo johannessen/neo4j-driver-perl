@@ -63,7 +63,6 @@ sub _execute {
 	croak sprintf "%s->execute_%s() requires subroutine ref", __PACKAGE__, lc $mode unless ref $func eq 'CODE';
 	
 	$self->{retry_sleep} //= 1;
-	my (@r, $r);
 	my $time_stop = Time::HiRes::time
 		+ ($self->{driver}->config('max_transaction_retry_time') // 30);  # seconds
 	my $tries = 0;
@@ -74,7 +73,7 @@ sub _execute {
 		try {
 			$tx->_begin;
 			$tx->{managed} = 1;  # Disallow commit() in $func
-			wantarray ? @r = $func->($tx) : $r = $func->($tx);
+			wantarray ? (my @r = $func->($tx)) : (my $r = $func->($tx));
 			$tx->{managed} = 0;
 			$tx->commit;
 			
