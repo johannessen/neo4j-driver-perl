@@ -124,8 +124,8 @@ reference for continuing with the next handler registered for
 this event and the driver.
 
 A handler for this event must return the blessed instance of
-an HTTP adapter module (formerly known as "networking module")
-to be used instead of the default adapter built into the driver.
+an HTTP adapter module to be used instead of the default adapter
+built into the driver.
 See L</"Network adapter API for HTTP"> below.
 
 =back
@@ -164,8 +164,7 @@ of the driver.
 
 =head1 THE EVENT MANAGER
 
-The job of the event manager (formerly known as the "plug-in
-manager") is to invoke the appropriate
+The job of the event manager is to invoke the appropriate
 event handlers when events are triggered. It also allows clients
 to modify the list of registered handlers. A reference to the
 event manager is provided to your plug-in when it is loaded;
