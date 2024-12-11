@@ -1,10 +1,8 @@
-use 5.010;
-use strict;
+use v5.12;
 use warnings;
-use utf8;
 
 package Neo4j::Driver::SummaryCounters;
-# ABSTRACT: Statement statistics
+# ABSTRACT: Query statistics
 
 
 sub new {
@@ -71,7 +69,7 @@ __END__
 
 =head1 DESCRIPTION
 
-Contains counters for various operations that a statement triggered.
+Contains counters for various operations that a query triggered.
 
 To obtain summary counters, call
 L<Neo4j::Driver::ResultSummary/"counters">.
@@ -104,8 +102,7 @@ attributes.
 
 =item * L<Neo4j::Driver>
 
-=item * Equivalent documentation for the official Neo4j drivers:
-L<SummaryCounters (Java)|https://neo4j.com/docs/api/java-driver/5.26/org.neo4j.driver/org/neo4j/driver/summary/SummaryCounters.html>
+=item * L<Neo4j::Driver::B<ResultSummary>>
 
 =back
 

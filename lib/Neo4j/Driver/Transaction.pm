@@ -1,7 +1,5 @@
-use 5.010;
-use strict;
+use v5.14;
 use warnings;
-use utf8;
 
 package Neo4j::Driver::Transaction;
 # ABSTRACT: Logical container for an atomic unit of work
@@ -12,7 +10,6 @@ our @CARP_NOT = qw(
 	Neo4j::Driver::Session
 	Neo4j::Driver::Session::Bolt
 	Neo4j::Driver::Session::HTTP
-	Try::Tiny
 );
 use Scalar::Util qw(blessed);
 
@@ -23,7 +20,7 @@ sub new {
 	# uncoverable pod (private method)
 	my ($class, $session, $mode) = @_;
 	
-	my $events = $session->{driver}->{plugins};
+	my $events = $session->{driver}->{events};
 	my $transaction = {
 		cypher_params_v2 => $session->{cypher_params_v2},
 		net => $session->{net},
@@ -101,7 +98,7 @@ package # private
 use parent -norequire => 'Neo4j::Driver::Transaction';
 
 use Carp qw(croak);
-use Try::Tiny;
+use Feature::Compat::Try;
 
 
 sub _begin {
@@ -112,9 +109,9 @@ sub _begin {
 	try {
 		$self->{bolt_txn} = $self->{net}->_new_tx($self);
 	}
-	catch {
-		die $_ if $_ !~ m/\bprotocol version\b/i;  # Bolt v1/v2
-	};
+	catch ($e) {
+		die $e if $e !~ m/\bprotocol version\b/i;  # Bolt v1/v2
+	}
 	$self->{net}->{active_tx} = 1;
 	$self->run('BEGIN') unless $self->{bolt_txn};
 	return $self;
@@ -131,10 +128,10 @@ sub _run_autocommit {
 	try {
 		$results = $self->run($query, @parameters);
 	}
-	catch {
+	catch ($e) {
 		$self->{net}->{active_tx} = 0;
-		croak $_;
-	};
+		croak $e;
+	}
 	$self->{net}->{active_tx} = 0;
 	
 	return $results;
@@ -311,11 +308,11 @@ Logical container for an atomic unit of work that is either committed
 in its entirety or is rolled back on failure. A driver Transaction
 object corresponds to a server transaction.
 
-Statements may be run lazily. Most of the time, you will not notice
-this, because the driver automatically waits for statements to
+Queries may be run lazily. Most of the time, you will not notice
+this, because the driver automatically waits for queries to
 complete at specific points to fulfill its contracts. If you require
-execution of a statement to have completed (S<e. g.> to check for
-statement errors), you need to call any method in the
+execution of a query to have completed (S<e. g.> to check for
+query errors), you need to call any method in the
 L<Result|Neo4j::Driver::Result>, such as C<has_next()>.
 
 Neo4j drivers allow the creation of different kinds of transactions.
@@ -359,9 +356,9 @@ used.
  $result = $transaction->run($query);
  $result = $transaction->run($query, \%params);
 
-Run a statement and return the L<Result|Neo4j::Driver::Result>.
+Run a query and return the L<Result|Neo4j::Driver::Result>.
 This method takes an optional set of parameters that will be injected
-into the Cypher statement by Neo4j. Using parameters is highly
+into the Cypher query by Neo4j. Using parameters is highly
 encouraged: It helps avoid dangerous Cypher injection attacks and
 improves database performance as Neo4j can re-use query plans more
 often.
@@ -414,7 +411,7 @@ This driver always reports all errors using C<die()>. Error messages
 received from the Neo4j server are passed on as-is.
 See L<Neo4j::Driver::Plugin/"error"> for accessing error details.
 
-Statement errors occur when the statement is executed on the server.
+Query errors can occur when the query is executed on the server.
 This may not necessarily have happened by the time C<run()> returns.
 If you use L<C<try>/C<catch>|Feature::Compat::Try> to handle errors,
 make sure you actually I<use> the L<Result|Neo4j::Driver::Result>
@@ -455,12 +452,6 @@ a defined state, you can roll back a failed transaction manually:
 =item * L<Neo4j::Driver::B<Result>>
 
 =item * L<Neo4j::Driver::Types>
-
-=item * Equivalent documentation for the official Neo4j drivers:
-L<Transaction (Java)|https://neo4j.com/docs/api/java-driver/5.26/org.neo4j.driver/org/neo4j/driver/Transaction.html>,
-L<Transaction (JavaScript)|https://neo4j.com/docs/api/javascript-driver/5.26/class/lib6/transaction.js~Transaction.html>,
-L<ITransaction (.NET)|https://neo4j.com/docs/api/dotnet-driver/5.13/html/b64c7dfe-87e9-8b85-5a02-8ff03800b67b.htm>,
-L<Sessions & Transactions (Python)|https://neo4j.com/docs/api/python-driver/5.26/api.html#transaction>
 
 =back
 

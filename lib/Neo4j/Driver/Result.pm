@@ -1,16 +1,13 @@
-use 5.010;
-use strict;
+use v5.12;
 use warnings;
-use utf8;
 
 package Neo4j::Driver::Result;
-# ABSTRACT: Result of running a Cypher statement (a stream of records)
+# ABSTRACT: Result of running a Cypher query (a stream of records)
 
 
 use Carp qw(croak);
 
 use Neo4j::Driver::Record;
-use Neo4j::Driver::ResultColumns;
 use Neo4j::Driver::ResultSummary;
 
 
@@ -25,18 +22,10 @@ sub new {
 }
 
 
-sub _column_keys {
-	my ($self) = @_;
-	
-	$self->{columns} = Neo4j::Driver::ResultColumns->new($self->{result}) unless $self->{columns};
-	return $self->{columns};
-}
-
-
 sub keys {
 	my ($self) = @_;
 	
-	return @{ $self->{result}->{columns} };
+	return @{ $self->{result}->{columns} // [] };
 }
 
 
@@ -61,7 +50,7 @@ sub single {
 	
 	croak 'There is not exactly one result record' if $self->size != 1;
 	my ($record) = $self->list;
-	$record->{_summary} = $self->summary if $self->{result}->{stats};
+	$record->{_summary} = $self->_summary;
 	return $record;
 }
 
@@ -76,7 +65,7 @@ sub _as_fully_buffered {
 	# buffered right away, avoiding the need to loop through _fetch_next().
 	# (also used in Bolt/Jolt testing, $gather_results 1)
 	$self->{buffer} = $self->{result}->{data};
-	$self->{columns} = Neo4j::Driver::ResultColumns->new($self->{result});
+	$self->{field_names_cache} = Neo4j::Driver::Record::_field_names_cache( $self->{result} );
 	$self->_init_record( $_ ) for @{ $self->{buffer} };
 	return $self;
 }
@@ -87,7 +76,7 @@ sub _fill_buffer {
 	
 	return 0 unless $self->{attached};
 	
-	$self->_column_keys if $self->{result};
+	$self->{field_names_cache} //= Neo4j::Driver::Record::_field_names_cache( $self->{result} );
 	
 	# try to get at least $minimum records on the buffer
 	my $buffer = $self->{buffer};
@@ -154,24 +143,31 @@ sub consume {
 	my ($self) = @_;
 	
 	1 while $self->fetch;  # Exhaust the result stream
-	return $self->summary;
+	return $self->_summary;
 }
 
 
 sub summary {
+	# uncoverable pod (see consume)
+	warnings::warnif deprecated => "summary() in Neo4j::Driver::Result is deprecated; use consume() instead";
+	&_summary;
+}
+
+
+sub _summary {
 	my ($self) = @_;
 	
 	$self->_fill_buffer;
 	
-	$self->{summary} //= Neo4j::Driver::ResultSummary->new( $self->{result}, $self->{notifications}, $self->{statement}, $self->{server_info} );
+	$self->{summary} //= Neo4j::Driver::ResultSummary->new( $self->{result}, $self->{notifications}, $self->{query}, $self->{server_info} );
 	
-	return $self->{summary}->_init;
+	return $self->{summary};
 }
 
 
 sub _bool_values {
 	no if $^V ge v5.36, 'warnings', 'experimental::builtin';
-	if ( $^V ge v5.36 && ! $ENV{NO_NEO4J_CORE_BOOLS} ) {
+	if ( $^V ge v5.36 ) {
 		return builtin::false(), builtin::true();
 	}
 	else {
@@ -206,7 +202,7 @@ __END__
  $summary = $result->consume;
  
  # For error checking, call any method on the result to ensure
- # the statement has executed before leaving the try block
+ # the query has executed before leaving the try block
  try {
    $result = $transaction->run( ... );
    $result->has_next;
@@ -215,7 +211,7 @@ __END__
 
 =head1 DESCRIPTION
 
-The result of running a Cypher statement, conceptually a stream of
+The result of running a Cypher query, conceptually a stream of
 records. The result stream can be navigated through using C<fetch()>
 to consume records one at a time, or be consumed in its entirety
 using C<list()> to get an array of all records.
@@ -226,7 +222,7 @@ buffered locally in the driver. Once I<all> data on the result stream
 has been retrieved from the server and buffered locally, the stream
 becomes B<detached.>
 
-Result streams are valid until the next statement
+Result streams are valid until the next query
 is run on the same session or (if the result was retrieved within
 an explicit transaction) until the transaction is closed, whichever
 comes first. When a result stream has become invalid I<before> it
@@ -235,13 +231,11 @@ was detached, calling any methods in this class may fail.
 Some result handlers may automatically detach a result stream
 immediately when the result is made available by the server.
 Such result streams are valid indefinitely.
-In driver S<version 0.xx,> this happens for all HTTP results.
+In driver S<version 0.xx,> this happened for all HTTP results.
 This behaviour is subject to change in future versions and
 shouldn't be relied upon.
 
 To obtain a query result, call L<Neo4j::Driver::Transaction/"run">.
-
-Until version 0.18, this module was named C<StatementResult>.
 
 =head1 METHODS
 
@@ -257,6 +251,11 @@ Calling this method fully exhausts the result and invalidates the
 result stream, discarding any remaining records. If you want to
 access records I<after> retrieving the summary, you should use
 C<list()> before C<consume()> to buffer all records into memory.
+
+Before driver S<version 0.44>, the summary was retrieved with
+the C<summary()> method, which didn't exhaust the result.
+That method has since been deprecated, matching a corresponding
+change in S<Neo4j 4.0>.
 
 =head2 fetch
 
@@ -302,7 +301,7 @@ stream.
 The list is internally buffered by this class. Calling this method
 multiple times returns the buffered list.
 
-This method returns an array reference if called in scalar context.
+In scalar context, returns an array reference (discouraged in new code).
 
 =head2 peek
 
@@ -330,25 +329,8 @@ method multiple times returns the buffered record.
 
 Return the count of records that calling C<list()> would yield.
 
-Calling this method exhausts the result stream and buffers all records
+Calling this method may exhaust the result stream and may buffer all records
 for use by C<list()>.
-
-=head2 summary
-
- $result_summary = $result->summary;
-
-Return a L<Neo4j::Driver::ResultSummary> object. Calling this method
-detaches the result stream, but does I<not> exhaust it.
-
-This method is discouraged. It may be deprecated and removed in
-a future version. Please use C<consume()> instead.
-
-As a special case, L<Record|Neo4j::Driver::Record>s returned by the
-C<single> method also have a C<summary> method that works the same
-way.
-
- $record = $transaction->run('...')->single;
- $result_summary = $record->summary;
 
 =head1 SEE ALSO
 
@@ -356,14 +338,9 @@ way.
 
 =item * L<Neo4j::Driver>
 
-=item * L<Neo4j::Driver::B<Record>>,
-L<Neo4j::Driver::B<ResultSummary>>
+=item * L<Neo4j::Driver::B<Record>>
 
-=item * Equivalent documentation for the official Neo4j drivers:
-L<Result (Java)|https://neo4j.com/docs/api/java-driver/5.26/org.neo4j.driver/org/neo4j/driver/Result.html>,
-L<Result (Python)|https://neo4j.com/docs/api/python-driver/5.26/api.html#result>,
-L<Result (JavaScript)|https://neo4j.com/docs/api/javascript-driver/5.26/class/lib6/result.js~Result.html>,
-L<IResult (.NET)|https://neo4j.com/docs/api/dotnet-driver/5.13/html/f1ac31ec-c6dd-798b-b5d6-3ca0794d7502.htm>
+=item * L<Neo4j::Driver::B<ResultSummary>>
 
 =back
 

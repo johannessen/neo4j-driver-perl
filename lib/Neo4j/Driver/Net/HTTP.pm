@@ -1,7 +1,5 @@
-use 5.010;
-use strict;
+use v5.12;
 use warnings;
-use utf8;
 
 package Neo4j::Driver::Net::HTTP;
 # ABSTRACT: Network controller for Neo4j HTTP
@@ -10,13 +8,13 @@ package Neo4j::Driver::Net::HTTP;
 # This package is not part of the public Neo4j::Driver API.
 
 
-use Carp qw(carp croak);
+use Carp qw(croak);
 our @CARP_NOT = qw(Neo4j::Driver::Transaction Neo4j::Driver::Transaction::HTTP);
 
 use Time::Piece 1.20 qw();
 use URI 1.31;
 
-use Neo4j::Driver::Net::HTTP::LWP;
+use Neo4j::Driver::Net::HTTP::Tiny;
 use Neo4j::Driver::Result::Jolt;
 use Neo4j::Driver::Result::JSON;
 use Neo4j::Driver::Result::Text;
@@ -36,15 +34,14 @@ sub new {
 	# uncoverable pod
 	my ($class, $driver) = @_;
 	
-	$driver->{plugins}->{default_handlers}->{http_adapter_factory} //= sub {
-		my $net_module = $driver->{config}->{net_module} || 'Neo4j::Driver::Net::HTTP::LWP';
+	$driver->{events}->{default_handlers}->{http_adapter_factory} //= sub {
+		my $net_module = $driver->{config}->{net_module} || 'Neo4j::Driver::Net::HTTP::Tiny';
 		return $net_module->new($driver);
 	};
-	my $http_adapter = $driver->{plugins}->trigger('http_adapter_factory', $driver);
+	my $http_adapter = $driver->{events}->trigger('http_adapter_factory', $driver);
 	
 	my $self = bless {
-		events => $driver->{plugins},
-		cypher_types => $driver->{config}->{cypher_types},
+		events => $driver->{events},
 		server_info => $driver->{server_info},
 		http_agent => $http_adapter,
 		want_jolt => $driver->{config}->{jolt},
@@ -115,9 +112,9 @@ sub _set_database {
 }
 
 
-# Send statements to the Neo4j server and return a list of all results.
+# Send queries to the Neo4j server and return a list of all results.
 sub _run {
-	my ($self, $tx, @statements) = @_;
+	my ($self, $tx, @queries) = @_;
 	
 	if ( ! $self->{want_concurrent} ) {
 		# A new HTTP tx has no commit endpoint until after the first result is received.
@@ -125,7 +122,7 @@ sub _run {
 		$is_concurrent and croak "Concurrent transactions for HTTP are disabled; use multiple sessions or enable the concurrent_tx config option";
 	}
 	
-	my $json = { statements => \@statements };
+	my $json = { statements => \@queries };
 	return $self->_request($tx, 'POST', $json)->_results;
 }
 
@@ -185,9 +182,8 @@ sub _request {
 		http_method => $method,
 		http_path => $tx_endpoint,
 		http_header => $header,
-		cypher_types => $self->{cypher_types},
 		server_info => $self->{server_info},
-		statements => $json ? $json->{statements} : [],
+		queries => $json ? $json->{statements} : [],
 	});
 	
 	my $info = $result->_info;

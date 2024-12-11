@@ -12,12 +12,7 @@ use if $no_warnings = $ENV{AUTHOR_TESTING} ? 1 : 0, 'Test::Warnings';
 use Time::Piece;
 use Neo4j_Test::MockQuery;
 use Neo4j::Driver;
-
-BEGIN {
-	require Neo4j::Types;
-	plan skip_all => 'Test requires Neo4j::Types v2' unless eval { Neo4j::Types->VERSION('2.00') };
-}
-
+use Neo4j::Types 2.00;
 
 
 # Confirm that the deep_bless Jolt parser correctly converts
@@ -39,9 +34,6 @@ sub mock_jolt {
 	return $query;
 }
 
-
-# Trigger Jolt.pm to load DateTime.pm (with require instead of use to allow for 1.00)
-$s->run(mock_jolt { 'T' => '00:00:00' })->fetch;
 
 SKIP: { skip '(Time-Piece#47: strftime broken on Win32)', 1 if $^O =~ /Win32/;
 neo4j_datetime_ok 'Neo4j::Driver::Type::DateTime', sub {
@@ -172,9 +164,6 @@ subtest 'ZonedDateTime non-standard offsets' => sub {
 	is $v->tz_name, undef, 'ZonedDateTime offset name';
 };
 
-
-# Trigger Jolt.pm to load DateTime.pm (with require instead of use to allow for 1.00)
-$s->run(mock_jolt { 'T' => 'PT0S' })->fetch;
 
 neo4j_duration_ok 'Neo4j::Driver::Type::Duration', sub {
 	my ($class, $params) = @_;

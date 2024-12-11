@@ -1,7 +1,5 @@
-use 5.010;
-use strict;
+use v5.12;
 use warnings;
-use utf8;
 
 package Neo4j::Driver::Type::Path;
 # ABSTRACT: Directed sequence of relationships between two nodes
@@ -11,16 +9,13 @@ package Neo4j::Driver::Type::Path;
 
 
 use parent 'Neo4j::Types::Path';
-use overload '@{}' => \&_array, fallback => 1;
-
-use Carp qw(croak);
 
 
 sub nodes {
 	my ($self) = @_;
 	
 	my $i = 0;
-	return grep { ++$i & 1 } @{$self->{path}};
+	return grep { ++$i & 1 } @{$self->{'..'}};
 }
 
 
@@ -28,19 +23,14 @@ sub relationships {
 	my ($self) = @_;
 	
 	my $i = 0;
-	return grep { $i++ & 1 } @{$self->{path}};
+	return grep { $i++ & 1 } @{$self->{'..'}};
 }
 
 
 sub elements {
 	my ($self) = @_;
 	
-	return @{$self->{path}};
-}
-
-
-sub _array {
-	croak 'Use elements() to access Neo4j path elements';
+	return @{$self->{'..'}};
 }
 
 

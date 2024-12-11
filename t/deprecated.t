@@ -19,7 +19,7 @@ my $session = $driver->session;
 
 use Test::More 0.94;
 use Test::Exception;
-use Test::Warnings 0.010 qw(warning warnings :no_end_test);
+use Test::Warnings 0.010 qw(:no_end_test);
 my $no_warnings;
 use if $no_warnings = $ENV{AUTHOR_TESTING} ? 1 : 0, 'Test::Warnings';
 
@@ -50,6 +50,7 @@ lives_ok { $r = 0; $r = $transaction->run($q)->single; } 'run query (structural 
 
 subtest 'direct node/rel/path access' => sub {
 	plan skip_all => '(query failed)' if ! $r;
+	plan skip_all => 'Neo4j::Bolt is designed for direct access' if $Neo4j_Test::bolt;
 	plan tests => 6;
 	ok my $n = $r->get('n4'), 'get node';
 	dies_ok { $n->{answer} = 42 } 'set node prop';
@@ -113,12 +114,12 @@ subtest 'die_on_error = 0' => sub {
 	my $d = Neo4j::Driver->new('http:')->plugin($mock)->plugin($error);
 	
 	# Text's _results() method is only triggered by surviving errors
-	lives_ok { $r = 0; warning { $r = $d->session->run('foo') }; } 'broken response lives';
+	lives_ok { no warnings; $r = 0; $r = $d->session->run('foo') } 'broken response lives';
 	is ref($r), 'Neo4j::Driver::Result', 'broken response result fallback';
 	is $Neo4j_Test::Plugin::NoDieOnError::error->as_string, 'bar', 'error text';
 	
 	# Surviving errors yields results with no summary
-	ok ! eval { $r->summary->server }, 'error missing summary';
+	ok ! eval { $r->consume->server }, 'error missing summary';
 };
 
 
@@ -142,7 +143,7 @@ subtest 'jolt config option' => sub {
 
 subtest 'net_module config option' => sub {
 	plan tests => 2;
-	my $net_module = 'Neo4j::Driver::Net::HTTP::LWP';
+	my $net_module = 'Neo4j::Driver::Net::HTTP::Tiny';
 	dies_ok { Neo4j::Driver->new({ net_module => $net_module }) } 'set net_module';
 	dies_ok { $driver->config('net_module') } 'get net_module';
 };
@@ -241,26 +242,10 @@ subtest 'run in list context' => sub {
 
 
 subtest 'config tls options' => sub {
-	plan tests => 2 + 9;
+	plan tests => 2;
 	my $ca_file = '/dev/null';
 	dies_ok { Neo4j::Driver->new({ ca_file => $ca_file }) } 'set config ca_file';
 	dies_ok { $driver->config('ca_file') } 'get ca_file';
-	
-	# Confirm that methods that are so far only discouraged don't warn
-	my $w;
-	my ($d1, $d2);
-	lives_ok { $d1 = Neo4j::Driver->new(); } 'new driver tls';
-	lives_ok { $d2 = Neo4j::Driver->new(); } 'new driver tls_ca';
-	lives_ok { $w = ''; $w = warning { $d1->config(tls => 7) }; } 'set config tls';
-	is_deeply $w, [], 'tls not deprecated'
-		or diag 'got warning(s): ', explain $w;
-	lives_ok { $w = ''; $w = warning { $d2->config(tls_ca => $ca_file) }; } 'set config tls_ca';
-	is_deeply $w, [], 'tls_ca not deprecated'
-		or diag 'got warning(s): ', explain $w;
-	no warnings 'deprecated';  # there may or may not be warnings for the getters
-	lives_and { is $d1->config('tls'), 7; } 'get tls';
-	lives_and { is $d2->config('tls_ca'), $ca_file; } 'get tls_ca';
-	lives_and { is $d2->config('trust_ca'), $ca_file; } 'get tls_ca trust_ca';
 };
 
 

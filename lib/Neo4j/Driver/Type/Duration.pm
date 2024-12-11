@@ -1,7 +1,5 @@
-use 5.010;
-use strict;
+use v5.12;
 use warnings;
-use utf8;
 
 package Neo4j::Driver::Type::Duration;
 # ABSTRACT: Represents a Neo4j temporal duration value
@@ -15,10 +13,6 @@ use parent 'Neo4j::Types::Duration';
 
 sub _parse {
 	my ($self) = @_;
-	
-	if ( ! exists $self->{T} ) {  # JSON format
-		$self->{T} = $self->{data};
-	}
 	
 	my ($minus, $years, $months, $weeks, $days, $hours, $mins, $secs, $nanos) = $self->{T} =~ m/^(-)?P(?:([-0-9.]+)Y)?(?:([-0-9.]+)M)?(?:([-0-9.]+)W)?(?:([-0-9.]+)D)?(?:T(?:([-0-9.]+)H)?(?:([-0-9.]+)M)?(?:([-0-9]+)(?:[,.]([0-9]+))?S)?)?$/;
 	
