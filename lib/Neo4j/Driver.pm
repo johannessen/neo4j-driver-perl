@@ -169,7 +169,6 @@ sub _parse_options {
 
 
 sub plugin {
-	# uncoverable pod (experimental feature)
 	my ($self, $plugin, @extra) = @_;
 	
 	croak "plugin() with more than one argument is unsupported" if @extra;

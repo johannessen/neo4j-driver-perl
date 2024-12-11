@@ -220,10 +220,6 @@ requires recent enough JSON module versions
 (S<L<Cpanel::JSON::XS> 4.38> / S<L<JSON::PP> 4.11>).
 
 =item *
-The value of node or relationship properties named C<_meta>
-may not be returned correctly.
-
-=item *
 Fields in records containing maps, lists, or temporal values
 may be returned with
 incorrect type or meta data due to a bug in the Neo4j server
